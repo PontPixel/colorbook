@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
+<title>ColorFind</title>
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --wall:#dfe3ea; --panel:#f7f8fb; --ink:#23283a; --muted:#646b80; --line:#c7ccd8;
+  --ok:#2f9e5b; --warn:#d0572f; --accent:#3b5bdb; --gold:#e0a100;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--wall);color:var(--ink);font:500 15px/1.4 "Nunito",system-ui,sans-serif;
+  padding-inline:16px;padding-block:16px 28px;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font:700 26px/1 "Fredoka",sans-serif;margin:0;letter-spacing:.2px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{height:52px;width:auto;mix-blend-mode:multiply;transform:rotate(-4deg);flex:none}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.levels{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.lvl{appearance:none;flex:1 0 auto;border:2px solid var(--ink);background:var(--panel);color:var(--ink);border-radius:10px;padding:6px 10px;font:600 13px "Fredoka",sans-serif;cursor:pointer;display:flex;gap:6px;align-items:center;justify-content:center;white-space:nowrap}
+.lvl[aria-current="true"]{background:var(--ink);color:#fff}
+.lvl:disabled{opacity:.45;cursor:default}
+.lvl .st{color:var(--gold);font-size:11px;letter-spacing:1px}
+.hud{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.pill{font:600 14px "Fredoka",sans-serif;background:var(--panel);border:2px solid var(--ink);border-radius:999px;padding:4px 12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.paintgauge{display:flex;align-items:center;gap:8px;font:600 13px "Fredoka",sans-serif;font-variant-numeric:tabular-nums}
+.paintgauge .bar{height:10px}
+.frame{background:#fff;border:3px solid var(--ink);border-radius:14px;padding:6px;box-shadow:0 5px 0 var(--ink)}
+svg.scene{display:block;width:100%;height:auto;border-radius:9px}
+.credit{font-size:12px;color:var(--muted);text-align:center;margin-top:-4px;min-height:16px}
+.credit i{font-style:italic}
+.region{cursor:pointer;transition:fill .7s ease,stroke .7s ease}
+.region.sel{animation:pulse 1.1s ease-in-out infinite}
+.region.done{cursor:default}
+@keyframes pulse{50%{filter:brightness(1.2)}}
+.selOutline{fill:none;stroke:var(--accent);stroke-width:3;stroke-dasharray:6 5;pointer-events:none;animation:dash 1s linear infinite}
+.selOutline.thick{stroke-dasharray:none;opacity:.35;animation:none}
+@keyframes dash{to{stroke-dashoffset:-22}}
+.crack{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;pointer-events:none;transition:opacity .5s}
+.crack.gone{opacity:0}
+.mixer{background:var(--panel);border:2px solid var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.swatches{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+.sw{display:flex;flex-direction:column;align-items:center;gap:6px}
+.sw .lab{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chip{width:100%;max-width:150px;aspect-ratio:1.6;border:3px solid var(--ink);border-radius:12px}
+.chip.empty{background:repeating-linear-gradient(45deg,#eef0f5 0 8px,#e3e6ee 8px 16px)}
+.chip.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.target-name{font:600 16px "Fredoka",sans-serif;text-align:center}
+.eq{font:700 22px "Fredoka",sans-serif;color:var(--muted)}
+.meter{display:flex;align-items:center;gap:10px}
+.bar{flex:1;height:12px;border:2px solid var(--ink);border-radius:99px;background:#fff;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--warn);transition:width .3s,background .3s}
+.pct{font:600 16px "Fredoka",sans-serif;min-width:48px;text-align:right;font-variant-numeric:tabular-nums}
+.drops{display:flex;flex-wrap:wrap;gap:5px;min-height:18px;justify-content:center}
+.drops span{width:15px;height:15px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid var(--ink)}
+.drops em{font-style:normal;color:var(--muted);font-size:13px}
+.paints{display:grid;grid-template-columns:repeat(var(--n,5),1fr);gap:8px}
+.paint{appearance:none;border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font:700 12px "Nunito",sans-serif;color:var(--ink)}
+.paint .blob{width:100%;max-width:56px;aspect-ratio:1;border-radius:50%;border:3px solid var(--ink);position:relative;box-shadow:0 3px 0 var(--ink);transition:transform .08s}
+.paint .blob::after{content:"";position:absolute;left:22%;top:16%;width:28%;height:22%;border-radius:50%;background:rgba(255,255,255,.55)}
+.paint:active .blob{transform:translateY(3px);box-shadow:0 0 0 var(--ink)}
+.paint:focus-visible .blob,.btn:focus-visible,.lvl:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.actions{display:flex;gap:8px}
+.actions .btn{flex:1 1 0;min-width:0;position:relative}
+.actions .btn.primary{flex:1.7 1 0}
+.badge{position:absolute;top:-9px;right:-6px;background:var(--gold);color:var(--ink);border:2px solid var(--ink);border-radius:99px;padding:0 6px;font:700 11px/16px "Fredoka",sans-serif;white-space:nowrap;display:flex;align-items:center;gap:3px}
+.badge.buy{background:#fff}
+.btn.on{background:var(--accent);color:#fff}
+.coin{display:inline-block;width:.95em;height:.95em;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe27a,#e0a100 70%);border:2px solid var(--ink);vertical-align:-2px;flex:none}
+.badge .coin{width:9px;height:9px;border-width:1.5px}
+.pill.coins{display:flex;align-items:center;gap:6px}
+.pill.bump{animation:bump .4s}
+@keyframes bump{40%{transform:scale(1.15)}}
+.drops.picking span{cursor:pointer;animation:wig .5s ease-in-out infinite;outline:2px dashed var(--accent);outline-offset:2px}
+@keyframes wig{50%{transform:rotate(-45deg) scale(1.2)}}
+.card .booster{background:#fff;border:2px dashed var(--ink);border-radius:12px;padding:10px;text-align:left;font-size:14px}
+.card .booster b{font-family:"Fredoka",sans-serif}
+.card .col{display:flex;flex-direction:column;gap:8px}
+.btn{appearance:none;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:10px;padding:10px 6px;font:600 14px "Fredoka",sans-serif;cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+.btn:active{transform:translateY(3px);box-shadow:none}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.primary{background:var(--ink);color:#fff}
+.btn.primary.ready{background:var(--ok)}
+.msg{min-height:20px;text-align:center;font-weight:700;font-size:14px;color:var(--muted)}
+.msg.good{color:var(--ok)} .msg.bad{color:var(--warn)}
+.hint{display:none;justify-content:center;gap:6px;align-items:center;font-size:13px;color:var(--muted);text-align:center}
+.hint.on{display:flex}
+.overlay{position:fixed;inset:0;background:rgba(35,40,58,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:5}
+.overlay[hidden]{display:none}
+.card{background:var(--panel);border:3px solid var(--ink);border-radius:16px;padding:22px;max-width:360px;width:100%;text-align:center;box-shadow:0 6px 0 var(--ink);display:flex;flex-direction:column;gap:12px}
+.card h2{font:700 24px "Fredoka",sans-serif;margin:0}
+.card p{margin:0;color:var(--muted)}
+.card .stars{font-size:28px;letter-spacing:2px;color:var(--gold)}
+.card .row{display:flex;gap:8px}.card .row .btn{flex:1}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font:600 14px "Fredoka",sans-serif;transition:.3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <img src="img/logo-card.jpg" alt="" width="34" height="52">
+      <div>
+      <h1>ColorFind</h1>
+      <div class="sub" id="levelSub">Tap a faded part, mix its color, paint it back.</div>
+      </div>
+    </div>
+    <div class="pill coins" id="coins" title="Coins"><span class="coin"></span><span id="coinCount">0</span></div>
+  </header>
+
+  <nav class="levels" id="levels" aria-label="Pictures"></nav>
+
+  <div class="hud">
+    <div class="pill" id="progress">0 / 10</div>
+    <div class="paintgauge" title="Paint left for this picture">
+      <span>Paint</span>
+      <div class="bar"><i id="paintFill"></i></div>
+      <span id="paintLeft">40</span>
+    </div>
+    <div class="pill" id="starCount">★ 0</div>
+  </div>
+
+  <div class="frame">
+    <svg class="scene" id="scene" viewBox="0 0 320 240" aria-label="Faded picture"></svg>
+  </div>
+  <div class="credit" id="credit"></div>
+
+  <section class="mixer" aria-label="Mixing table">
+    <div class="swatches">
+      <div class="sw">
+        <div class="lab">Target</div>
+        <div class="chip" id="targetChip"></div>
+        <div class="target-name" id="targetName">Sun</div>
+      </div>
+      <div class="eq">→</div>
+      <div class="sw">
+        <div class="lab">Your mix</div>
+        <div class="chip empty" id="mixChip"></div>
+        <div class="drops" id="drops"><em>add paint</em></div>
+      </div>
+    </div>
+    <div class="meter">
+      <div class="bar"><i id="barFill"></i></div>
+      <div class="pct" id="pct">0%</div>
+    </div>
+    <div class="msg" id="msg">Match 95% or more to paint.</div>
+    <div class="hint" id="hint"></div>
+    <div class="paints" id="paints"></div>
+    <div class="actions">
+      <button class="btn" id="clearBtn">Empty</button>
+      <button class="btn" id="undoBtn" hidden>Undo<span class="badge"></span></button>
+      <button class="btn" id="pickBtn" hidden>Pick<span class="badge"></span></button>
+      <button class="btn" id="hintBtn" hidden>Hint<span class="badge"></span></button>
+      <button class="btn primary" id="applyBtn">Paint it</button>
+    </div>
+  </section>
+</div>
+
+<div class="overlay" id="endOverlay" hidden>
+  <div class="card">
+    <h2 id="endTitle">Picture restored</h2>
+    <div class="stars" id="endStars"></div>
+    <p id="endText"></p>
+    <button class="btn primary" id="rescueBtn" hidden></button>
+    <div class="row">
+      <button class="btn" id="retryBtn">Replay</button>
+      <button class="btn primary" id="nextBtn">Next picture</button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="introOverlay" hidden>
+  <div class="card">
+    <h2 id="introTitle"></h2>
+    <p id="introText"></p>
+    <div class="col" id="introBoosters"></div>
+    <button class="btn primary" id="introBtn">Let's paint</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+// ---------- Color model: RYB pigment cube + white/black tint & shade ----------
+const C={w:[1,1,1],r:[0.92,0.13,0.16],y:[1,0.86,0.1],b:[0.16,0.38,0.75],
+  ry:[1,0.5,0.05],rb:[0.5,0.12,0.55],yb:[0.1,0.62,0.3],ryb:[0.42,0.26,0.13]};
+function ryb2rgb(r,y,b){
+  const L=(a,c,t)=>a.map((v,i)=>v+(c[i]-v)*t);
+  return L(L(L(C.w,C.b,b),L(C.y,C.yb,b),y),L(L(C.r,C.rb,b),L(C.ry,C.ryb,b),y),r);
+}
+const PAINTS=[
+  {k:'W',name:'White',rgb:[0.98,0.98,0.97]},{k:'R',name:'Red',rgb:C.r},
+  {k:'Y',name:'Yellow',rgb:C.y},{k:'B',name:'Blue',rgb:C.b},{k:'K',name:'Black',rgb:[0.13,0.13,0.15]}];
+const PMAP=Object.fromEntries(PAINTS.map(p=>[p.k,p]));
+function mix(c){
+  const R=c.R||0,Y=c.Y||0,B=c.B||0,W=c.W||0,K=c.K||0,total=R+Y+B+W+K; if(!total) return null;
+  const ch=R+Y+B; let out=[0,0,0];
+  if(ch){let v=[R/ch,Y/ch,B/ch];const m=Math.max(...v);v=v.map(x=>x/m);
+    const base=ryb2rgb(...v);out=out.map((o,i)=>o+base[i]*ch/total);}
+  return out.map((o,i)=>o+PMAP.W.rgb[i]*W/total+PMAP.K.rgb[i]*K/total);
+}
+const hex=rgb=>'#'+rgb.map(v=>Math.round(Math.max(0,Math.min(1,v))*255).toString(16).padStart(2,'0')).join('');
+function lab(rgb){
+  const l=rgb.map(v=>v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4));
+  const f=t=>t>0.008856?Math.cbrt(t):7.787*t+16/116;
+  const X=f((l[0]*0.4124+l[1]*0.3576+l[2]*0.1805)/0.95047),Y=f(l[0]*0.2126+l[1]*0.7152+l[2]*0.0722),Z=f((l[0]*0.0193+l[1]*0.1192+l[2]*0.9505)/1.08883);
+  return [116*Y-16,500*(X-Y),200*(Y-Z)];
+}
+const dE=(a,b)=>{const A=lab(a),B=lab(b);return Math.hypot(A[0]-B[0],A[1]-B[1],A[2]-B[2]);};
+const matchPct=(a,b)=>Math.max(0,Math.round(100-dE(a,b)*1.1));
+function grayOf(rgb){const Y=0.2126*rgb[0]+0.7152*rgb[1]+0.0722*rgb[2];const g=0.42+0.5*Y;return [g,g+0.005,g+0.02];}
+
+// ---------- Pictures ----------
+function petals(cx,cy){let s='';for(let i=0;i<5;i++){const a=i/5*Math.PI*2-Math.PI/2;s+=`<circle cx="${(cx+Math.cos(a)*7).toFixed(1)}" cy="${(cy+Math.sin(a)*7).toFixed(1)}" r="5.5"/>`;}return s;}
+const INK='#23283a';
+
+const LEVELS=[
+{ id:'balloons', title:'Balloons', sub:'Each balloon needs just one paint.', budget:8, paints:['R','Y','B'],
+  tip:{title:'Welcome, restorer',text:'Each faded part has a target color. Tap a paint to drop it in the bowl, then press <b>Paint it</b> once the match reaches 95%. Every drop uses paint from your pot. Restored parts earn coins.'},
+  bg:`<rect width="320" height="240" fill="#eaf1fa"/><g fill="#fff" stroke="${INK}" stroke-width="1.5"><path d="M18 212a14 14 0 0 1 26-8a11 11 0 0 1 20 8z"/><path d="M252 214a16 16 0 0 1 30-8a12 12 0 0 1 22 8z"/></g>`,
+  regions:[
+    {id:'red',name:'Red balloon',recipe:{R:1},svg:'<ellipse cx="90" cy="98" rx="30" ry="38"/><path d="M85 142L90 134L95 142Z"/>'},
+    {id:'yellow',name:'Yellow balloon',recipe:{Y:1},svg:'<ellipse cx="168" cy="74" rx="30" ry="38"/><path d="M163 118L168 110L173 118Z"/>'},
+    {id:'blue',name:'Blue balloon',recipe:{B:1},svg:'<ellipse cx="246" cy="100" rx="30" ry="38"/><path d="M241 144L246 136L251 144Z"/>'},
+  ],
+  order:['red','yellow','blue'],
+  decor:`<g fill="none" stroke="${INK}" stroke-width="1.5" pointer-events="none"><path d="M90 142q-8 30 6 50t4 40"/><path d="M168 118q10 30-4 56t6 58"/><path d="M246 144q-6 30 6 50t-2 38"/></g>
+    <g fill="#fff" opacity=".55" pointer-events="none"><ellipse cx="78" cy="82" rx="6" ry="11" transform="rotate(20 78 82)"/><ellipse cx="156" cy="58" rx="6" ry="11" transform="rotate(20 156 58)"/><ellipse cx="234" cy="84" rx="6" ry="11" transform="rotate(20 234 84)"/></g>`
+},
+{ id:'fruit', title:'Fruit bowl', sub:'Two paints make a new color.', budget:12, paints:['R','Y','B'], intro:'undo',
+  tip:{title:'Mixing two colors',text:'Orange, green and purple are not in your paint set. Mix them: one drop of each of two paints.'},
+  bg:`<rect width="320" height="240" fill="#f4eee4"/><rect y="188" width="320" height="52" fill="#dcc7aa"/><line x1="0" y1="188" x2="320" y2="188" stroke="${INK}" stroke-width="2"/>`,
+  regions:[
+    {id:'orange',name:'Orange',recipe:{R:1,Y:1},svg:'<circle cx="116" cy="146" r="30"/>'},
+    {id:'pear',name:'Pear',recipe:{Y:1,B:1},svg:'<path d="M160 70c10 0 12 14 14 24c4 12 20 22 20 40c0 22-16 32-34 32s-34-10-34-32c0-18 16-28 20-40c2-10 4-24 14-24z"/>'},
+    {id:'plum',name:'Plum',recipe:{R:1,B:1},svg:'<circle cx="204" cy="150" r="27"/>'},
+  ],
+  order:['pear','orange','plum'],
+  decor:`<g pointer-events="none"><path d="M160 72q1-10 8-15" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M62 162H258Q252 216 160 216Q68 216 62 162Z" fill="#fff" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M70 180H250" stroke="#8fb3e0" stroke-width="5"/><g fill="${INK}"><circle cx="106" cy="132" r="1.5"/><circle cx="124" cy="126" r="1.5"/></g></g>`
+},
+{ id:'beach', title:'Beach', sub:'White lightens. Black darkens.', budget:16, intro:'pick',
+  tip:{title:'Light and dark',text:'All five paints are open now. Add <b>White</b> to make a color lighter and <b>Black</b> to make it darker.'},
+  regions:[
+    {id:'sun',name:'Sun',recipe:{Y:1},svg:'<circle cx="62" cy="46" r="22"/>'},
+    {id:'sea',name:'Sea',recipe:{B:1},svg:'<path d="M0 118H320V168Q240 158 160 166T0 160Z"/>'},
+    {id:'sky',name:'Sky',recipe:{W:1,B:1},svg:'<rect x="0" y="0" width="320" height="130"/>'},
+    {id:'sand',name:'Sand',recipe:{W:1,Y:1},svg:'<path d="M0 158Q80 150 160 160T320 156V240H0Z"/>'},
+    {id:'umbrella',name:'Umbrella',recipe:{W:1,R:1},svg:'<path d="M70 150A52 36 0 0 1 174 150Q161 142 148 150Q135 142 122 150Q109 142 96 150Q83 142 70 150Z"/>'},
+    {id:'rock',name:'Rock',recipe:{W:1,K:1},svg:'<path d="M232 170q6-24 28-26q20 0 28 24q-2 6-28 6t-28-4z"/>'},
+  ],
+  order:['sky','sun','sea','sand','rock','umbrella'],
+  decor:`<g fill="none" stroke="${INK}" stroke-width="1.5" stroke-linecap="round" pointer-events="none">
+    <line x1="122" y1="146" x2="122" y2="214" stroke-width="3"/><path d="M122 114L109 146M122 114L135 146"/>
+    <path d="M196 52q8-8 16 0q8-8 16 0"/><path d="M236 70q6-6 12 0q6-6 12 0"/>
+    <path d="M20 138q10-6 20 0M130 130q10-6 20 0M240 136q10-6 20 0"/></g>`
+},
+{ id:'house', title:'Cottage', sub:'Tap a faded part, mix its color, paint it back.', budget:38, intro:'hint',
+  tip:{title:'A bigger picture',text:'Ten parts share one paint pot, so plan your drops. You can tap any faded part to work on it. If the pot runs dry, coins can rescue the part you are on.'},
+  regions:[
+    {id:'sun',name:'Sun',recipe:{Y:1},svg:'<circle cx="264" cy="46" r="24"/>'},
+    {id:'flower',name:'Flowers',recipe:{W:1,R:1},svg:petals(284,196)+petals(304,206)},
+    {id:'window',name:'Lit windows',recipe:{W:1,Y:1},svg:'<rect x="134" y="124" width="26" height="22" rx="2"/><rect x="206" y="124" width="26" height="22" rx="2"/>'},
+    {id:'door',name:'Door',recipe:{R:1,B:1},svg:'<path d="M168 190V156a13 13 0 0 1 26 0V190Z"/>'},
+    {id:'roof',name:'Roof',recipe:{R:2,Y:1},svg:'<path d="M106 114L180 60L254 114Z"/>'},
+    {id:'wall',name:'Walls',recipe:{W:2,R:1,Y:1},svg:'<rect x="118" y="112" width="124" height="78"/>'},
+    {id:'tree',name:'Treetop',recipe:{Y:1,B:1},svg:'<circle cx="46" cy="104" r="24"/><circle cx="72" cy="96" r="26"/><circle cx="60" cy="74" r="22"/>'},
+    {id:'trunk',name:'Tree trunk',recipe:{R:1,Y:1,B:1},svg:'<rect x="52" y="118" width="14" height="60" rx="2"/>'},
+    {id:'grass',name:'Grass',recipe:{Y:2,B:1},svg:'<path d="M0 176Q80 158 160 174T320 170V240H0Z"/>'},
+    {id:'sky',name:'Sky',recipe:{W:1,B:1},svg:'<rect x="0" y="0" width="320" height="185"/>'},
+  ],
+  order:['sky','sun','grass','trunk','tree','wall','roof','door','window','flower'],
+  decor:`<g fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round" pointer-events="none">
+    <line x1="284" y1="202" x2="284" y2="226"/><line x1="304" y1="212" x2="304" y2="230"/>
+    <line x1="147" y1="124" x2="147" y2="146"/><line x1="134" y1="135" x2="160" y2="135"/>
+    <line x1="219" y1="124" x2="219" y2="146"/><line x1="206" y1="135" x2="232" y2="135"/></g>
+    <g fill="#fff" stroke="${INK}" stroke-width="1.5" pointer-events="none"><circle cx="284" cy="196" r="3"/><circle cx="304" cy="206" r="3"/><circle cx="189" cy="174" r="2" fill="${INK}"/></g>`
+},
+{ id:'shelf', title:'Kitchen shelf', sub:'Everything on the shelf is cracked and faded. Mend it.', budget:36,
+  regions:[
+    {id:'lemon',name:'Lemon',recipe:{Y:1},svg:'<ellipse cx="211" cy="162" rx="11" ry="8"/>',crack:'M205 157l4 4-2 3 5 2'},
+    {id:'mug',name:'Mug',recipe:{R:1,Y:1},svg:'<rect x="148" y="130" width="36" height="40" rx="4"/><path d="M184 138q14 0 14 12t-14 12v-6q8 0 8-6t-8-6z"/>',crack:'M160 130l4 10-5 6 7 8-3 6'},
+    {id:'leaves',name:'Leaves',recipe:{Y:2,B:1},svg:'<ellipse cx="263" cy="104" rx="9" ry="26"/><ellipse cx="246" cy="112" rx="8" ry="21" transform="rotate(-32 246 112)"/><ellipse cx="280" cy="112" rx="8" ry="21" transform="rotate(32 280 112)"/>',crack:'M263 84l3 8-4 5 3 7'},
+    {id:'teapot',name:'Teapot',recipe:{W:1,R:1,B:1},svg:'<path d="M44 135Q24 128 20 110L28 108Q34 124 48 126Z"/><path d="M116 122q22 0 22 18t-22 18v-8q13 0 13-10t-13-10z"/><ellipse cx="80" cy="140" rx="38" ry="30"/><path d="M62 113Q80 100 98 113Z"/><circle cx="80" cy="103" r="4"/>',crack:'M72 112l6 12-6 8 8 10-4 10 6 8'},
+    {id:'pot',name:'Flower pot',recipe:{W:1,R:2,Y:1},svg:'<path d="M230 142H296L288 170H238Z"/><rect x="226" y="132" width="74" height="11" rx="2"/>',crack:'M252 143l5 9-4 6 6 8'},
+    {id:'frame',name:'Picture frame',recipe:{R:1,K:1},svg:'<path fill-rule="evenodd" d="M118 28h84v60h-84zM128 38v40h64v-40z"/>',crack:'M118 50l6 3-2 5 4 4'},
+    {id:'plank',name:'Shelf',recipe:{W:1,R:1,Y:1,B:1},svg:'<rect x="8" y="170" width="304" height="14" rx="2"/><path d="M40 184h10l-10 24zM270 184h10v24z"/>',crack:'M120 170l5 7-4 7M230 170l-3 6 5 8'},
+    {id:'wallp',name:'Wall',recipe:{W:3,B:1},svg:'<rect x="0" y="0" width="320" height="240"/>'},
+  ],
+  order:['wallp','plank','frame','teapot','mug','lemon','pot','leaves'],
+  decor:`<g pointer-events="none"><rect x="128" y="38" width="64" height="40" fill="#f4f1ea" stroke="${INK}" stroke-width="1.5"/>
+    <path d="M132 74l14-18 10 11 8-8 24 15" fill="none" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
+    <circle cx="178" cy="48" r="4" fill="none" stroke="${INK}" stroke-width="1.5"/>
+    <path d="M160 18l-2 10M160 18l2 10" stroke="${INK}" stroke-width="1.5"/><circle cx="160" cy="16" r="2" fill="${INK}"/>
+    <line x1="263" y1="130" x2="263" y2="92" stroke="${INK}" stroke-width="1.5"/></g>`
+},
+{ id:'starry', title:'Starry Night', sub:'A famous night sky lost its color. Bring it back.', budget:34,
+  credit:'After <i>The Starry Night</i> by Vincent van Gogh, 1889 (public domain)',
+  regions:[
+    {id:'stars',name:'Stars',recipe:{W:1,Y:2},svg:[[110,30],[178,22],[228,68],[302,96],[18,62],[140,62],[92,86],[250,20]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="6"/>`).join('')},
+    {id:'moon',name:'Moon',recipe:{R:1,Y:3},svg:'<circle cx="276" cy="44" r="21"/>'},
+    {id:'hills',name:'Hills',recipe:{Y:1,B:2},svg:'<path d="M0 150Q60 126 120 144T232 136T320 146V192H0Z"/>'},
+    {id:'swirl',name:'Wind swirls',recipe:{W:1,B:2},stroke:8,svg:'<path d="M0 100C50 72 90 124 140 98C168 84 184 62 214 72"/><path d="M172 108C152 124 118 112 122 90C126 70 158 70 162 88C165 100 152 105 145 97"/><path d="M196 118C228 96 262 124 304 106"/><path d="M58 48C90 36 112 56 152 44"/><path d="M216 44C238 30 250 58 272 74"/>'},
+    {id:'village',name:'Village',recipe:{W:1,B:1,K:1},svg:'<path d="M0 184Q100 172 200 180T320 178V240H0Z"/><path d="M120 190v-12l9-7 9 7v12z"/><path d="M146 192v-10l8-6 8 6v10z"/><path d="M200 188v-14l10-8 10 8v14z"/><path d="M232 190v-10l8-6 8 6v10z"/><path d="M262 190v-14l9-7 9 7v14z"/><path d="M292 192v-10l7-6 7 6v10z"/><path d="M176 190v-30l5-34 5 34v30z"/>'},
+    {id:'cypress',name:'Cypress tree',recipe:{Y:1,B:1,K:3},svg:'<path d="M36 240C24 214 40 200 34 176C44 158 38 140 48 124C44 104 56 92 52 72C60 58 58 38 66 16C72 36 72 54 78 70C76 90 86 104 82 122C92 140 86 158 96 176C92 200 106 214 104 240Z"/>'},
+    {id:'sky',name:'Night sky',recipe:{B:2,K:1},svg:'<rect x="0" y="0" width="320" height="200"/>'},
+  ],
+  order:['sky','swirl','stars','moon','hills','village','cypress'],
+  decor:`<g fill="none" stroke="${INK}" stroke-width="1.5" stroke-linecap="round" pointer-events="none">
+    <path d="M268 30a16 16 0 1 0 14 26a12 12 0 1 1 -14 -26z"/>
+    <path d="M60 60c4 20 2 40 8 60M54 110c4 30 6 60 16 110M74 90c2 30 12 70 18 130"/></g>
+    <g fill="${INK}" pointer-events="none"><rect x="126" y="182" width="3" height="3"/><rect x="206" y="178" width="3" height="3"/><rect x="268" y="180" width="3" height="3"/><rect x="152" y="184" width="3" height="3"/></g>`
+}];
+LEVELS.forEach(L=>L.regions.forEach(r=>{r.target=mix(r.recipe);r.min=Object.values(r.recipe).reduce((a,b)=>a+b,0);}));
+
+// ---------- Economy ----------
+const BOOSTERS={
+  undo:{name:'Undo',price:20,text:'Takes back your last drop and refunds its paint.'},
+  pick:{name:'Pick',price:30,text:'Tap it, then tap any drop in the bowl to remove just that color. The paint comes back.'},
+  hint:{name:'Hint',price:40,text:'Shows the exact recipe for the part you are on. That part can earn at most 2 stars.'}};
+const FREE_BOOSTERS=3, RESCUE_PRICE=30, COINS_PER_STAR=3, FIRST_CLEAR_BONUS=20, REPLAY_BONUS=5;
+const introAt=b=>LEVELS.findIndex(l=>l.intro===b);
+
+// ---------- Saved progress (per viewer, optional) ----------
+let save={best:{},coins:0,inv:{},seen:{}};
+try{const s=JSON.parse(localStorage.getItem('paintMender')||'null');if(s&&s.best)save=Object.assign(save,s);}catch(e){}
+function persist(){try{localStorage.setItem('paintMender',JSON.stringify(save));}catch(e){}}
+const unlocked=i=>i===0||save.best[LEVELS[i-1].id]!=null||save.best[LEVELS[i].id]!=null;
+
+// ---------- State ----------
+const $=id=>document.getElementById(id);
+const scene=$('scene');
+let L, state;
+
+function renderLevels(){
+  $('levels').innerHTML=LEVELS.map((lv,i)=>{
+    const b=save.best[lv.id];
+    return `<button class="lvl" data-i="${i}" ${unlocked(i)?'':'disabled'} aria-current="${L===lv}">${i+1}. ${lv.title}${b!=null?`<span class="st">${'★'.repeat(b)}</span>`:unlocked(i)?'':' 🔒'}</button>`;
+  }).join('');
+}
+$('levels').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(b&&!b.disabled)start(+b.dataset.i);});
+
+function start(i){
+  L=LEVELS[i]; L.index=i;
+  state={done:{},stars:{},used:{},hinted:{},rescued:{},drops:[],picking:false,paint:L.budget,earned:0};
+  $('levelSub').textContent=L.sub;
+  $('credit').innerHTML=L.credit||'';
+  const ks=L.paints||PAINTS.map(p=>p.k);
+  $('paints').style.setProperty('--n',ks.length);
+  $('paints').innerHTML=ks.map(k=>PMAP[k]).map(p=>`<button class="paint" data-k="${p.k}" aria-label="Add ${p.name}"><span class="blob" style="background:${hex(p.rgb)}"></span>${p.name}</button>`).join('');
+  buildScene(); renderLevels(); updateHud(); renderCoins();
+  $('endOverlay').hidden=true;
+  select(L.regions[0].id);
+  showIntro();
+}
+function showIntro(){
+  // Hand out boosters whose intro picture has been reached (also covers players who skip ahead).
+  const fresh=Object.keys(BOOSTERS).filter(b=>save.inv[b]==null&&introAt(b)>=0&&introAt(b)<=L.index);
+  fresh.forEach(b=>save.inv[b]=FREE_BOOSTERS);
+  const tip=!save.seen[L.id]&&L.tip;
+  save.seen[L.id]=true; persist(); renderActions();
+  if(!tip&&!fresh.length) return;
+  $('introTitle').textContent=tip?tip.title:'New booster';
+  $('introText').innerHTML=tip?tip.text:'';
+  $('introText').hidden=!tip;
+  $('introBoosters').innerHTML=fresh.map(b=>`<div class="booster"><b>New booster: ${BOOSTERS[b].name}</b><br>${BOOSTERS[b].text}<br>You get ${FREE_BOOSTERS} free. After that, ${BOOSTERS[b].price} <span class="coin"></span> each.</div>`).join('');
+  $('introOverlay').hidden=false;
+}
+$('introBtn').onclick=()=>{$('introOverlay').hidden=true;};
+
+function regionEl(r){
+  const col=hex(grayOf(r.target));
+  return r.stroke
+    ? `<g class="region" data-id="${r.id}" fill="none" stroke="${col}" stroke-width="${r.stroke}" stroke-linecap="round">${r.svg}</g>`
+    : `<g class="region" data-id="${r.id}" fill="${col}" stroke="${INK}" stroke-width="2" stroke-linejoin="round">${r.svg}</g>`;
+}
+function buildScene(){
+  const byId=Object.fromEntries(L.regions.map(r=>[r.id,r]));
+  scene.innerHTML=`<g pointer-events="none">${L.bg||''}</g>`+L.order.map(id=>regionEl(byId[id])).join('')+L.decor+
+    L.regions.filter(r=>r.crack).map(r=>`<path class="crack" data-for="${r.id}" d="${r.crack}"/>`).join('')+
+    '<g id="selLayer"></g>';
+  scene.setAttribute('aria-label','Faded picture: '+L.title);
+  scene.querySelectorAll('.region').forEach(g=>g.addEventListener('click',()=>{if(!state.done[g.dataset.id])select(g.dataset.id);}));
+}
+const current=()=>L.regions.find(x=>x.id===state.sel);
+function select(id){
+  state.sel=id; state.drops=[]; state.picking=false;
+  scene.querySelectorAll('.region').forEach(g=>g.classList.toggle('sel',g.dataset.id===id));
+  const r=current();
+  $('selLayer').innerHTML=r.stroke?`<g class="selOutline thick" style="stroke-width:${r.stroke+6}">${r.svg}</g>`:`<g class="selOutline">${r.svg}</g>`;
+  $('targetChip').style.background=hex(r.target);
+  $('targetName').textContent=r.name;
+  renderHint(); renderMix();
+}
+function counts(){const c={};state.drops.forEach(k=>c[k]=(c[k]||0)+1);return c;}
+
+function renderMix(override){
+  const m=mix(counts()),chip=$('mixChip'),r=current();
+  if(!state.drops.length) state.picking=false;
+  chip.classList.toggle('empty',!m); chip.style.background=m?hex(m):'';
+  $('drops').classList.toggle('picking',state.picking);
+  $('drops').innerHTML=state.drops.length?state.drops.map((k,i)=>`<span data-i="${i}" title="${PMAP[k].name}" style="background:${hex(PMAP[k].rgb)}"></span>`).join(''):'<em>add paint</em>';
+  const p=m?matchPct(m,r.target):0;
+  $('pct').textContent=p+'%';
+  const f=$('barFill');f.style.width=p+'%';f.style.background=p>=95?'var(--ok)':p>=75?'var(--gold)':'var(--warn)';
+  $('applyBtn').classList.toggle('ready',p>=95);
+  $('applyBtn').disabled=!m; $('clearBtn').disabled=!state.drops.length;
+  renderActions();
+  const msg=$('msg');
+  if(override){msg.textContent=override[0];msg.className='msg '+override[1];}
+  else if(state.picking){msg.textContent='Tap the drop you want to take out.';msg.className='msg';}
+  else if(!m){msg.textContent='Match 95% or more to paint. Every drop uses paint.';msg.className='msg';}
+  else if(p>=95){msg.textContent='Great match. Tap "Paint it".';msg.className='msg good';}
+  else{msg.textContent=advice(m,r.target);msg.className='msg';}
+}
+function advice(m,t){
+  const dl=lab(m)[0]-lab(t)[0];
+  const hasBW=!L.paints||L.paints.includes('W');
+  if(dl>10) return hasBW?'Too light. Add color or a touch of black.':'Not quite. Check which paints the target needs.';
+  if(dl<-10) return hasBW?'Too dark. Try adding white.':'Not quite. Check which paints the target needs.';
+  return 'Brightness is close. The hue is off.';
+}
+function renderHint(){
+  const r=current(), on=!!state.hinted[r.id];
+  $('hint').classList.toggle('on',on);
+  if(on)$('hint').innerHTML='Recipe: '+Object.entries(r.recipe).map(([k,n])=>`${n} × <b>${PMAP[k].name}</b>`).join(' + ');
+  renderActions();
+}
+function renderActions(){
+  if(!state) return;
+  const has=state.drops.length>0;
+  for(const b in BOOSTERS){
+    const btn=$(b+'Btn'), n=save.inv[b];
+    btn.hidden=n==null; if(n==null) continue;
+    const badge=btn.querySelector('.badge');
+    badge.classList.toggle('buy',!n);
+    badge.innerHTML=n?n:`${BOOSTERS[b].price}<span class="coin"></span>`;
+    btn.title=BOOSTERS[b].text;
+  }
+  $('undoBtn').disabled=!has;
+  $('pickBtn').disabled=!has; $('pickBtn').classList.toggle('on',state.picking);
+  $('hintBtn').disabled=!!state.hinted[state.sel];
+}
+function updateHud(){
+  $('progress').textContent=Object.keys(state.done).length+' / '+L.regions.length;
+  $('paintLeft').textContent=state.paint;
+  const f=$('paintFill'),pc=Math.min(100,state.paint/L.budget*100);
+  f.style.width=pc+'%';f.style.background=pc>40?'var(--accent)':pc>15?'var(--gold)':'var(--warn)';
+  $('starCount').textContent='★ '+Object.values(state.stars).reduce((a,b)=>a+b,0);
+}
+function renderCoins(bump){
+  $('coinCount').textContent=save.coins;
+  const el=$('coins'); if(bump){el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');}
+}
+function addCoins(n){save.coins+=n; if(n>0) state.earned+=n; persist(); renderCoins(true);}
+// Use one booster from the inventory, or buy it with coins when the inventory is empty.
+function canUse(b){return save.inv[b]>0||save.coins>=BOOSTERS[b].price;}
+function spend(b){
+  if(save.inv[b]>0){save.inv[b]--;persist();}
+  else if(save.coins>=BOOSTERS[b].price){addCoins(-BOOSTERS[b].price);toast(`${BOOSTERS[b].name} bought for ${BOOSTERS[b].price} coins`);}
+  else{toast(`${BOOSTERS[b].name} costs ${BOOSTERS[b].price} coins. You have ${save.coins}.`);return false;}
+  renderActions(); return true;
+}
+function refundDrop(){state.paint++; state.used[state.sel]--; updateHud();}
+
+// ---------- Input ----------
+$('paints').addEventListener('click',e=>{
+  const b=e.target.closest('.paint'); if(!b) return;
+  if(state.paint<=0){outOfPaint();return;}
+  if(state.drops.length>=12){renderMix(['The bowl is full. Take drops out or empty it.','bad']);return;}
+  state.picking=false;
+  state.drops.push(b.dataset.k); state.paint--; state.used[state.sel]=(state.used[state.sel]||0)+1;
+  updateHud(); renderMix();
+});
+$('undoBtn').onclick=()=>{
+  if(!state.drops.length||!spend('undo')) return;
+  state.drops.pop(); state.picking=false; refundDrop(); renderMix(['Drop taken back. Paint refunded.','']);
+};
+$('pickBtn').onclick=()=>{
+  if(state.picking){state.picking=false;renderMix();return;}
+  if(!state.drops.length) return;
+  if(!canUse('pick')){spend('pick');return;}
+  state.picking=true; renderMix();
+};
+$('drops').addEventListener('click',e=>{
+  const d=e.target.closest('span[data-i]'); if(!d||!state.picking) return;
+  if(!spend('pick')) return;
+  const k=state.drops.splice(+d.dataset.i,1)[0];
+  state.picking=false; refundDrop(); renderMix([`${PMAP[k].name} taken out. Paint refunded.`,'']);
+});
+$('clearBtn').onclick=()=>{state.drops=[];renderMix();};
+$('hintBtn').onclick=()=>{if(state.hinted[state.sel]||!spend('hint')) return; state.hinted[state.sel]=true; renderHint();};
+$('applyBtn').onclick=apply;
+$('retryBtn').onclick=()=>start(L.index);
+$('nextBtn').onclick=()=>start(Math.min(L.index+1,LEVELS.length-1));
+$('rescueBtn').onclick=rescue;
+
+function apply(){
+  const r=current(),m=mix(counts()); if(!m) return;
+  const p=matchPct(m,r.target);
+  if(p<95){
+    const chip=$('mixChip');chip.classList.remove('shake');void chip.offsetWidth;chip.classList.add('shake');
+    renderMix([p+'% is not close enough. '+advice(m,r.target),'bad']);
+    if(state.paint<=0) setTimeout(outOfPaint,700);
+    return;
+  }
+  const used=state.used[r.id]||0;
+  let s=used<=r.min?3:used<=r.min+2?2:1;
+  if(state.hinted[r.id]||state.rescued[r.id]) s=Math.min(s,2);
+  state.done[r.id]=true; state.stars[r.id]=s;
+  const g=scene.querySelector(`.region[data-id="${r.id}"]`);
+  g.setAttribute(r.stroke?'stroke':'fill',hex(r.target)); g.classList.remove('sel'); g.classList.add('done');
+  const cr=scene.querySelector(`.crack[data-for="${r.id}"]`); if(cr) cr.classList.add('gone');
+  const c=s*COINS_PER_STAR; addCoins(c);
+  toast(`${r.name} restored  ${'★'.repeat(s)}${'☆'.repeat(3-s)}  +${c} coins`);
+  state.drops=[]; state.picking=false; updateHud();
+  const next=L.regions.find(x=>!state.done[x.id]);
+  if(!next){$('selLayer').innerHTML='';renderMix();setTimeout(win,900);}
+  else if(state.paint<=0){select(next.id);setTimeout(outOfPaint,700);}
+  else setTimeout(()=>select(next.id),350);
+}
+function pictureStars(){
+  const t=Object.values(state.stars).reduce((a,b)=>a+b,0);
+  return Math.max(1,Math.round(t/L.regions.length));
+}
+function win(){
+  const s=pictureStars(), last=L.index===LEVELS.length-1, first=save.best[L.id]==null;
+  const bonus=first?FIRST_CLEAR_BONUS:REPLAY_BONUS; addCoins(bonus);
+  save.best[L.id]=Math.max(save.best[L.id]||0,s); persist(); renderLevels();
+  $('endTitle').textContent=L.title+' restored';
+  $('endStars').textContent='★'.repeat(s)+'☆'.repeat(3-s);
+  $('endText').innerHTML=`+${state.earned} <span class="coin"></span> earned (${bonus} picture bonus). ${state.paint} drops of paint left.`+(L.credit?`<br>${L.credit}.`:'')+(last?'<br>That was the last picture.':'');
+  $('rescueBtn').hidden=true;
+  $('retryBtn').textContent='Replay';
+  $('nextBtn').hidden=last;
+  $('endOverlay').hidden=false;
+}
+function outOfPaint(){
+  if(!$('endOverlay').hidden) return;
+  const r=current(), ok=save.coins>=RESCUE_PRICE;
+  $('endTitle').textContent='Out of paint';
+  $('endStars').textContent='';
+  $('endText').innerHTML=`You restored ${Object.keys(state.done).length} of ${L.regions.length} parts. `+
+    (ok?`Restart the <b>${r.name}</b> with fresh paint and keep the rest of your work.`:`Restarting a part costs ${RESCUE_PRICE} coins. You have ${save.coins}.`);
+  const rb=$('rescueBtn'); rb.hidden=false; rb.disabled=!ok;
+  rb.innerHTML=`Restart ${r.name} · ${RESCUE_PRICE} <span class="coin"></span>`;
+  $('retryBtn').textContent='Start picture over';
+  $('nextBtn').hidden=true;
+  $('endOverlay').hidden=false;
+}
+// Pay coins to retry the current part: refund the paint spent on it, topped up so it is always winnable.
+function rescue(){
+  if(save.coins<RESCUE_PRICE) return;
+  addCoins(-RESCUE_PRICE);
+  const r=current();
+  state.paint=Math.max(state.paint+(state.used[r.id]||0),r.min+4);
+  state.used[r.id]=0; state.rescued[r.id]=true;
+  $('endOverlay').hidden=true;
+  updateHud(); select(r.id);
+  toast(`${r.name} restarted. Paint refilled.`);
+}
+let tt;function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),1800);}
+
+// first unfinished unlocked picture
+let startAt=0; while(startAt<LEVELS.length-1&&save.best[LEVELS[startAt].id]!=null) startAt++;
+start(startAt);
+})();
+</script>
+</body>
+</html>

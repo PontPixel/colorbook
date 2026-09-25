@@ -49,24 +49,25 @@ h1{margin:0;font:800 20px/1.2 "Manrope",system-ui,sans-serif}
 .acc .bar i{display:block;height:100%;width:0;background:var(--ink);border-radius:9px;transition:width .15s}
 .acc b{color:var(--ink);min-width:38px;text-align:right}
 
-/* sliders */
-.sliders{display:flex;flex-direction:column;gap:2px;background:var(--panel);border-radius:18px;padding:8px 16px;box-shadow:var(--shadow)}
-.row{display:grid;grid-template-columns:18px 1fr 52px;align-items:center;gap:14px;min-height:40px}
+.well.empty{background:var(--bg);box-shadow:inset 0 0 0 2px var(--line)}
+.well.dropping{box-shadow:0 0 0 3px var(--ink),var(--shadow)}
+.emptyhint{position:absolute;left:0;right:0;bottom:13%;text-align:center;font-size:13px;color:var(--muted);pointer-events:none}
 .sw{display:inline-block;width:16px;height:16px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
-.row .val{text-align:right;font-variant-numeric:tabular-nums;line-height:1.1}
-.row .val b{display:block;font-size:15px}
-.row .val span{display:block;font-size:11px;color:var(--muted);white-space:nowrap}
-.row .val span.ok{color:var(--ink);font-weight:800}
-.row.base{color:var(--muted)}
-.row.base .val b{font-weight:600}
-.meter{height:4px;border-radius:9px;background:var(--track);overflow:hidden}
-.meter i{display:block;height:100%;background:#c9c8c3;border-radius:9px;transition:width .1s}
-input[type=range]{--v:0%;-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0;cursor:pointer;touch-action:pan-y}
-input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:9px;background:linear-gradient(90deg,var(--ink) var(--v),var(--track) var(--v))}
-input[type=range]::-moz-range-track{height:4px;border-radius:9px;background:linear-gradient(90deg,var(--ink) var(--v),var(--track) var(--v))}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-9px;border-radius:50%;background:#fff;border:2px solid var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.15)}
-input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.15)}
-input[type=range]:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:9px}
+
+/* drops in the bowl: tap one to take it out */
+.drops{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;min-height:20px;max-width:min(var(--d,360px),340px)}
+.drops button{appearance:none;border:0;padding:0;width:16px;height:16px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);cursor:pointer}
+.drops button:hover{outline:2px solid var(--ink);outline-offset:2px}
+
+/* paints */
+.paints{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;background:var(--panel);border-radius:18px;padding:12px 14px;box-shadow:var(--shadow)}
+.paint{appearance:none;border:0;background:none;padding:0;display:flex;justify-content:center;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.paint .blob{width:100%;max-width:52px;aspect-ratio:1;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);transition:transform .1s}
+.paint:active .blob{transform:scale(.9)}
+.paint.hinted .blob{box-shadow:inset 0 0 0 1px rgba(0,0,0,.1),0 0 0 3px var(--panel),0 0 0 5px var(--ink)}
+.paint:focus-visible .blob{outline:2px solid var(--ink);outline-offset:3px}
+.paint:disabled{opacity:.4;cursor:default}
+.ghost{position:fixed;left:0;top:0;width:48px;height:48px;border-radius:50%;pointer-events:none;z-index:8;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1),0 10px 24px rgba(20,24,40,.2)}
 
 /* buttons */
 .bar5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
@@ -113,7 +114,7 @@ input[type=range]:focus-visible{outline:2px solid var(--ink);outline-offset:2px;
 .lv .r{text-align:right;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .lv .r b{display:block;color:var(--ink);font-size:13px}
 
-@media (max-height:700px){ .well{--d:min(40vh,86vw)} .row{min-height:34px} .btn{min-height:54px} }
+@media (max-height:700px){ .well{--d:min(38vh,86vw)} .paint .blob{max-width:44px} .btn{min-height:54px} }
 </style>
 </head>
 <body>
@@ -125,14 +126,16 @@ input[type=range]:focus-visible{outline:2px solid var(--ink);outline-offset:2px;
   </header>
 
   <section class="stage">
-    <div class="well" id="well">
+    <div class="well empty" id="well">
       <div class="dot" id="dot"></div>
+      <div class="emptyhint" id="emptyHint">Нажмите на краску</div>
       <div class="paused" id="paused" hidden><b>Пауза</b>Нажмите на таймер, чтобы продолжить</div>
     </div>
     <div class="acc"><span>Точность</span><div class="bar"><i id="accBar"></i></div><b id="accVal">—</b></div>
+    <div class="drops" id="drops"></div>
   </section>
 
-  <section class="sliders" id="sliders"></section>
+  <section class="paints" id="paints"></section>
 
   <nav class="bar5">
     <button class="btn" id="bMenu" aria-label="Уровни"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Уровни</button>
@@ -156,10 +159,8 @@ function cmy2rgb(c,m,y){
 }
 const PAINTS=[
   {k:'C',name:'Голубой',rgb:C.c},{k:'M',name:'Пурпурный',rgb:C.m},{k:'Y',name:'Жёлтый',rgb:C.y},
-  {k:'K',name:'Чёрный',rgb:[0.13,0.13,0.15]},{k:'W',name:'Белый',rgb:[0.98,0.98,0.97]}];
-const PK=['C','M','Y','W','K'], PMAP=Object.fromEntries(PAINTS.map(p=>[p.k,p]));
-// White is the base: the player sets C/M/Y/K as shares of the mix and white fills the rest.
-const SK=['C','M','Y','K'];
+  {k:'W',name:'Белый',rgb:[0.98,0.98,0.97]},{k:'K',name:'Чёрный',rgb:[0.13,0.13,0.15]}];
+const PK=PAINTS.map(p=>p.k), PMAP=Object.fromEntries(PAINTS.map(p=>[p.k,p]));
 function mix(c){
   const Cy=c.C||0,M=c.M||0,Y=c.Y||0,W=c.W||0,K=c.K||0,total=Cy+M+Y+W+K; if(!total) return null;
   const ch=Cy+M+Y; let out=[0,0,0];
@@ -177,6 +178,7 @@ function lab(rgb){
 const dE=(a,b)=>{const A=lab(a),B=lab(b);return Math.hypot(A[0]-B[0],A[1]-B[1],A[2]-B[2]);};
 const matchPct=(a,b)=>Math.max(0,Math.round(100-dE(a,b)*1.1));
 const WIN=96;               // match % needed to solve a task
+const BOWL=12;              // max drops in the bowl; every recipe fits
 const sum=r=>PK.reduce((s,k)=>s+(r[k]||0),0);
 const shares=r=>{const t=sum(r);return Object.fromEntries(PK.map(k=>[k,t?(r[k]||0)/t:0]));};
 
@@ -189,7 +191,7 @@ const CMY=['C','M','Y'];
 
 const SIMPLE=[[3,1],[4,1],[3,2],[2,1,1],[3,1,1],[2,2,1]];
 const CX4=[[4,3,2,1],[5,3,2,1],[3,2,2,1],[5,2,2,1],[4,3,1,1],[3,3,2,1]];
-const CX5=[[5,4,3,2,1],[4,3,2,2,1],[6,4,3,2,1],[5,3,2,1,1],[4,4,3,2,1]];
+const CX5=[[4,3,2,2,1],[5,3,2,1,1],[4,3,2,1,1],[3,3,2,2,1],[3,2,2,1,1]];  // ≤ BOWL drops
 
 // A recipe must give a readable color: not near-black, K not dominant, and at least one chromatic paint.
 function okRecipe(r){
@@ -251,31 +253,15 @@ const unlocked=i=>i===0||!!save.best[i-1]||!!save.best[i];
 // ---------- State ----------
 const $=id=>document.getElementById(id);
 let L=0, tasks=[], ti=0, results=[], task=null;
-const vals=Object.fromEntries(SK.map(k=>[k,0]));   // percent of the mix, sum ≤ 100
-const white=()=>100-SK.reduce((s,k)=>s+vals[k],0);
-const mixNow=()=>mix({...vals,W:white()});
+let drops=[];                 // paint keys in the order they were added
 let elapsed=0, lastTick=0, running=false, paused=false, solved=false;
+const counts=()=>{const c={};drops.forEach(k=>c[k]=(c[k]||0)+1);return c;};
+const recipeSize=r=>sum(r);
 
 // ---------- UI build ----------
-const inputs={}, valEls={}, tgtEls={};
 const swatch=k=>`<span class="sw" style="background:${hex(PMAP[k].rgb)}"></span>`;
-for(const k of SK){
-  const p=PMAP[k], row=document.createElement('div'); row.className='row';
-  row.innerHTML=`${swatch(k)}<input type="range" min="0" max="100" step="1" value="0" aria-label="${p.name}">
-    <div class="val"><b>0%</b><span hidden></span></div>`;
-  const inp=row.querySelector('input');
-  inp.addEventListener('input',()=>{
-    // The mix is capped at 100%: a slider can only take what white still has left.
-    const room=100-SK.reduce((s,j)=>s+(j===k?0:vals[j]),0);
-    vals[k]=Math.min(+inp.value,room); inp.value=vals[k]; update();
-  });
-  inp.addEventListener('change',checkWin);
-  inputs[k]=inp; valEls[k]=row.querySelector('.val b'); tgtEls[k]=row.querySelector('.val span');
-  $('sliders').appendChild(row);
-}
-const baseRow=document.createElement('div'); baseRow.className='row base'; baseRow.setAttribute('aria-label','Белый: остаток смеси');
-baseRow.innerHTML=`${swatch('W')}<div class="meter"><i></i></div><div class="val"><b>100%</b></div>`;
-$('sliders').appendChild(baseRow);
+$('paints').innerHTML=PAINTS.map(p=>`<button class="paint" data-k="${p.k}" aria-label="Добавить: ${p.name}"><span class="blob" style="background:${hex(p.rgb)}"></span></button>`).join('');
+const paintBtn=k=>$('paints').querySelector(`[data-k="${k}"]`);
 
 const fmtTime=s=>{s=Math.floor(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
 const pct=x=>Math.round(x*100)+'%';
@@ -283,28 +269,22 @@ let toastT;
 function toast(html){const t=$('toast');t.innerHTML=html;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
 
 function update(){
-  const ts=shares(task.recipe), w=white();
-  for(const k of SK){
-    inputs[k].style.setProperty('--v',vals[k]+'%');
-    valEls[k].textContent=vals[k]+'%';
-    if(task.hints.has(k)) tgtEls[k].classList.toggle('ok',Math.abs(ts[k]*100-vals[k])<=3);
-  }
-  baseRow.querySelector('b').textContent=w+'%';
-  baseRow.querySelector('.meter i').style.width=w+'%';
-  $('well').style.backgroundColor=hex(mixNow());
-  const m=w<100?matchPct(mixNow(),task.target):0;
-  $('accVal').textContent=w<100?m+'%':'—';
-  $('accBar').style.width=m+'%';
+  const m=mix(counts()), well=$('well');
+  well.classList.toggle('empty',!m); well.style.backgroundColor=m?hex(m):'';
+  $('emptyHint').hidden=!!m;
+  $('drops').innerHTML=drops.length
+    ?drops.map((k,i)=>`<button data-i="${i}" aria-label="Убрать: ${PMAP[k].name}" style="background:${hex(PMAP[k].rgb)}"></button>`).join('')
+    :'';
+  const p=m?matchPct(m,task.target):0;
+  $('accVal').textContent=m?p+'%':'—';
+  $('accBar').style.width=p+'%';
 }
 function renderDots(){
   $('dots').innerHTML=tasks.map((_,i)=>`<i class="${i===ti&&!solved?'cur':results[i]?(results[i].skipped?'skip':'done'):''}"></i>`).join('');
 }
-function renderHints(){
-  const ts=shares(task.recipe);
-  for(const k of SK){
-    const on=task.hints.has(k); tgtEls[k].hidden=!on; if(on) tgtEls[k].textContent='цель '+pct(ts[k]);
-  }
-  const n=task.hints.size; $('hintBadge').hidden=!n; $('hintBadge').textContent=n;
+function showHintMark(k){
+  $('paints').querySelectorAll('.paint').forEach(b=>b.classList.toggle('hinted',b.dataset.k===k));
+  $('hintBadge').hidden=!task.hints; $('hintBadge').textContent=task.hints;
 }
 
 // ---------- Timer ----------
@@ -317,7 +297,7 @@ function setPaused(p){
   if(!running&&p) return;
   paused=p; $('paused').hidden=!p; $('bTimer').classList.toggle('pausedb',p);
   $('dot').style.visibility=p?'hidden':'';
-  for(const k of SK) inputs[k].disabled=p;
+  $('paints').querySelectorAll('.paint').forEach(b=>b.disabled=p);
   ['bReset','bHint','bSkip'].forEach(id=>$(id).disabled=p);
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!solved) setPaused(true);});
@@ -329,41 +309,46 @@ function startLevel(i){
   $('lvTitle').textContent=LEVELS[i].title;
   loadTask();
   showCard(`<h2>Уровень ${i+1}: ${LEVELS[i].title}</h2><p>${LEVELS[i].text}</p>
-    <p>Смешивайте краски на белом так, чтобы большой круг совпал по цвету с точкой в центре. Цветов в уровне: ${tasks.length}.</p>
+    <p>Нажимайте на краски внизу: каждое нажатие добавляет одну каплю. Лишнюю каплю под кругом можно убрать нажатием. Смешайте цвет точки в центре круга. Цветов в уровне: ${tasks.length}.</p>
     <div class="actions"><button class="primary" data-a="go">Начать</button></div>`,false,{go:()=>{closeCard();running=true;}});
 }
-function setVals(v){for(const k of SK){vals[k]=v[k]||0;inputs[k].value=vals[k];}}
 function loadTask(){
-  const r=tasks[ti]; task={recipe:r,target:mix(r),hints:new Set()};
-  setVals({});
+  const r=tasks[ti]; task={recipe:r,target:mix(r),hints:0,used:0};
+  drops=[];
   $('dot').style.background=hex(task.target);
   elapsed=0; $('timeVal').textContent='0:00'; solved=false; running=false;
   $('well').classList.remove('win');
-  setPaused(false); renderHints(); renderDots(); update();
+  setPaused(false); showHintMark(null); renderDots(); update();
 }
-function checkWin(){
-  if(solved||paused||white()===100) return;
-  if(matchPct(mixNow(),task.target)>=WIN) finishTask(false);
+function addDrop(k){
+  if(solved||paused||!running) return false;
+  if(drops.length>=BOWL){toast('Миска полна: уберите капли или нажмите «Сброс»');return false;}
+  drops.push(k); task.used++; showHintMark(null); update();
+  if(matchPct(mix(counts()),task.target)>=WIN) finishTask(false);
+  return true;
 }
 function recipeHTML(r){
-  const s=shares(r);
-  return '<div class="recipe">'+['C','M','Y','K','W'].filter(k=>r[k]).map(k=>`<span class="chip">${swatch(k)}${pct(s[k])}</span>`).join('')+'</div>';
+  return '<div class="recipe">'+PK.filter(k=>r[k]).map(k=>`<span class="chip">${swatch(k)}× ${r[k]}</span>`).join('')+'</div>';
 }
 const starsHTML=n=>'<div class="stars">'+[0,1,2].map(i=>i<n?'★':'<span class="off">★</span>').join('')+'</div>';
+// Like the main game: 3★ within the recipe size, 2★ within +2 drops, else 1★; any hint caps at 2★.
+function starsFor(){
+  const n=recipeSize(task.recipe), s=task.used<=n?3:task.used<=n+2?2:1;
+  return task.hints?Math.min(2,s):s;
+}
 function finishTask(skipped){
-  solved=true; running=false;
-  const h=task.hints.size, stars=skipped?0:h===0?3:h===1?2:1, m=matchPct(mixNow(),task.target);
+  solved=true; running=false; showHintMark(null);
+  const stars=skipped?0:starsFor(), m=skipped?0:matchPct(mix(counts()),task.target);
   results[ti]={stars,time:elapsed,skipped};
-  if(skipped){ // show the answer on the sliders
-    const s=shares(task.recipe); setVals(Object.fromEntries(SK.map(k=>[k,Math.round(s[k]*100)]))); update();
-  }else $('well').classList.add('win');
+  if(skipped){ drops=PK.flatMap(k=>Array(task.recipe[k]||0).fill(k)); update(); }  // show the answer in the bowl
+  else $('well').classList.add('win');
   renderDots();
   const last=ti===tasks.length-1;
   setTimeout(()=>showCard(`
     <div class="pair"><div class="big" style="background:${hex(task.target)}"></div>
       <div><h2>${skipped?'Ответ':'Совпадение '+m+'%'}</h2>${skipped?'<p>Задание пропущено</p>':starsHTML(stars)}</div></div>
     ${recipeHTML(task.recipe)}
-    <p>Время: ${fmtTime(elapsed)}${h?` · подсказок: ${h}`:''}</p>
+    <p>Время: ${fmtTime(elapsed)}${skipped?'':` · капель: ${task.used} (минимум ${recipeSize(task.recipe)})`}${task.hints?` · подсказок: ${task.hints}`:''}</p>
     <div class="actions"><button class="primary" data-a="next">${last?'Итоги уровня':'Дальше'}</button></div>`,true,
     {next:()=>{closeCard(); if(last) finishLevel(); else {ti++;loadTask();running=true;}}}),skipped?150:650);
 }
@@ -396,19 +381,68 @@ function showCard(html,low,acts={}){
 }
 const closeCard=()=>{$('ov').hidden=true;};
 
+// ---------- Input ----------
+let dragged=false; // set when a press turned into a drag, so the click that follows is ignored
+$('paints').addEventListener('click',e=>{
+  const b=e.target.closest('.paint'); if(!b) return;
+  if(dragged){dragged=false;return;}
+  addDrop(b.dataset.k);
+});
+// Drag and drop: press a paint, drag it onto the circle, let go to add a drop. A short press stays a tap.
+(function(){
+  let d=null;
+  const overWell=(x,y)=>{const r=$('well').getBoundingClientRect(),m=20;return x>r.left-m&&x<r.right+m&&y>r.top-m&&y<r.bottom+m;};
+  $('paints').addEventListener('pointerdown',e=>{
+    const b=e.target.closest('.paint'); if(!b||b.disabled||e.button>0) return;
+    d={k:b.dataset.k,x:e.clientX,y:e.clientY,ghost:null,id:e.pointerId}; dragged=false;
+  });
+  addEventListener('pointermove',e=>{
+    if(!d||e.pointerId!==d.id) return;
+    if(!d.ghost){
+      if(Math.hypot(e.clientX-d.x,e.clientY-d.y)<8) return;
+      dragged=true;
+      d.ghost=document.createElement('div'); d.ghost.className='ghost';
+      d.ghost.style.background=hex(PMAP[d.k].rgb); document.body.appendChild(d.ghost);
+    }
+    d.ghost.style.transform=`translate(${e.clientX-24}px,${e.clientY-24}px)`;
+    $('well').classList.toggle('dropping',overWell(e.clientX,e.clientY));
+  });
+  const end=e=>{
+    if(!d||e.pointerId!==d.id) return;
+    const g=d.ghost, k=d.k; d=null; $('well').classList.remove('dropping');
+    if(!g) return;
+    g.remove();
+    if(e.type==='pointerup'&&overWell(e.clientX,e.clientY)) addDrop(k);
+    setTimeout(()=>{dragged=false;},0);
+  };
+  addEventListener('pointerup',end); addEventListener('pointercancel',end);
+})();
+$('drops').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-i]'); if(!b||solved||paused) return;
+  drops.splice(+b.dataset.i,1); showHintMark(null); update();
+});
+
 // ---------- Buttons ----------
 $('bMenu').onclick=showLevels;
-$('bReset').onclick=()=>{if(solved)return;setVals({});update();};
+$('bReset').onclick=()=>{if(solved||!drops.length)return;drops=[];showHintMark(null);update();};
 $('bTimer').onclick=()=>{if(!solved) setPaused(!paused);};
 $('bSkip').onclick=()=>{if(!solved&&running) finishTask(true);};
+// Hint = only the next useful step, as in the main game: a wrong paint to take out, or the next paint to add.
+function nextHint(){
+  const r=task.recipe, c=counts();
+  const bad=Object.keys(c).find(k=>!r[k]);
+  if(bad) return {k:bad,remove:true};
+  let m=1; for(const k in c) m=Math.max(m,Math.ceil(c[k]/r[k]));
+  if(m*recipeSize(r)>BOWL) return {reset:true};
+  let best=null,d=0; for(const k in r){const def=m*r[k]-(c[k]||0); if(def>d){d=def;best=k;}}
+  return {k:best};
+}
 $('bHint').onclick=()=>{
   if(solved||!running) return;
-  const ts=shares(task.recipe), off=k=>Math.abs(ts[k]*100-vals[k]);
-  // Reveal the paint that is furthest off (white is the remainder, so it is never hinted).
-  const cand=SK.filter(k=>!task.hints.has(k)&&off(k)>2).sort((a,b)=>off(b)-off(a));
-  if(!cand.length){toast(task.hints.size===SK.length?'Все доли уже открыты':'Доли уже близки: подвигайте ползунки чуть-чуть');return;}
-  const k=cand[0]; task.hints.add(k); renderHints(); update();
-  toast(`${swatch(k)} ${pct(ts[k])} смеси`);
+  const h=nextHint(); task.hints++;
+  if(h.reset){showHintMark(null);toast('Капель слишком много для этой пропорции: начните заново');return;}
+  showHintMark(h.remove?null:h.k);
+  toast(h.remove?`Уберите ${swatch(h.k)}`:`Добавьте ${swatch(h.k)}`);
 };
 
 // Start: continue from the first level not yet cleared.

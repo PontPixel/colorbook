@@ -183,10 +183,10 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .gcard:disabled{cursor:default}.gcard:disabled>svg{opacity:.35;filter:grayscale(1)}
 .gcard .lockico{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:#fff;box-shadow:var(--shadow);color:var(--muted)}
 /* Game: compact bar + compact mixer so it all fits a phone screen */
-#game{gap:10px}
+#game{gap:8px}
 .gamebar{display:flex;align-items:center;gap:10px}
 .gamebar .paintgauge{flex:1}
-.mixer{padding:12px 12px 12px;gap:10px}
+.mixer{padding:12px;gap:8px}
 .swatches{grid-template-columns:1fr minmax(84px,.9fr) 1fr;align-items:start;gap:6px}
 .sw{gap:6px}
 .chip{max-width:78px;border-width:5px}
@@ -202,7 +202,12 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .paint .blob{max-width:40px}
 .btn.boost .ico{width:40px;height:40px;padding:10px}
 .btn.boost{font-size:11px;gap:3px}
-.actions .btn.primary{margin-bottom:15px;padding:11px 10px}
+/* Boosters get their own evenly spaced row; Paint it is a full-width button below */
+.actions{flex-direction:column;align-items:stretch;gap:12px}
+.boosters{display:flex;justify-content:space-around;padding-top:8px}
+.boosters .btn.boost{flex:0 0 64px;position:relative}
+.actions .btn.primary{flex:none;margin:0;padding:13px;font-size:16px}
+body:has(#game:not([hidden])){padding-bottom:12px}
 .stamp{font-size:26px}
 @media (max-height:700px){.frame{padding:5px;border-radius:18px}.chip{max-width:64px}}
 /* Layout: stacked on phones, side by side on wide landscape screens */
@@ -292,10 +297,12 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
     <div class="paints" id="paints"></div>
     <div class="coachTip" id="coachTip" hidden></div>
     <div class="actions">
-      <button class="btn boost" id="emptyBtn"></button>
-      <button class="btn boost" id="undoBtn"></button>
-      <button class="btn boost" id="pickBtn"></button>
-      <button class="btn boost" id="hintBtn"></button>
+      <div class="boosters">
+        <button class="btn boost" id="emptyBtn"></button>
+        <button class="btn boost" id="undoBtn"></button>
+        <button class="btn boost" id="pickBtn"></button>
+        <button class="btn boost" id="hintBtn"></button>
+      </div>
       <button class="btn primary" id="applyBtn">Paint it</button>
     </div>
   </section>

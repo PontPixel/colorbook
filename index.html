@@ -193,15 +193,13 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 #game{gap:8px}
 .gamebar{display:flex;align-items:center;gap:10px}
 .gamebar .paintgauge{flex:1}
-.mixer{padding:14px 12px;gap:10px}
-.swatches{grid-template-columns:1fr minmax(84px,.9fr) 1fr;align-items:start;gap:6px}
+.mixer{padding:12px;gap:8px}
+.swatches{grid-template-columns:1fr 1fr;align-items:start;gap:12px}
 .sw{gap:6px}
-.chip{max-width:90px;border-width:6px}
+.chip{max-width:84px;border-width:6px}
 .target-name{font-size:16px;line-height:1.2}
-.swatches .meter{display:flex;flex-direction:column;align-items:stretch;gap:5px;padding-top:14px;text-align:center}
-.swatches .meter b{font:800 30px/1 "Inter",system-ui,sans-serif;font-variant-numeric:tabular-nums}
-.swatches .meter .bar{flex:none;height:8px}
-.swatches .meter small{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mixer .meter{display:block;padding:0 4px}
+.mixer .meter .bar{height:8px}
 .drops{gap:4px;min-height:16px}.drops span{width:12px;height:12px}.drops em{font-size:13px}
 .msg{font-size:13px;min-height:18px}
 .paints{padding:8px 4px;gap:4px}
@@ -217,8 +215,8 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 body:has(#game:not([hidden])){padding-bottom:12px}
 .stamp{font-size:26px}
 /* Taller phones get the full-size controls */
-@media (min-height:760px) and (max-width:899px){.mixer{padding:18px 14px;gap:14px}.chip{max-width:104px}.paint .blob{max-width:56px}.btn.boost .ico{width:52px;height:52px;padding:14px}.swatches .meter b{font-size:32px}}
-@media (max-height:640px){.frame{padding:5px;border-radius:18px}.chip{max-width:70px}.paint .blob{max-width:42px}.btn.boost .ico{width:42px;height:42px;padding:10px}}
+@media (min-height:760px) and (max-width:899px){.mixer{padding:18px 14px;gap:14px}.chip{max-width:116px}.paint .blob{max-width:56px}.btn.boost .ico{width:52px;height:52px;padding:14px}}
+@media (max-height:640px){.frame{padding:5px;border-radius:18px}.chip{max-width:84px}.paint .blob{max-width:42px}.btn.boost .ico{width:42px;height:42px;padding:10px}}
 /* Layout: stacked on phones, side by side on wide landscape screens */
 .board,.stage{display:flex;flex-direction:column;gap:12px}
 @media (min-width:900px) and (orientation:landscape){
@@ -227,7 +225,7 @@ body:has(#game:not([hidden])){padding-bottom:12px}
   .board{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:24px;align-items:start}
   /* keep the whole picture on screen: 4:3 picture, header + title + level bar + hud take ~250px */
   .stage{width:100%;max-width:calc((100vh - 110px) * 4 / 3);justify-self:center;min-width:420px}
-  .chip{max-width:96px}
+  .chip{max-width:116px}
   .home{max-width:1000px}
   .gallery .ggrid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
   .mixer{position:sticky;top:16px}
@@ -291,15 +289,13 @@ body:has(#game:not([hidden])){padding-bottom:12px}
         <div class="chip" id="targetChip"></div>
         <div class="target-name" id="targetName">Sun</div>
       </div>
-      <div class="meter">
-        <b id="pct">0%</b>
-        <div class="bar"><i id="barFill"></i></div>
-        <small>match</small>
-      </div>
       <div class="sw">
         <div class="chip empty" id="mixChip"></div>
         <div class="drops" id="drops"><em>add paint</em></div>
       </div>
+    </div>
+    <div class="meter" id="meter" role="progressbar" aria-label="Match" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="bar"><i id="barFill"></i></div>
     </div>
     <div class="msg" id="msg">Match 95% or more to paint.</div>
     <div class="hint" id="hint"></div>
@@ -675,7 +671,7 @@ function renderMix(override){
   $('drops').classList.toggle('picking',state.picking);
   $('drops').innerHTML=state.drops.length?state.drops.map((k,i)=>`<span data-i="${i}" title="${PMAP[k].name}" style="background:${hex(PMAP[k].rgb)}"></span>`).join(''):'<em>add paint</em>';
   const p=m?matchPct(m,r.target):0;
-  $('pct').textContent=p+'%';
+  $('meter').setAttribute('aria-valuenow',p); $('meter').setAttribute('aria-valuetext',p+'% match');
   const f=$('barFill');f.style.width=p+'%';f.style.background=p>=95?'var(--ok)':p>=75?'var(--gold)':'var(--warn)';
   renderActions();
   const msg=$('msg');

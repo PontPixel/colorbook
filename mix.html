@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
+<title>ColorFind Mix</title>
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#1c1e24; --panel:#262930; --panel2:#30333b; --ink:#eceef3; --muted:#9aa0ad; --line:#383c46; --track:#3a3e48;
+  --accent:#4f7cff; --ok:#3fcf8e; --warn:#ff7a59; --gold:#ffc53d;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:600 15px/1.35 "Manrope",system-ui,sans-serif;
+  -webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+button{font:inherit;color:inherit}
+.app{max-width:560px;min-height:100%;margin:0 auto;display:flex;flex-direction:column;
+  padding:calc(12px + env(safe-area-inset-top)) 16px calc(10px + env(safe-area-inset-bottom))}
+
+/* header */
+header{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.lvname{font-size:13px;color:var(--muted);letter-spacing:.3px}
+h1{margin:0;font:800 20px/1.2 "Manrope",system-ui,sans-serif}
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--track)}
+.dots i.cur{background:var(--ink);box-shadow:0 0 0 3px rgba(255,255,255,.12)}
+.dots i.s3{background:var(--gold)} .dots i.s2{background:#d9a64a} .dots i.s1{background:#a88a5a} .dots i.s0{background:#5a5e69}
+
+/* circle */
+.stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px 0}
+.well{--d:min(46vh,86vw,440px);width:var(--d);height:var(--d);border-radius:50%;position:relative;
+  background:#15171c;box-shadow:inset 0 0 0 2px var(--line);transition:background-color .12s}
+.well.empty{background:repeating-conic-gradient(#1a1c21 0 25%,#202329 0 50%) 50%/22px 22px;box-shadow:inset 0 0 0 2px var(--line)}
+.well.filled{box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.dot{position:absolute;left:50%;top:50%;width:38.73%;height:38.73%;border-radius:50%;transform:translate(-50%,-50%)}
+.well.win .dot{animation:pulse .9s ease-out}
+.well.win{animation:glow 1.2s ease-out}
+@keyframes pulse{0%{transform:translate(-50%,-50%) scale(1)}40%{transform:translate(-50%,-50%) scale(1.12)}100%{transform:translate(-50%,-50%) scale(1)}}
+@keyframes glow{0%{box-shadow:0 0 0 0 rgba(63,207,142,.7)}100%{box-shadow:0 0 0 26px rgba(63,207,142,0)}}
+.emptyhint{position:absolute;left:0;right:0;bottom:12%;text-align:center;font-size:13px;color:var(--muted);pointer-events:none}
+.paused{position:absolute;inset:0;border-radius:50%;background:#15171c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:14px;box-shadow:inset 0 0 0 2px var(--line)}
+.paused b{font-size:20px;color:var(--ink)}
+.acc{width:min(var(--d,360px),320px);display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.acc .bar{flex:1;height:6px;border-radius:9px;background:var(--track);overflow:hidden}
+.acc .bar i{display:block;height:100%;width:0;background:var(--warn);border-radius:9px;transition:width .15s,background-color .15s}
+.acc b{color:var(--ink);min-width:38px;text-align:right}
+
+/* sliders */
+.sliders{display:flex;flex-direction:column;gap:4px;background:var(--panel);border-radius:18px;padding:10px 14px}
+.row{display:grid;grid-template-columns:118px 1fr 58px;align-items:center;gap:10px;min-height:40px}
+.row .nm{display:flex;align-items:center;gap:8px;font-size:14px;white-space:nowrap}
+.row .sw{width:14px;height:14px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.18)}
+.row .nm small{color:var(--muted);font-weight:600}
+.row .val{text-align:right;font-variant-numeric:tabular-nums;line-height:1.1}
+.row .val b{display:block;font-size:15px}
+.row .val span{display:block;font-size:11px;color:var(--gold);white-space:nowrap}
+.row .val span.ok{color:var(--ok)}
+input[type=range]{--v:0%;--c:#fff;-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0;cursor:pointer;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:9px;background:linear-gradient(90deg,var(--c) var(--v),var(--track) var(--v))}
+input[type=range]::-moz-range-track{height:6px;border-radius:9px;background:linear-gradient(90deg,var(--c) var(--v),var(--track) var(--v))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-9px;border-radius:50%;background:var(--c);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--c);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+input[type=range]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:9px}
+.row.hinted .nm{color:var(--gold)}
+
+/* buttons */
+.bar5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+.btn{appearance:none;border:0;background:var(--panel2);border-radius:16px;min-height:62px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-size:12px;color:var(--ink);position:relative}
+.btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.timer{font-variant-numeric:tabular-nums}
+.btn.timer b{font-size:15px}
+.btn.timer.pausedb{background:var(--accent)}
+.btn .badge{position:absolute;top:6px;right:8px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--gold);color:#1c1e24;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+
+/* toast */
+.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translate(-50%,-140%);background:#fff;color:#1c1e24;padding:10px 16px;border-radius:14px;font-size:14px;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,.4);transition:transform .25s;z-index:30;max-width:calc(100vw - 32px);text-align:center}
+.toast.show{transform:translate(-50%,0)}
+
+/* overlays */
+.overlay{position:fixed;inset:0;background:rgba(10,11,14,.6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.overlay.low{align-items:flex-end;background:rgba(10,11,14,.35);padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+.card{width:100%;max-width:420px;background:var(--panel);border-radius:22px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 32px);overflow:auto}
+.card h2{margin:0;font:800 22px/1.2 "Manrope",system-ui,sans-serif}
+.card p{margin:0;color:var(--muted);font-size:14px}
+.stars{color:var(--gold);font-size:26px;letter-spacing:4px}
+.stars .off{color:var(--track)}
+.recipe{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:flex;align-items:center;gap:6px;background:var(--panel2);border-radius:99px;padding:5px 10px 5px 6px;font-size:13px;font-variant-numeric:tabular-nums}
+.chip .sw{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 1px rgba(255,255,255,.18)}
+.pair{display:flex;align-items:center;gap:12px}
+.pair .big{width:56px;height:56px;border-radius:50%;flex:none}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stats div{background:var(--panel2);border-radius:14px;padding:10px 4px;font-size:12px;color:var(--muted)}
+.stats b{display:block;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
+.actions{display:flex;gap:8px}
+.primary,.secondary{appearance:none;border:0;border-radius:14px;min-height:48px;padding:0 16px;font-weight:800;font-size:15px;cursor:pointer;flex:1}
+.primary{background:var(--accent);color:#fff}
+.secondary{background:var(--panel2);color:var(--ink)}
+.lvlist{display:flex;flex-direction:column;gap:6px}
+.lv{appearance:none;border:0;background:var(--panel2);border-radius:14px;padding:10px 12px;display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;text-align:left;cursor:pointer}
+.lv:disabled{opacity:.4;cursor:default}
+.lv .n{width:34px;height:34px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:800}
+.lv.done .n{background:var(--ok);color:#10261b}
+.lv .t{font-weight:700}
+.lv .t small{display:block;color:var(--muted);font-weight:600;font-size:12px}
+.lv .r{text-align:right;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.lv .r b{display:block;color:var(--gold);font-size:13px}
+
+@media (max-width:380px){ .row{grid-template-columns:96px 1fr 50px;gap:8px} .row .nm small{display:none} }
+@media (max-height:700px){ .well{--d:min(40vh,86vw)} .row{min-height:34px} .btn{min-height:54px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="lvname" id="lvName"></div>
+    <h1 id="lvTitle"></h1>
+    <div class="dots" id="dots"></div>
+  </header>
+
+  <section class="stage">
+    <div class="well empty" id="well">
+      <div class="dot" id="dot"></div>
+      <div class="emptyhint" id="emptyHint">Добавьте краску</div>
+      <div class="paused" id="paused" hidden><b>Пауза</b>Нажмите на таймер, чтобы продолжить</div>
+    </div>
+    <div class="acc"><span>Точность</span><div class="bar"><i id="accBar"></i></div><b id="accVal">—</b></div>
+  </section>
+
+  <section class="sliders" id="sliders"></section>
+
+  <nav class="bar5">
+    <button class="btn" id="bMenu" aria-label="Уровни"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Уровни</button>
+    <button class="btn" id="bReset"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg>Сброс</button>
+    <button class="btn" id="bHint"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg>Подсказка<span class="badge" id="hintBadge" hidden></span></button>
+    <button class="btn timer" id="bTimer" aria-label="Таймер, нажмите для паузы"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg><b id="timeVal">0:00</b></button>
+    <button class="btn" id="bSkip"><svg viewBox="0 0 24 24"><path d="M5 5l9 7-9 7z"/><path d="M18 5v14"/></svg>Пропустить</button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="overlay" id="ov" hidden><div class="card" id="card"></div></div>
+
+<script>
+// ---------- Color model (same subtractive CMY cube as index.html) ----------
+const C={w:[1,1,1],c:[0,0.66,0.92],m:[0.89,0.07,0.52],y:[1,0.9,0.05],
+  cm:[0.24,0.22,0.62],cy:[0.05,0.63,0.32],my:[0.93,0.18,0.14],cmy:[0.36,0.25,0.16]};
+function cmy2rgb(c,m,y){
+  const L=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+  return L(L(L(C.w,C.y,y),L(C.m,C.my,y),m),L(L(C.c,C.cy,y),L(C.cm,C.cmy,y),m),c);
+}
+const PAINTS=[
+  {k:'C',name:'Голубой',rgb:C.c},{k:'M',name:'Пурпурный',rgb:C.m},{k:'Y',name:'Жёлтый',rgb:C.y},
+  {k:'W',name:'Белый',rgb:[0.98,0.98,0.97]},{k:'K',name:'Чёрный',rgb:[0.13,0.13,0.15]}];
+const PK=PAINTS.map(p=>p.k), PMAP=Object.fromEntries(PAINTS.map(p=>[p.k,p]));
+function mix(c){
+  const Cy=c.C||0,M=c.M||0,Y=c.Y||0,W=c.W||0,K=c.K||0,total=Cy+M+Y+W+K; if(!total) return null;
+  const ch=Cy+M+Y; let out=[0,0,0];
+  if(ch){let v=[Cy/ch,M/ch,Y/ch];const m=Math.max(...v);v=v.map(x=>x/m);
+    const base=cmy2rgb(...v);out=out.map((o,i)=>o+base[i]*ch/total);}
+  return out.map((o,i)=>o+PMAP.W.rgb[i]*W/total+PMAP.K.rgb[i]*K/total);
+}
+const hex=rgb=>'#'+rgb.map(v=>Math.round(Math.max(0,Math.min(1,v))*255).toString(16).padStart(2,'0')).join('');
+function lab(rgb){
+  const l=rgb.map(v=>v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4));
+  const f=t=>t>0.008856?Math.cbrt(t):7.787*t+16/116;
+  const X=f((l[0]*0.4124+l[1]*0.3576+l[2]*0.1805)/0.95047),Y=f(l[0]*0.2126+l[1]*0.7152+l[2]*0.0722),Z=f((l[0]*0.0193+l[1]*0.1192+l[2]*0.9505)/1.08883);
+  return [116*Y-16,500*(X-Y),200*(Y-Z)];
+}
+const dE=(a,b)=>{const A=lab(a),B=lab(b);return Math.hypot(A[0]-B[0],A[1]-B[1],A[2]-B[2]);};
+const matchPct=(a,b)=>Math.max(0,Math.round(100-dE(a,b)*1.1));
+const WIN=96;               // match % needed to solve a task
+const sum=r=>PK.reduce((s,k)=>s+(r[k]||0),0);
+const shares=r=>{const t=sum(r);return Object.fromEntries(PK.map(k=>[k,t?(r[k]||0)/t:0]));};
+
+// ---------- Levels ----------
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pick=a=>a[Math.random()*a.length|0];
+const rec=(keys,parts)=>Object.fromEntries(keys.map((k,i)=>[k,parts[i]]));
+const combos=(arr,n)=>n===0?[[]]:arr.flatMap((x,i)=>combos(arr.slice(i+1),n-1).map(c=>[x,...c]));
+const CMY=['C','M','Y'];
+
+const SIMPLE=[[3,1],[4,1],[3,2],[2,1,1],[3,1,1],[2,2,1]];
+const CX4=[[4,3,2,1],[5,3,2,1],[3,2,2,1],[5,2,2,1],[4,3,1,1],[3,3,2,1]];
+const CX5=[[5,4,3,2,1],[4,3,2,2,1],[6,4,3,2,1],[5,3,2,1,1],[4,4,3,2,1]];
+
+// A recipe must give a readable color: not near-black, K not dominant, and at least one chromatic paint.
+function okRecipe(r){
+  const s=shares(r); if(!CMY.some(k=>s[k]>0)) return false;
+  if(s.K>0.4) return false;
+  const L=lab(mix(r))[0]; return L>=20&&L<=96;
+}
+function randRecipe(pattern){
+  for(let i=0;i<200;i++){
+    const keys=shuffle(PK).slice(0,pattern.length), r=rec(keys,shuffle(pattern));
+    if(okRecipe(r)) return r;
+  }
+  return {C:pattern[0],W:pattern[1]||1};
+}
+// Draw 7 mixed tasks whose colors are all visibly different.
+function genMixed(lvl){
+  const complex=Math.min(7,lvl-4), p5=Math.max(0,Math.min(1,(lvl-7)/5));
+  const pats=[...Array(7-complex)].map(()=>pick(SIMPLE))
+    .concat([...Array(complex)].map(()=>pick(Math.random()<p5?CX5:CX4)));
+  const out=[];
+  for(const p of pats){
+    let best=null,bestD=-1;
+    for(let i=0;i<60;i++){
+      const r=randRecipe(p), c=mix(r), d=out.length?Math.min(...out.map(o=>dE(c,mix(o)))):99;
+      if(d>bestD){best=r;bestD=d;} if(d>=12) break;
+    }
+    out.push(best);
+  }
+  return out; // simple first, complex last: difficulty rises inside the level
+}
+const MIXED_NAMES=['Разминка','Тонкие оттенки','Приглушённые тона','Сложные смеси','Четыре краски','Палитра художника','Пять красок','Мастер'];
+const LEVELS=[
+  {title:'Осветление и затемнение',sub:'Один цвет + белый или чёрный, 1:1',
+   text:'Работаем только со светлотой. Смешайте цвет с белым или чёрным поровну.',
+   make:()=>shuffle([...CMY.flatMap(k=>[rec([k,'W'],[1,1]),rec([k,'K'],[1,1])]),rec(['W','K'],[1,1])])},
+  {title:'Чистые бинарные смеси',sub:'Два основных цвета, 1:1',
+   text:'Два чистых пигмента поровну дают цвета второго порядка: зелёный, красный, сине-фиолетовый.',
+   make:()=>shuffle(combos(CMY,2).map(ks=>rec(ks,[1,1])))},
+  {title:'Смещение доминанты',sub:'Два основных цвета, 2:1',
+   text:'Цвета третьего порядка: одного пигмента вдвое больше, и оттенок сдвигается к нему.',
+   make:()=>shuffle(CMY.flatMap(a=>CMY.filter(b=>b!==a).map(b=>rec([a,b],[2,1]))))},
+  {title:'Три краски',sub:'Три краски поровну, 1:1:1',
+   text:'Любые три из пяти красок в равных долях. Сочетание всех трёх основных даёт коричневый.',
+   make:()=>shuffle(combos(PK,3).map(ks=>rec(ks,[1,1,1])))},
+  ...MIXED_NAMES.map((title,i)=>{const lvl=i+5,cx=Math.min(7,lvl-4);return {title,
+    sub:`Простых: ${7-cx} · сложных: ${cx}`,
+    text:cx<7?`Семь цветов. Сначала простые пропорции (3:1, 4:1, 2:1:1…), в конце — сложные смеси из 4–5 красок (${cx} шт.).`
+             :'Семь сложных смесей из 4–5 красок в неравных пропорциях.',
+    make:()=>genMixed(lvl)};})
+];
+
+// ---------- Save ----------
+const SAVE_KEY='colorfindMix';
+let save={best:{}};
+try{save=Object.assign(save,JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'));}catch(e){}
+const persist=()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}};
+const unlocked=i=>i===0||!!save.best[i-1]||!!save.best[i];
+
+// ---------- State ----------
+const $=id=>document.getElementById(id);
+let L=0, tasks=[], ti=0, results=[], task=null;
+const vals=Object.fromEntries(PK.map(k=>[k,0]));
+let elapsed=0, lastTick=0, running=false, paused=false, solved=false;
+
+// ---------- UI build ----------
+const inputs={}, valEls={}, tgtEls={}, rows={};
+for(const p of PAINTS){
+  const row=document.createElement('div'); row.className='row';
+  row.innerHTML=`<div class="nm"><span class="sw" style="background:${hex(p.rgb)}"></span>${p.name} <small>(${p.k})</small></div>
+    <input type="range" min="0" max="100" step="1" value="0" aria-label="${p.name}">
+    <div class="val"><b>0%</b><span hidden></span></div>`;
+  const inp=row.querySelector('input'); inp.style.setProperty('--c',p.k==='K'?'#50535c':hex(p.rgb));
+  inp.addEventListener('input',()=>{vals[p.k]=+inp.value;update();});
+  inp.addEventListener('change',checkWin);
+  inputs[p.k]=inp; valEls[p.k]=row.querySelector('.val b'); tgtEls[p.k]=row.querySelector('.val span'); rows[p.k]=row;
+  $('sliders').appendChild(row);
+}
+const fmtTime=s=>{s=Math.floor(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+const pct=x=>Math.round(x*100)+'%';
+let toastT;
+function toast(msg){const t=$('toast');t.innerHTML=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
+
+function update(){
+  const s=shares(vals), total=sum(vals), cur=mix(vals);
+  for(const k of PK){
+    inputs[k].style.setProperty('--v',vals[k]+'%');
+    valEls[k].textContent=pct(s[k]);
+    if(task.hints.has(k)){const ts=shares(task.recipe)[k];
+      tgtEls[k].classList.toggle('ok',Math.abs(ts-s[k])<=0.03);}
+  }
+  const well=$('well');
+  well.classList.toggle('empty',!total); well.classList.toggle('filled',!!total);
+  well.style.backgroundColor=total?hex(cur):'';
+  $('emptyHint').hidden=!!total;
+  const m=total?matchPct(cur,task.target):0;
+  $('accVal').textContent=total?m+'%':'—';
+  $('accBar').style.width=m+'%';
+  $('accBar').style.background=m>=WIN?'var(--ok)':m>=85?'var(--gold)':'var(--warn)';
+}
+function renderDots(){
+  $('dots').innerHTML=tasks.map((_,i)=>`<i class="${i===ti&&!solved?'cur':results[i]!=null?'s'+results[i].stars:''}"></i>`).join('');
+}
+function renderHints(){
+  const ts=shares(task.recipe);
+  for(const k of PK){
+    const on=task.hints.has(k); rows[k].classList.toggle('hinted',on);
+    tgtEls[k].hidden=!on; if(on) tgtEls[k].textContent='цель '+pct(ts[k]);
+  }
+  const n=task.hints.size; $('hintBadge').hidden=!n; $('hintBadge').textContent=n;
+}
+
+// ---------- Timer ----------
+function tick(now){
+  if(running&&!paused){elapsed+=(now-lastTick)/1000;$('timeVal').textContent=fmtTime(elapsed);}
+  lastTick=now; requestAnimationFrame(tick);
+}
+requestAnimationFrame(t=>{lastTick=t;tick(t);});
+function setPaused(p){
+  if(!running&&p) return;
+  paused=p; $('paused').hidden=!p; $('bTimer').classList.toggle('pausedb',p);
+  $('dot').style.visibility=p?'hidden':'';
+  for(const k of PK) inputs[k].disabled=p;
+  ['bReset','bHint','bSkip'].forEach(id=>$(id).disabled=p);
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!solved) setPaused(true);});
+
+// ---------- Flow ----------
+function startLevel(i){
+  L=i; tasks=LEVELS[i].make(); ti=0; results=[];
+  $('lvName').textContent=`Уровень ${i+1} из ${LEVELS.length}`;
+  $('lvTitle').textContent=LEVELS[i].title;
+  loadTask();
+  showCard(`<h2>Уровень ${i+1}: ${LEVELS[i].title}</h2><p><b style="color:var(--ink)">${LEVELS[i].sub}.</b> ${LEVELS[i].text}</p>
+    <p>Подберите доли красок так, чтобы большой круг совпал по цвету с точкой в центре. Цветов в уровне: ${tasks.length}.</p>
+    <div class="actions"><button class="primary" data-a="go">Начать</button></div>`,false,{go:()=>{closeCard();running=true;}});
+}
+function loadTask(){
+  const r=tasks[ti]; task={recipe:r,target:mix(r),hints:new Set()};
+  for(const k of PK){vals[k]=0;inputs[k].value=0;}
+  $('dot').style.background=hex(task.target);
+  elapsed=0; $('timeVal').textContent='0:00'; solved=false; running=false;
+  $('well').classList.remove('win');
+  setPaused(false); renderHints(); renderDots(); update();
+}
+function checkWin(){
+  if(solved||paused||!sum(vals)) return;
+  if(matchPct(mix(vals),task.target)>=WIN) finishTask(false);
+}
+function recipeHTML(r){
+  const s=shares(r);
+  return '<div class="recipe">'+PK.filter(k=>r[k]).map(k=>`<span class="chip"><span class="sw" style="background:${hex(PMAP[k].rgb)}"></span>${PMAP[k].name} ${pct(s[k])}</span>`).join('')+'</div>'
+    +`<p>Пропорция: ${PK.filter(k=>r[k]).map(k=>k+' '+r[k]).join(' : ')}</p>`;
+}
+const starsHTML=n=>'<div class="stars">'+[0,1,2].map(i=>i<n?'★':'<span class="off">★</span>').join('')+'</div>';
+function finishTask(skipped){
+  solved=true; running=false;
+  const h=task.hints.size, stars=skipped?0:h===0?3:h===1?2:1, m=matchPct(mix(vals)||[0,0,0],task.target);
+  results[ti]={stars,time:elapsed,skipped};
+  if(skipped){ // show the answer on the sliders
+    const mx=Math.max(...PK.map(k=>task.recipe[k]||0));
+    for(const k of PK){vals[k]=Math.round((task.recipe[k]||0)/mx*100);inputs[k].value=vals[k];}
+    update();
+  }else $('well').classList.add('win');
+  renderDots();
+  const last=ti===tasks.length-1;
+  setTimeout(()=>showCard(`
+    <div class="pair"><div class="big" style="background:${hex(task.target)}"></div>
+      <div><h2>${skipped?'Ответ':'Совпадение '+m+'%'}</h2>${skipped?'<p>Задание пропущено</p>':starsHTML(stars)}</div></div>
+    ${recipeHTML(task.recipe)}
+    <p>Время: ${fmtTime(elapsed)}${h?` · подсказок: ${h}`:''}</p>
+    <div class="actions"><button class="primary" data-a="next">${last?'Итоги уровня':'Дальше'}</button></div>`,true,
+    {next:()=>{closeCard(); if(last) finishLevel(); else {ti++;loadTask();running=true;}}}),skipped?150:650);
+}
+function finishLevel(){
+  const stars=results.reduce((s,r)=>s+r.stars,0), max=tasks.length*3, time=results.reduce((s,r)=>s+r.time,0);
+  const prev=save.best[L];
+  save.best[L]={stars:Math.max(stars,prev?.stars||0),time:Math.min(time,prev?.time??Infinity)}; persist();
+  const hasNext=L<LEVELS.length-1;
+  showCard(`<h2>Уровень ${L+1} пройден!</h2>
+    <div class="stats"><div><b>${stars}/${max}</b>звёзд</div><div><b>${fmtTime(time)}</b>время</div><div><b>${fmtTime(time/tasks.length)}</b>в среднем</div></div>
+    ${prev?`<p>Рекорд: ${save.best[L].stars}/${max} ★ · ${fmtTime(save.best[L].time)}</p>`:''}
+    <div class="actions"><button class="secondary" data-a="again">Ещё раз</button>${hasNext?'<button class="primary" data-a="next">Следующий</button>':'<button class="primary" data-a="menu">Уровни</button>'}</div>`,false,
+    {again:()=>startLevel(L),next:()=>startLevel(L+1),menu:showLevels});
+}
+function showLevels(){
+  const wasRunning=running&&!paused; if(wasRunning) setPaused(true);
+  const html=LEVELS.map((lv,i)=>{const b=save.best[i],open=unlocked(i);
+    return `<button class="lv${b?' done':''}" data-lv="${i}" ${open?'':'disabled'}><span class="n">${open?i+1:'🔒'}</span>
+      <span class="t">${lv.title}<small>${lv.sub}</small></span>
+      <span class="r">${b?`<b>★ ${b.stars}</b>${fmtTime(b.time)}`:''}</span></button>`;}).join('');
+  showCard(`<h2>Уровни</h2><div class="lvlist">${html}</div>
+    ${tasks.length?'<div class="actions"><button class="secondary" data-a="close">Продолжить</button></div>':''}`,false,
+    {close:()=>{closeCard(); if(wasRunning) setPaused(false);}});
+  $('card').querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>startLevel(+b.dataset.lv));
+}
+function showCard(html,low,acts={}){
+  $('card').innerHTML=html; $('ov').classList.toggle('low',!!low); $('ov').hidden=false;
+  $('card').querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>acts[b.dataset.a]());
+  $('card').querySelector('.primary,.secondary')?.focus();
+}
+const closeCard=()=>{$('ov').hidden=true;};
+
+// ---------- Buttons ----------
+$('bMenu').onclick=showLevels;
+$('bReset').onclick=()=>{if(solved)return;for(const k of PK){vals[k]=0;inputs[k].value=0;}update();};
+$('bTimer').onclick=()=>{if(!solved) setPaused(!paused);};
+$('bSkip').onclick=()=>{if(!solved&&running) finishTask(true);};
+$('bHint').onclick=()=>{
+  if(solved||!running) return;
+  const ts=shares(task.recipe), cs=shares(vals), empty=!sum(vals);
+  // Reveal the paint that is furthest off; with an empty bowl, start from the biggest share.
+  const cand=PK.filter(k=>!task.hints.has(k)&&(empty?ts[k]>0:Math.abs(ts[k]-cs[k])>0.02))
+    .sort((a,b)=>Math.abs(ts[b]-cs[b])-Math.abs(ts[a]-cs[a]));
+  if(!cand.length){toast(task.hints.size===PK.length?'Все доли уже открыты':'Доли уже близки — подвигайте ползунки чуть-чуть');return;}
+  const k=cand[0]; task.hints.add(k); renderHints(); update();
+  toast(`${PMAP[k].name}: ${pct(ts[k])} смеси`);
+};
+
+// Start: continue from the first level not yet cleared.
+let first=LEVELS.findIndex((_,i)=>!save.best[i]); if(first<0) first=0;
+startLevel(first);
+</script>
+</body>
+</html>

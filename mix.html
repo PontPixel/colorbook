@@ -212,7 +212,7 @@ const shares=r=>{const t=sum(r);return Object.fromEntries(PK.map(k=>[k,t?(r[k]||
 // Drops are life. Each level has its own pot of drops (BUDGET_K × the recipes' total). When the pot runs dry,
 // drops come out of the player's life reserve, which refills by one every LIFE_REGEN seconds up to LIFE_MAX.
 // Drops left in the pot at the end of a level go back into the reserve. Coins come from stars and speed.
-const LIFE_MAX=30, LIFE_REGEN=90, BUDGET_K=1.5;
+const LIFE_MAX=30, LIFE_REGEN=300, BUDGET_K=1.3;
 const COINS_PER_STAR=3, FAST_SEC=30, FAST_BONUS=2, FIRST_CLEAR_BONUS=20, REPLAY_BONUS=5, START_COINS=50;
 const LIFE_PACK={drops:15,price:30}, AD_DROPS=10;
 const FREE_BOOSTERS=3;
@@ -435,7 +435,7 @@ function finishTask(){
       <div><h2>Совпадение ${m}%</h2>${starsHTML(stars)}</div></div>
     ${recipeHTML(task.recipe)}
     <p>Время ${fmtTime(elapsed)} · капель ${task.used} (минимум ${sum(task.recipe)})</p>
-    <div class="reward"><span>+${coins} ${COIN}</span>${fast?`<span>быстро: +${FAST_BONUS}</span>`:''}</div>
+    <div class="reward"><span>+${coins} ${COIN}</span>${fast?`<span>быстрее ${FAST_SEC} с: +${FAST_BONUS}</span>`:''}</div>
     <div class="acts"><button class="primary" data-a="next">${last?'Итоги уровня':'Дальше'}</button></div>`,true,
     {next:()=>{closeCard(); if(last) finishLevel(); else {ti++;loadTask();running=true;}}}),650);
 }
@@ -458,7 +458,7 @@ function finishLevel(){
 function outOfDrops(){
   const canBuy=save.coins>=LIFE_PACK.price;
   showCard(`<h2>Капли закончились</h2>
-    <p>Капли уровня и запас пусты. Запас пополняется сам: +1 ${DROP} каждые ${LIFE_REGEN} с, до ${LIFE_MAX}.</p>
+    <p>Капли уровня и запас пусты. Запас пополняется сам: +1 ${DROP} каждые ${LIFE_REGEN/60} мин, до ${LIFE_MAX}.</p>
     <p>Следующая капля через <b id="lifeWait">${fmtTime(nextLifeIn())}</b></p>
     <div class="col">
       <button class="primary" data-a="ad">Посмотреть рекламу: +${AD_DROPS} ${DROP}</button>

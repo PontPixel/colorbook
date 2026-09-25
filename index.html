@@ -76,8 +76,14 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .drops em{font-style:normal;color:var(--muted);font-size:13px}
 .paints{display:grid;grid-template-columns:repeat(var(--n,5),1fr);gap:6px;padding:12px 6px 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .paint{appearance:none;border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font:600 12px "Inter",system-ui,sans-serif;color:#4a5061}
-.paint .blob{width:100%;max-width:48px;aspect-ratio:1;border-radius:50%;position:relative;box-shadow:0 0 0 1px rgba(20,24,40,.1),0 4px 10px rgba(20,24,40,.16),inset 0 -3px 0 rgba(0,0,0,.1);transition:transform .1s}
-.paint .blob::after{content:"";position:absolute;left:24%;top:17%;width:24%;height:18%;border-radius:50%;background:rgba(255,255,255,.45)}
+/* Flat paint dots: plain color, no gloss or shadow. White gets a hairline so it shows on the white panel. */
+.paint .blob{width:100%;max-width:48px;aspect-ratio:1;border-radius:50%;transition:transform .1s}
+.paint[data-k="W"] .blob{box-shadow:inset 0 0 0 1.5px #d6d9e1}
+.paint{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.ghost{position:fixed;left:0;top:0;width:48px;height:48px;border-radius:50%;pointer-events:none;z-index:8;box-shadow:0 10px 24px rgba(20,24,40,.25);opacity:.95}
+.ghost.white{box-shadow:inset 0 0 0 1.5px #d6d9e1,0 10px 24px rgba(20,24,40,.25)}
+.chip.dropping{transform:scale(1.12);box-shadow:0 0 0 3px var(--accent),0 6px 16px rgba(20,24,40,.12)}
+.chip{transition:background .25s,transform .15s,box-shadow .15s}
 .paint:active .blob{transform:scale(.9)}
 .paint:focus-visible .blob,.btn:focus-visible,.lvl:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 .actions{display:flex;gap:6px;align-items:center}
@@ -183,10 +189,10 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .gcard:disabled{cursor:default}.gcard:disabled>svg{opacity:.35;filter:grayscale(1)}
 .gcard .lockico{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:#fff;box-shadow:var(--shadow);color:var(--muted)}
 /* Game: compact bar + compact mixer so it all fits a phone screen */
-#game{gap:10px}
+#game{gap:8px}
 .gamebar{display:flex;align-items:center;gap:10px}
 .gamebar .paintgauge{flex:1}
-.mixer{padding:12px 12px 12px;gap:10px}
+.mixer{padding:12px;gap:8px}
 .swatches{grid-template-columns:1fr minmax(84px,.9fr) 1fr;align-items:start;gap:6px}
 .sw{gap:6px}
 .chip{max-width:78px;border-width:5px}
@@ -202,7 +208,12 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .paint .blob{max-width:40px}
 .btn.boost .ico{width:40px;height:40px;padding:10px}
 .btn.boost{font-size:11px;gap:3px}
-.actions .btn.primary{margin-bottom:15px;padding:11px 10px}
+/* Boosters get their own evenly spaced row; Paint it is a full-width button below */
+.actions{flex-direction:column;align-items:stretch;gap:12px}
+.boosters{display:flex;justify-content:space-around;padding-top:8px}
+.boosters .btn.boost{flex:0 0 64px;position:relative}
+.actions .btn.primary{flex:none;margin:0;padding:13px;font-size:16px}
+body:has(#game:not([hidden])){padding-bottom:12px}
 .stamp{font-size:26px}
 @media (max-height:700px){.frame{padding:5px;border-radius:18px}.chip{max-width:64px}}
 /* Layout: stacked on phones, side by side on wide landscape screens */
@@ -292,10 +303,12 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
     <div class="paints" id="paints"></div>
     <div class="coachTip" id="coachTip" hidden></div>
     <div class="actions">
-      <button class="btn boost" id="emptyBtn"></button>
-      <button class="btn boost" id="undoBtn"></button>
-      <button class="btn boost" id="pickBtn"></button>
-      <button class="btn boost" id="hintBtn"></button>
+      <div class="boosters">
+        <button class="btn boost" id="emptyBtn"></button>
+        <button class="btn boost" id="undoBtn"></button>
+        <button class="btn boost" id="pickBtn"></button>
+        <button class="btn boost" id="hintBtn"></button>
+      </div>
       <button class="btn primary" id="applyBtn">Paint it</button>
     </div>
   </section>
@@ -758,17 +771,55 @@ function nudge(){const t=$('coachTip');t.classList.remove('nudge');void t.offset
 $('coachDim').onclick=nudge;
 
 // ---------- Input ----------
-$('paints').addEventListener('click',e=>{
-  const b=e.target.closest('.paint'); if(!b||state.finished) return;
-  if(state.forced){nudge();return;}
-  if(state.paint<=0){outOfPaint();return;}
-  if(state.drops.length>=12){renderMix(['The bowl is full. Take drops out or empty it.','bad']);return;}
-  const k=b.dataset.k;
+function addDrop(k){
+  if(!state||state.finished) return false;
+  if(state.forced){nudge();return false;}
+  if(state.paint<=0){outOfPaint();return false;}
+  if(state.drops.length>=12){renderMix(['The bowl is full. Take drops out or empty it.','bad']);return false;}
   state.picking=false; state.hintMsg=null;
   state.drops.push(k); state.paint--; state.used[state.sel]=(state.used[state.sel]||0)+1;
   updateHud(); renderHint(); renderMix();
   if(L.intro==='undo'&&!save.tut.undo&&!current().recipe[k]) forceUndo(k);
+  return true;
+}
+let dragged=false; // set when a press turned into a drag, so the click that follows is ignored
+$('paints').addEventListener('click',e=>{
+  const b=e.target.closest('.paint'); if(!b) return;
+  if(dragged){dragged=false;return;}
+  addDrop(b.dataset.k);
 });
+// Drag and drop: press a paint, drag it onto the mix circle, let go to add a drop. A short press stays a tap.
+(function(){
+  let d=null;
+  const overMix=(x,y)=>{const r=$('mixChip').getBoundingClientRect(),m=28;return x>r.left-m&&x<r.right+m&&y>r.top-m&&y<r.bottom+m;};
+  $('paints').addEventListener('pointerdown',e=>{
+    const b=e.target.closest('.paint'); if(!b||!state||state.finished||state.forced||e.button>0) return;
+    d={k:b.dataset.k,x:e.clientX,y:e.clientY,ghost:null,id:e.pointerId}; dragged=false;
+  });
+  addEventListener('pointermove',e=>{
+    if(!d||e.pointerId!==d.id) return;
+    if(!d.ghost){
+      if(Math.hypot(e.clientX-d.x,e.clientY-d.y)<8) return;
+      dragged=true;
+      d.ghost=document.createElement('div'); d.ghost.className='ghost'+(d.k==='W'?' white':'');
+      d.ghost.style.background=hex(PMAP[d.k].rgb); document.body.appendChild(d.ghost);
+    }
+    d.ghost.style.transform=`translate(${e.clientX-24}px,${e.clientY-24}px)`;
+    $('mixChip').classList.toggle('dropping',overMix(e.clientX,e.clientY));
+  });
+  const end=e=>{
+    if(!d||e.pointerId!==d.id) return;
+    const g=d.ghost, k=d.k; d=null; $('mixChip').classList.remove('dropping');
+    if(!g) return;
+    g.remove();
+    if(e.type==='pointerup'&&overMix(e.clientX,e.clientY)&&addDrop(k)){
+      const r=$('mixChip').getBoundingClientRect();
+      burst(r.left+r.width/2,r.top+r.height/2,[hex(PMAP[k].rgb),hex(PMAP[k].rgb),'#ffffff'],12,{speed:4,size:3.5,decay:.035,gravity:.1});
+    }
+    setTimeout(()=>{dragged=false;},0);
+  };
+  addEventListener('pointerup',end); addEventListener('pointercancel',end);
+})();
 $('emptyBtn').onclick=()=>{
   if(isLocked('empty')||!state.drops.length) return;
   const n=state.drops.length; state.drops=[]; state.hintMsg=null;

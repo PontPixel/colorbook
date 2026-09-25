@@ -53,6 +53,19 @@ h1{margin:0;font:800 19px/1.2 "Manrope",system-ui,sans-serif}
 .dot{position:absolute;left:37%;top:37%;width:32.4%;height:32.4%;border-radius:50%;transform:translate(-50%,-50%)}
 .well.win .dot{animation:pulse .9s ease-out}
 .well.win{animation:ring 1.2s ease-out}
+/* pour-out: the circle tips left, the paint drains with a level wavy surface and spills over the rim */
+.well.pouring{animation:tilt .95s ease-in-out}
+@keyframes tilt{0%{transform:rotate(0)}28%{transform:rotate(-18deg)}72%{transform:rotate(-18deg)}100%{transform:rotate(0)}}
+.well.pouring .emptyhint{opacity:0}
+.liqwrap{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none}
+.liqlevel{position:absolute;inset:-25%;animation:untilt .95s ease-in-out}
+@keyframes untilt{0%{transform:rotate(0)}28%{transform:rotate(18deg)}72%{transform:rotate(18deg)}100%{transform:rotate(0)}}
+.liq{position:absolute;inset:0;background:var(--c);animation:drain .8s cubic-bezier(.55,0,.8,.45) .12s both}
+.liq svg{position:absolute;left:0;bottom:calc(100% - 1px);width:200%;height:12px;fill:var(--c);animation:wave .45s linear infinite}
+@keyframes drain{from{transform:translateY(15%)}to{transform:translateY(102%)}}
+@keyframes wave{to{transform:translateX(-50%)}}
+.spill{position:fixed;left:0;top:0;border-radius:50% 50% 50% 0;pointer-events:none;z-index:9;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+@media (prefers-reduced-motion:reduce){.well.pouring,.liqlevel,.liq{animation:none}.liqwrap{display:none}}
 @keyframes pulse{0%{transform:translate(-50%,-50%) scale(1)}40%{transform:translate(-50%,-50%) scale(1.12)}100%{transform:translate(-50%,-50%) scale(1)}}
 @keyframes ring{0%{box-shadow:0 0 0 1px var(--line),0 0 0 0 rgba(42,44,48,.35)}100%{box-shadow:0 0 0 1px var(--line),0 0 0 24px rgba(42,44,48,0)}}
 .emptyhint{position:absolute;left:0;right:0;bottom:16%;text-align:center;font-size:13px;color:var(--muted);pointer-events:none}
@@ -506,8 +519,38 @@ function lockedMsg(b){
   if(save.inv[b]!=null) return false;
   toast(`${BOOSTERS[b].name} откроется на уровне ${BOOSTERS[b].at+1}`); return true;
 }
+// Pour-out animation: a copy of the paint drains out of the tipped circle and spills over its left rim,
+// while the drops under the circle fall away.
+function pourAnim(color){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const well=$('well'), r=well.getBoundingClientRect();
+  const wrap=document.createElement('div'); wrap.className='liqwrap';
+  wrap.innerHTML=`<div class="liqlevel"><div class="liq" style="--c:${color}"><svg viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M0 6Q25 0 50 6T100 6T150 6T200 6V12H0Z"/></svg></div></div>`;
+  well.insertBefore(wrap,well.firstChild);
+  well.classList.remove('pouring'); void well.offsetWidth; well.classList.add('pouring');
+  const fall=(x,y,c,size,dx,dy,delay,dur)=>{
+    const s=document.createElement('div'); s.className='spill';
+    s.style.cssText=`width:${size}px;height:${size}px;background:${c}`;
+    document.body.appendChild(s);
+    const at=(fx,fy,sc)=>`translate(${x+fx-size/2}px,${y+fy-size/2}px) rotate(135deg) scale(${sc})`;
+    s.animate([{transform:at(0,0,.4),opacity:0},{transform:at(dx*.15,dy*.03,1),opacity:1,offset:.12},
+      {transform:at(dx*.6,dy*.3,1),opacity:1,offset:.5},{transform:at(dx,dy,.7),opacity:0}],
+      {duration:dur,delay,easing:'cubic-bezier(.3,0,.9,.7)',fill:'both'}).onfinish=()=>s.remove();
+  };
+  // Stream over the rim: the tipped circle's lowest-left point.
+  for(let i=0;i<22;i++)
+    fall(r.left+r.width*.1,r.top+r.height*(.62+Math.random()*.12),color,6+Math.random()*9,
+      -(20+Math.random()*80),140+Math.random()*200,240+i*22,620+Math.random()*260);
+  // Drops under the circle drop out one after another.
+  $('drops').querySelectorAll('span').forEach((d,i)=>{
+    const b=d.getBoundingClientRect();
+    fall(b.left+b.width/2,b.top+b.height/2,d.style.background,16,(Math.random()-.5)*30,90+Math.random()*60,i*35,520);
+  });
+  setTimeout(()=>{wrap.remove();well.classList.remove('pouring');},1150);
+}
 $('b_empty').onclick=()=>{
   if(lockedMsg('empty')||!drops.length) return;
+  pourAnim(hex(mix(counts())));
   const n=drops.length, all=drops; drops=[]; hintShown=false; markPaint(null);
   // As in the main game: with no booster and no coins the bowl is poured out without a refund.
   if(!canUse('empty')){update();toast(`Миска вылита, ${n} ${plural(n,['капля','капли','капель'])} потеряно`);return;}

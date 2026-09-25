@@ -317,8 +317,23 @@ const LEVELS=[
     <path d="M62 162H258Q252 216 160 216Q68 216 62 162Z" fill="#fff" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
     <path d="M70 180H250" stroke="#8fb3e0" stroke-width="5"/><g fill="${INK}"><circle cx="106" cy="132" r="1.5"/><circle cx="124" cy="126" r="1.5"/></g></g>`
 },
+{ id:'malevich', title:'Suprematism', sub:'Only white and black. Balance light and dark.', budget:8, paints:['W','K'],
+  credit:'After <i>Suprematism</i> by Kazimir Malevich, 1915 (public domain)',
+  tip:{title:'Light and dark',text:'This picture needs only <b>White</b> and <b>Black</b>. One drop of each makes <b>gray</b>. More white makes it lighter, more black makes it darker.'},
+  bg:`<rect width="320" height="240" fill="#d8d2c6"/><rect x="66" y="0.5" width="188" height="239" fill="#b89a6c" stroke="${INK}" stroke-width="2"/>`,
+  regions:[
+    {id:'square',name:'Black square',recipe:{K:1},svg:'<path d="M121.9 16.9H200.4V94.2H121.9Z"/>'},
+    {id:'canvas',name:'Canvas',recipe:{W:1},svg:'<rect x="70" y="4.5" width="180" height="231"/>'},
+    {id:'bar',name:'Gray bar',recipe:{W:1,K:1},svg:'<path d="M202.6 205.8 237.0 178.6 244.9 188.5 210.5 215.7Z"/>'},
+  ],
+  order:['canvas','square','bar'],
+  decor:`<g stroke="${INK}" stroke-width="1.5" stroke-linejoin="round" pointer-events="none">
+    <path d="M83.8 106.8H115.9V157.9H83.8Z" fill="#f5b800"/><path d="M104.8 157.9H124.8V175.2H104.8Z" fill="#9a4a1f"/>
+    <path fill-rule="evenodd" d="M123.60000000000001 146.0a12.3 12.3 0 1 0 24.6 0a12.3 12.3 0 1 0 -24.6 0zM128.0 146.0a7.9 7.9 0 1 1 15.8 0a7.9 7.9 0 1 1 -15.8 0z" fill="#9a4a1f"/>
+    <path d="M147.3 172.0 200.2 135.7 224.1 187.5 191.0 214.7Z" fill="#1f4fa3"/></g>`
+},
 { id:'beach', title:'Beach', sub:'White lightens. Black darkens.', budget:16, intro:'pick',
-  tip:{title:'Light and dark',text:'All five paints are open now. Add <b>White</b> to make a color lighter and <b>Black</b> to make it darker.'},
+  tip:{title:'All five paints',text:'All five paints are open now. Mix a color, then add <b>White</b> to make it lighter or <b>Black</b> to make it darker.'},
   regions:[
     {id:'sun',name:'Sun',recipe:{Y:1},svg:'<circle cx="62" cy="46" r="22"/>'},
     {id:'sea',name:'Sea',recipe:{C:1},svg:'<path d="M0 118H320V168Q240 158 160 166T0 160Z"/>'},

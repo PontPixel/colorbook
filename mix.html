@@ -21,43 +21,54 @@ body{margin:0;background:var(--bg);color:var(--ink);font:600 15px/1.35 "Manrope"
   -webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 button{font:inherit;color:inherit}
 .app{max-width:560px;min-height:100%;margin:0 auto;display:flex;flex-direction:column;
-  padding:calc(12px + env(safe-area-inset-top)) 16px calc(10px + env(safe-area-inset-bottom))}
+  padding:calc(10px + env(safe-area-inset-top)) 16px calc(10px + env(safe-area-inset-bottom))}
 
-/* header */
-header{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
-.lvname{font-size:13px;color:var(--muted);letter-spacing:.3px}
-h1{margin:0;font:800 20px/1.2 "Manrope",system-ui,sans-serif}
+/* top bar: levels, level pot, life drops, coins */
+.topbar{display:flex;align-items:center;gap:10px}
+.iconbtn{appearance:none;border:0;background:var(--panel);box-shadow:var(--shadow);width:40px;height:40px;border-radius:50%;display:grid;place-items:center;cursor:pointer;flex:none}
+.pot{flex:1;display:flex;align-items:center;gap:8px;font-size:13px;font-variant-numeric:tabular-nums;min-width:0}
+.pot .bar{flex:1;height:6px;border-radius:9px;background:var(--track);overflow:hidden}
+.pot .bar i{display:block;height:100%;background:var(--ink);border-radius:9px;transition:width .2s}
+.pot.life .bar i{background:var(--muted)}
+.pill{display:flex;align-items:center;gap:6px;background:var(--panel);box-shadow:var(--shadow);border-radius:99px;padding:6px 11px;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill.bump{animation:bump .4s}
+@keyframes bump{40%{transform:scale(1.15)}}
+.dropico{display:inline-block;width:10px;height:10px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--ink);flex:none;margin:0 1px}
+.coin{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--panel);box-shadow:inset 0 0 0 2.5px var(--ink);flex:none}
+.ico{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+header{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;margin-top:10px}
+h1{margin:0;font:800 19px/1.2 "Manrope",system-ui,sans-serif}
 .dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
 .dots i{width:8px;height:8px;border-radius:50%;background:var(--track)}
 .dots i.done{background:var(--ink)}
-.dots i.skip{background:var(--muted)}
 .dots i.cur{background:var(--panel);box-shadow:inset 0 0 0 2px var(--ink)}
 
-/* circle */
-.stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:12px 0}
-.well{--d:min(46vh,86vw,440px);width:var(--d);height:var(--d);border-radius:50%;position:relative;
+/* circle with the target dot up-left */
+.stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px 0}
+.well{--d:min(42vh,84vw,420px);width:var(--d);height:var(--d);border-radius:50%;position:relative;
   background:#fff;box-shadow:0 0 0 1px var(--line),var(--shadow);transition:background-color .12s}
-.dot{position:absolute;left:50%;top:50%;width:38.73%;height:38.73%;border-radius:50%;transform:translate(-50%,-50%)}
-.well.win .dot{animation:pulse .9s ease-out}
-.well.win{animation:ring 1.2s ease-out}
-@keyframes pulse{0%{transform:translate(-50%,-50%) scale(1)}40%{transform:translate(-50%,-50%) scale(1.1)}100%{transform:translate(-50%,-50%) scale(1)}}
-@keyframes ring{0%{box-shadow:0 0 0 1px var(--line),0 0 0 0 rgba(42,44,48,.35)}100%{box-shadow:0 0 0 1px var(--line),0 0 0 24px rgba(42,44,48,0)}}
-.paused{position:absolute;inset:0;border-radius:50%;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:14px;text-align:center;padding:0 18%}
-.paused b{font-size:20px;color:var(--ink)}
-.acc{width:min(var(--d,360px),320px);display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
-.acc .bar{flex:1;height:4px;border-radius:9px;background:var(--track);overflow:hidden}
-.acc .bar i{display:block;height:100%;width:0;background:var(--ink);border-radius:9px;transition:width .15s}
-.acc b{color:var(--ink);min-width:38px;text-align:right}
-
 .well.empty{background:var(--bg);box-shadow:inset 0 0 0 2px var(--line)}
 .well.dropping{box-shadow:0 0 0 3px var(--ink),var(--shadow)}
-.emptyhint{position:absolute;left:0;right:0;bottom:13%;text-align:center;font-size:13px;color:var(--muted);pointer-events:none}
-.sw{display:inline-block;width:16px;height:16px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
-
-/* drops in the bowl: tap one to take it out */
-.drops{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;min-height:20px;max-width:min(var(--d,360px),340px)}
-.drops button{appearance:none;border:0;padding:0;width:16px;height:16px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);cursor:pointer}
-.drops button:hover{outline:2px solid var(--ink);outline-offset:2px}
+.dot{position:absolute;left:37%;top:37%;width:32.4%;height:32.4%;border-radius:50%;transform:translate(-50%,-50%)}
+.well.win .dot{animation:pulse .9s ease-out}
+.well.win{animation:ring 1.2s ease-out}
+@keyframes pulse{0%{transform:translate(-50%,-50%) scale(1)}40%{transform:translate(-50%,-50%) scale(1.12)}100%{transform:translate(-50%,-50%) scale(1)}}
+@keyframes ring{0%{box-shadow:0 0 0 1px var(--line),0 0 0 0 rgba(42,44,48,.35)}100%{box-shadow:0 0 0 1px var(--line),0 0 0 24px rgba(42,44,48,0)}}
+.emptyhint{position:absolute;left:0;right:0;bottom:16%;text-align:center;font-size:13px;color:var(--muted);pointer-events:none}
+.paused{position:absolute;inset:0;border-radius:50%;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:14px;text-align:center;padding:0 18%}
+.paused b{font-size:20px;color:var(--ink)}
+.meterrow{width:min(var(--d,360px),340px);display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.meterrow .bar{flex:1;height:4px;border-radius:9px;background:var(--track);overflow:hidden}
+.meterrow .bar i{display:block;height:100%;width:0;background:var(--ink);border-radius:9px;transition:width .15s}
+.meterrow b{color:var(--ink);min-width:36px;text-align:right}
+.timer{appearance:none;border:0;background:var(--panel);box-shadow:var(--shadow);border-radius:99px;padding:5px 10px 5px 8px;display:flex;align-items:center;gap:5px;font-size:13px;font-weight:800;cursor:pointer;font-variant-numeric:tabular-nums}
+.timer .ico{width:16px;height:16px}
+.timer.on{background:var(--ink);color:#fff}
+.drops{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;min-height:18px;max-width:min(var(--d,360px),340px)}
+.drops span{width:16px;height:16px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
+.drops.picking span{cursor:pointer;animation:wig .5s ease-in-out infinite;outline:2px dashed var(--ink);outline-offset:2px}
+@keyframes wig{50%{transform:rotate(-45deg) scale(1.2)}}
 
 /* paints */
 .paints{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;background:var(--panel);border-radius:18px;padding:12px 14px;box-shadow:var(--shadow)}
@@ -66,24 +77,28 @@ h1{margin:0;font:800 20px/1.2 "Manrope",system-ui,sans-serif}
 .paint:active .blob{transform:scale(.9)}
 .paint.hinted .blob{box-shadow:inset 0 0 0 1px rgba(0,0,0,.1),0 0 0 3px var(--panel),0 0 0 5px var(--ink)}
 .paint:focus-visible .blob{outline:2px solid var(--ink);outline-offset:3px}
-.paint:disabled{opacity:.4;cursor:default}
 .ghost{position:fixed;left:0;top:0;width:48px;height:48px;border-radius:50%;pointer-events:none;z-index:8;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1),0 10px 24px rgba(20,24,40,.2)}
 
-/* buttons */
-.bar5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
-.btn{appearance:none;border:0;background:var(--panel);box-shadow:var(--shadow);border-radius:16px;min-height:62px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-size:12px;color:var(--ink);position:relative}
-.btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.btn:active{transform:scale(.96)}
-.btn:disabled{opacity:.4;cursor:default}
-.btn.timer{font-variant-numeric:tabular-nums}
-.btn.timer b{font-size:15px}
-.btn.timer.pausedb{background:var(--ink);color:var(--panel)}
-.btn .badge{position:absolute;top:6px;right:8px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--ink);color:var(--panel);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+/* boosters: same row as the main game */
+.boosters{display:flex;justify-content:space-around;padding-top:14px}
+.boost{appearance:none;border:0;background:none;padding:0;flex:0 0 68px;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12px;cursor:pointer;position:relative;color:var(--ink)}
+.boost .ico{width:48px;height:48px;padding:13px;border-radius:50%;background:var(--panel);box-shadow:0 0 0 1px var(--line),var(--shadow);transition:transform .1s}
+.boost:active .ico{transform:scale(.92)}
+.boost.on .ico{background:var(--ink);color:#fff}
+.boost:disabled{opacity:.4;cursor:default}
+.boost.locked{color:var(--muted)}
+.boost.locked .ico{background:var(--panel2);box-shadow:0 0 0 1px var(--line)}
+.badge{position:absolute;top:-5px;left:calc(50% + 10px);background:var(--ink);color:#fff;border:2px solid var(--bg);border-radius:99px;padding:0 6px;font-size:11px;line-height:16px;font-weight:800;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.badge.buy{background:var(--panel);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.badge .coin{width:9px;height:9px;box-shadow:inset 0 0 0 2px var(--ink)}
 
 /* toast */
-.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translate(-50%,-160%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-size:15px;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,.18);transition:transform .25s;z-index:30;max-width:calc(100vw - 32px);display:flex;align-items:center;gap:8px}
+.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translate(-50%,-160%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-size:14px;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,.18);transition:transform .25s;z-index:30;max-width:calc(100vw - 32px);display:flex;align-items:center;gap:8px;text-align:center}
 .toast.show{transform:translate(-50%,0)}
+.sw{display:inline-block;width:16px;height:16px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
 .toast .sw{box-shadow:0 0 0 1px rgba(255,255,255,.5)}
+.toast .dropico,.toast .coin{background:#fff}
+.toast .coin{box-shadow:inset 0 0 0 2.5px var(--ink);outline:1px solid #fff}
 
 /* overlays */
 .overlay{position:fixed;inset:0;background:rgba(40,40,45,.25);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
@@ -91,19 +106,28 @@ h1{margin:0;font:800 20px/1.2 "Manrope",system-ui,sans-serif}
 .card{width:100%;max-width:420px;background:var(--panel);border-radius:22px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.15);display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 32px);overflow:auto}
 .card h2{margin:0;font:800 22px/1.2 "Manrope",system-ui,sans-serif}
 .card p{margin:0;color:var(--muted);font-size:14px}
+.card p b{color:var(--ink)}
 .stars{color:var(--ink);font-size:24px;letter-spacing:4px}
 .stars .off{color:var(--track)}
 .recipe{display:flex;flex-wrap:wrap;gap:6px}
 .chip{display:flex;align-items:center;gap:6px;background:var(--panel2);border-radius:99px;padding:5px 10px 5px 6px;font-size:13px;font-variant-numeric:tabular-nums}
 .pair{display:flex;align-items:center;gap:12px}
 .pair .big{width:56px;height:56px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.reward{display:flex;flex-wrap:wrap;gap:6px}
+.reward span{display:flex;align-items:center;gap:6px;background:var(--panel2);border-radius:99px;padding:6px 12px;font-size:13px;font-weight:800}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
 .stats div{background:var(--panel2);border-radius:14px;padding:10px 4px;font-size:12px;color:var(--muted)}
 .stats b{display:block;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
-.actions{display:flex;gap:8px}
-.primary,.secondary{appearance:none;border:0;border-radius:14px;min-height:48px;padding:0 16px;font-weight:800;font-size:15px;cursor:pointer;flex:1}
+.booster{background:var(--panel2);border-radius:14px;padding:10px 12px;font-size:14px;display:flex;gap:10px;align-items:flex-start;color:var(--muted)}
+.booster b{color:var(--ink)}
+.acts{display:flex;gap:8px}
+.col{display:flex;flex-direction:column;gap:8px}
+.primary,.secondary{appearance:none;border:0;border-radius:14px;min-height:48px;padding:0 16px;font-weight:800;font-size:15px;cursor:pointer;flex:1;display:flex;align-items:center;justify-content:center;gap:6px}
 .primary{background:var(--ink);color:#fff}
+.primary .coin{background:var(--ink);box-shadow:inset 0 0 0 2.5px #fff}
+.primary .dropico{background:#fff}
 .secondary{background:var(--panel2);color:var(--ink)}
+.primary:disabled,.secondary:disabled{opacity:.4;cursor:default}
 .lvlist{display:flex;flex-direction:column;gap:6px}
 .lv{appearance:none;border:0;background:var(--panel2);border-radius:14px;padding:10px 12px;display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;text-align:left;cursor:pointer}
 .lv:disabled{opacity:.45;cursor:default}
@@ -113,14 +137,20 @@ h1{margin:0;font:800 20px/1.2 "Manrope",system-ui,sans-serif}
 .lv .t small{display:block;color:var(--muted);font-weight:600;font-size:12px}
 .lv .r{text-align:right;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .lv .r b{display:block;color:var(--ink);font-size:13px}
+.adbox{height:140px;border-radius:14px;background:var(--panel2);display:grid;place-items:center;color:var(--muted);font-size:14px;text-align:center}
 
-@media (max-height:700px){ .well{--d:min(38vh,86vw)} .paint .blob{max-width:44px} .btn{min-height:54px} }
+@media (max-height:720px){ .well{--d:min(36vh,84vw)} .paint .blob{max-width:44px} .boost .ico{width:42px;height:42px;padding:10px} .boosters{padding-top:10px} }
 </style>
 </head>
 <body>
 <div class="app">
+  <div class="topbar">
+    <button class="iconbtn" id="bMenu" aria-label="Уровни"><svg class="ico" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg></button>
+    <div class="pot" id="pot" title="Капли уровня"><div class="bar"><i id="potFill"></i></div><span id="potVal">0</span></div>
+    <div class="pill" id="lifePill" title="Запас капель"><span class="dropico"></span><span id="lifeVal">0</span></div>
+    <div class="pill" id="coinPill" title="Монеты"><span class="coin"></span><span id="coinVal">0</span></div>
+  </div>
   <header>
-    <div class="lvname" id="lvName"></div>
     <h1 id="lvTitle"></h1>
     <div class="dots" id="dots"></div>
   </header>
@@ -131,19 +161,15 @@ h1{margin:0;font:800 20px/1.2 "Manrope",system-ui,sans-serif}
       <div class="emptyhint" id="emptyHint">Нажмите на краску</div>
       <div class="paused" id="paused" hidden><b>Пауза</b>Нажмите на таймер, чтобы продолжить</div>
     </div>
-    <div class="acc"><span>Точность</span><div class="bar"><i id="accBar"></i></div><b id="accVal">—</b></div>
+    <div class="meterrow">
+      <button class="timer" id="bTimer" aria-label="Таймер, нажмите для паузы"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg><span id="timeVal">0:00</span></button>
+      <span>Точность</span><div class="bar"><i id="accBar"></i></div><b id="accVal">—</b>
+    </div>
     <div class="drops" id="drops"></div>
   </section>
 
   <section class="paints" id="paints"></section>
-
-  <nav class="bar5">
-    <button class="btn" id="bMenu" aria-label="Уровни"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Уровни</button>
-    <button class="btn" id="bReset"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg>Сброс</button>
-    <button class="btn" id="bHint"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg>Подсказка<span class="badge" id="hintBadge" hidden></span></button>
-    <button class="btn timer" id="bTimer" aria-label="Таймер, нажмите для паузы"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg><b id="timeVal">0:00</b></button>
-    <button class="btn" id="bSkip"><svg viewBox="0 0 24 24"><path d="M5 5l9 7-9 7z"/><path d="M18 5v14"/></svg>Пропустить</button>
-  </nav>
+  <div class="boosters" id="boosters"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -181,6 +207,28 @@ const WIN=96;               // match % needed to solve a task
 const BOWL=12;              // max drops in the bowl; every recipe fits
 const sum=r=>PK.reduce((s,k)=>s+(r[k]||0),0);
 const shares=r=>{const t=sum(r);return Object.fromEntries(PK.map(k=>[k,t?(r[k]||0)/t:0]));};
+
+// ---------- Economy ----------
+// Drops are life. Each level has its own pot of drops (BUDGET_K × the recipes' total). When the pot runs dry,
+// drops come out of the player's life reserve, which refills by one every LIFE_REGEN seconds up to LIFE_MAX.
+// Drops left in the pot at the end of a level go back into the reserve. Coins come from stars and speed.
+const LIFE_MAX=30, LIFE_REGEN=90, BUDGET_K=1.5;
+const COINS_PER_STAR=3, FAST_SEC=30, FAST_BONUS=2, FIRST_CLEAR_BONUS=20, REPLAY_BONUS=5, START_COINS=50;
+const LIFE_PACK={drops:15,price:30}, AD_DROPS=10;
+const FREE_BOOSTERS=3;
+const BOOSTERS={
+  empty:{name:'Вылить',price:15,at:0,text:'Выливает всю миску и возвращает капли.'},
+  undo:{name:'Отменить',price:20,at:0,text:'Убирает последнюю каплю и возвращает её.'},
+  pick:{name:'Пипетка',price:30,at:1,text:'Нажмите её, затем любую каплю под кругом: эта капля уберётся и вернётся.'},
+  hint:{name:'Подсказка',price:40,at:2,text:'Подсказывает следующий шаг. За цвет с подсказкой не больше 2★.'}};
+const ICONS={
+  empty:'<path d="M4 10h15a7.5 6.5 0 0 1-15 0Z"/><path d="M6.5 6.5 4.5 4"/><circle cx="3" cy="13.5" r="1.1"/>',
+  undo:'<path d="M9 5 4 10l5 5"/><path d="M4 10h10a5 5 0 0 1 0 10h-3"/>',
+  pick:'<path d="m14.5 3.5 6 6-2.5 2.5-6-6z"/><path d="m13 8-8.5 8.5V20h3.5l8.5-8.5"/>',
+  hint:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3Z"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'};
+const icon=k=>`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
+const COIN='<span class="coin"></span>', DROP='<span class="dropico"></span>';
 
 // ---------- Levels ----------
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
@@ -222,166 +270,285 @@ function genMixed(lvl){
   }
   return out; // simple first, complex last: difficulty rises inside the level
 }
-// Descriptions name the idea of the level, never the proportions: those are the puzzle.
+const plural=(n,f)=>f[n%10===1&&n%100!==11?0:n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?1:2];
+const colorsLabel=n=>`${n} ${plural(n,['цвет','цвета','цветов'])}`;
+// Level texts name the idea of the level, never the proportions: those are the puzzle.
 const MIXED_NAMES=['Разминка','Тонкие оттенки','Приглушённые тона','Сложные смеси','Четыре краски','Палитра художника','Пять красок','Мастер'];
 const LEVELS=[
-  {title:'Осветление и затемнение',sub:'Светлее и темнее',
+  {title:'Осветление и затемнение',n:7,
    text:'Работаем только со светлотой: цвет светлеет с белым и темнеет с чёрным.',
    make:()=>shuffle([...CMY.flatMap(k=>[rec([k,'W'],[1,1]),rec([k,'K'],[1,1])]),rec(['W','K'],[1,1])])},
-  {title:'Чистые смеси',sub:'Два основных цвета',
+  {title:'Чистые смеси',n:3,
    text:'Смешиваем два чистых пигмента: рождаются цвета второго порядка.',
    make:()=>shuffle(combos(CMY,2).map(ks=>rec(ks,[1,1])))},
-  {title:'Смещение доминанты',sub:'Два основных цвета, один ведёт',
+  {title:'Смещение доминанты',n:6,
    text:'Цвета третьего порядка: оттенок сдвигается в сторону одного из родителей.',
    make:()=>shuffle(CMY.flatMap(a=>CMY.filter(b=>b!==a).map(b=>rec([a,b],[2,1]))))},
-  {title:'Три краски',sub:'Смеси из трёх красок',
+  {title:'Три краски',n:10,
    text:'Каждый цвет собран из трёх красок.',
    make:()=>shuffle(combos(PK,3).map(ks=>rec(ks,[1,1,1])))},
-  ...MIXED_NAMES.map((title,i)=>{const lvl=i+5,cx=Math.min(7,lvl-4);return {title,
-    sub:`Простых: ${7-cx} · сложных: ${cx}`,
-    text:cx<7?'Семь цветов: сначала простые смеси, в конце сложные.':'Семь сложных смесей.',
-    make:()=>genMixed(lvl)};})
+  ...MIXED_NAMES.map((title,i)=>({title,n:7,
+    text:i<7?'Сначала простые смеси, в конце сложные.':'Только сложные смеси.',
+    make:()=>genMixed(i+5)}))
 ];
 
 // ---------- Save ----------
 const SAVE_KEY='colorfindMix';
-let save={best:{}};
+let save={best:{},coins:START_COINS,inv:{},life:LIFE_MAX,lifeT:Date.now()};
 try{save=Object.assign(save,JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'));}catch(e){}
+save.inv=save.inv||{};
 const persist=()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}};
 const unlocked=i=>i===0||!!save.best[i-1]||!!save.best[i];
+// Refill the life reserve for the time that has passed (also while the game was closed).
+function syncLife(){
+  const now=Date.now();
+  if(save.life>=LIFE_MAX){save.lifeT=now;return;}
+  const n=Math.floor((now-save.lifeT)/1000/LIFE_REGEN);
+  if(n>0){save.life=Math.min(LIFE_MAX,save.life+n); save.lifeT=save.life>=LIFE_MAX?now:save.lifeT+n*LIFE_REGEN*1000; persist(); renderWallet();}
+}
+const nextLifeIn=()=>Math.max(0,LIFE_REGEN-Math.floor((Date.now()-save.lifeT)/1000));
 
 // ---------- State ----------
 const $=id=>document.getElementById(id);
 let L=0, tasks=[], ti=0, results=[], task=null;
-let drops=[];                 // paint keys in the order they were added
-let elapsed=0, lastTick=0, running=false, paused=false, solved=false;
-const counts=()=>{const c={};drops.forEach(k=>c[k]=(c[k]||0)+1);return c;};
-const recipeSize=r=>sum(r);
+let drops=[];                 // {k, life} in the order added; life = the drop came from the reserve
+let pot=0, budget=0, potWarned=false;
+let elapsed=0, lastTick=0, running=false, paused=false, solved=false, picking=false, hintShown=false;
+const counts=()=>{const c={};drops.forEach(d=>c[d.k]=(c[d.k]||0)+1);return c;};
 
-// ---------- UI build ----------
+// ---------- UI ----------
 const swatch=k=>`<span class="sw" style="background:${hex(PMAP[k].rgb)}"></span>`;
 $('paints').innerHTML=PAINTS.map(p=>`<button class="paint" data-k="${p.k}" aria-label="Добавить: ${p.name}"><span class="blob" style="background:${hex(p.rgb)}"></span></button>`).join('');
-const paintBtn=k=>$('paints').querySelector(`[data-k="${k}"]`);
-
+$('boosters').innerHTML=Object.keys(BOOSTERS).map(b=>`<button class="boost" id="b_${b}"></button>`).join('');
 const fmtTime=s=>{s=Math.floor(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
-const pct=x=>Math.round(x*100)+'%';
 let toastT;
 function toast(html){const t=$('toast');t.innerHTML=html;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
+function bump(id){const e=$(id);e.classList.remove('bump');void e.offsetWidth;e.classList.add('bump');}
 
+function renderWallet(){
+  $('coinVal').textContent=save.coins; $('lifeVal').textContent=save.life;
+  $('potVal').textContent=pot;
+  $('potFill').style.width=(budget?Math.min(100,pot/budget*100):0)+'%';
+  $('pot').classList.toggle('life',pot<=0);
+  $('pot').title=pot>0?'Капли уровня':'Капли уровня закончились: тратится запас';
+}
+function addCoins(n){save.coins+=n; persist(); renderWallet(); if(n) bump('coinPill');}
 function update(){
   const m=mix(counts()), well=$('well');
+  if(!drops.length) picking=false;
   well.classList.toggle('empty',!m); well.style.backgroundColor=m?hex(m):'';
   $('emptyHint').hidden=!!m;
-  $('drops').innerHTML=drops.length
-    ?drops.map((k,i)=>`<button data-i="${i}" aria-label="Убрать: ${PMAP[k].name}" style="background:${hex(PMAP[k].rgb)}"></button>`).join('')
-    :'';
+  $('drops').classList.toggle('picking',picking);
+  $('drops').innerHTML=drops.map((d,i)=>`<span data-i="${i}" title="${PMAP[d.k].name}" style="background:${hex(PMAP[d.k].rgb)}"></span>`).join('');
   const p=m?matchPct(m,task.target):0;
   $('accVal').textContent=m?p+'%':'—';
   $('accBar').style.width=p+'%';
+  renderBoosters(); renderWallet();
 }
 function renderDots(){
-  $('dots').innerHTML=tasks.map((_,i)=>`<i class="${i===ti&&!solved?'cur':results[i]?(results[i].skipped?'skip':'done'):''}"></i>`).join('');
+  $('dots').innerHTML=tasks.map((_,i)=>`<i class="${i===ti&&!solved?'cur':results[i]?'done':''}"></i>`).join('');
 }
-function showHintMark(k){
-  $('paints').querySelectorAll('.paint').forEach(b=>b.classList.toggle('hinted',b.dataset.k===k));
-  $('hintBadge').hidden=!task.hints; $('hintBadge').textContent=task.hints;
+function renderBoosters(){
+  for(const b in BOOSTERS){
+    const B=BOOSTERS[b], btn=$('b_'+b), n=save.inv[b], locked=n==null;
+    btn.classList.toggle('locked',locked); btn.classList.toggle('on',b==='pick'&&picking);
+    btn.innerHTML=icon(locked?'lock':b)+`<span>${locked?'Ур. '+(B.at+1):B.name}</span>`
+      +(locked?'':`<span class="badge${n?'':' buy'}">${n?n:B.price+COIN}</span>`);
+    btn.setAttribute('aria-label',locked?`${B.name}: откроется на уровне ${B.at+1}`:`${B.name}: ${n?'осталось '+n:B.price+' монет'}`);
+    btn.disabled=!locked&&(solved||paused||(b==='hint'?hintShown:!drops.length));
+  }
 }
+function markPaint(k){$('paints').querySelectorAll('.paint').forEach(b=>b.classList.toggle('hinted',b.dataset.k===k));}
 
-// ---------- Timer ----------
+// ---------- Timer (stops while any card is open or the game is paused) ----------
 function tick(now){
-  if(running&&!paused){elapsed+=(now-lastTick)/1000;$('timeVal').textContent=fmtTime(elapsed);}
+  if(running&&!paused&&$('ov').hidden){elapsed+=(now-lastTick)/1000;$('timeVal').textContent=fmtTime(elapsed);}
   lastTick=now; requestAnimationFrame(tick);
 }
 requestAnimationFrame(t=>{lastTick=t;tick(t);});
+setInterval(()=>{syncLife(); const w=$('lifeWait'); if(w) w.textContent=fmtTime(nextLifeIn()); const c=$('lifeGo'); if(c) c.disabled=save.life<=0;},1000);
 function setPaused(p){
-  if(!running&&p) return;
-  paused=p; $('paused').hidden=!p; $('bTimer').classList.toggle('pausedb',p);
+  if(solved||(!running&&p)) return;
+  paused=p; $('paused').hidden=!p; $('bTimer').classList.toggle('on',p);
   $('dot').style.visibility=p?'hidden':'';
   $('paints').querySelectorAll('.paint').forEach(b=>b.disabled=p);
-  ['bReset','bHint','bSkip'].forEach(id=>$(id).disabled=p);
+  renderBoosters();
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!solved) setPaused(true);});
 
 // ---------- Flow ----------
 function startLevel(i){
   L=i; tasks=LEVELS[i].make(); ti=0; results=[];
-  $('lvName').textContent=`Уровень ${i+1} из ${LEVELS.length}`;
-  $('lvTitle').textContent=LEVELS[i].title;
+  budget=pot=Math.ceil(BUDGET_K*tasks.reduce((s,r)=>s+sum(r),0)); potWarned=false;
+  $('lvTitle').textContent=`${i+1}. ${LEVELS[i].title}`;
+  // Boosters unlock on their level with a few free ones, like in the main game.
+  const fresh=Object.keys(BOOSTERS).filter(b=>BOOSTERS[b].at<=i&&save.inv[b]==null);
+  fresh.forEach(b=>save.inv[b]=FREE_BOOSTERS); if(fresh.length) persist();
   loadTask();
   showCard(`<h2>Уровень ${i+1}: ${LEVELS[i].title}</h2><p>${LEVELS[i].text}</p>
-    <p>Нажимайте на краски внизу: каждое нажатие добавляет одну каплю. Лишнюю каплю под кругом можно убрать нажатием. Смешайте цвет точки в центре круга. Цветов в уровне: ${tasks.length}.</p>
-    <div class="actions"><button class="primary" data-a="go">Начать</button></div>`,false,{go:()=>{closeCard();running=true;}});
+    <p>Нажимайте на краски: каждое нажатие добавляет одну каплю. Смешайте цвет маленького круга. На уровень <b>${budget} капель</b>; когда они закончатся, капли пойдут из вашего запаса.</p>
+    ${fresh.map(b=>`<div class="booster">${icon(b)}<div><b>${BOOSTERS[b].name}</b>: ${BOOSTERS[b].text} ${FREE_BOOSTERS} бесплатно, дальше ${BOOSTERS[b].price} ${COIN}</div></div>`).join('')}
+    <div class="acts"><button class="primary" data-a="go">Начать</button></div>`,false,{go:()=>{closeCard();running=true;}});
 }
 function loadTask(){
-  const r=tasks[ti]; task={recipe:r,target:mix(r),hints:0,used:0};
-  drops=[];
+  const r=tasks[ti]; task={recipe:r,target:mix(r),used:0,hinted:false};
+  drops=[]; picking=false; hintShown=false;
   $('dot').style.background=hex(task.target);
   elapsed=0; $('timeVal').textContent='0:00'; solved=false; running=false;
   $('well').classList.remove('win');
-  setPaused(false); showHintMark(null); renderDots(); update();
+  setPaused(false); markPaint(null); renderDots(); update();
 }
 function addDrop(k){
   if(solved||paused||!running) return false;
-  if(drops.length>=BOWL){toast('Миска полна: уберите капли или нажмите «Сброс»');return false;}
-  drops.push(k); task.used++; showHintMark(null); update();
-  if(matchPct(mix(counts()),task.target)>=WIN) finishTask(false);
+  if(drops.length>=BOWL){toast('Миска полна: уберите капли или вылейте миску');return false;}
+  let life=false;
+  if(pot>0) pot--;
+  else{
+    syncLife();
+    if(save.life<=0){outOfDrops();return false;}
+    save.life--; life=true; persist(); bump('lifePill');
+    if(!potWarned){potWarned=true;toast(`Капли уровня закончились: теперь тратится запас ${DROP}`);}
+  }
+  drops.push({k,life}); task.used++; picking=false; hintShown=false; markPaint(null); update();
+  if(matchPct(mix(counts()),task.target)>=WIN) finishTask();
   return true;
 }
+function refund(d){ if(d.life){save.life++;persist();} else pot++; }
 function recipeHTML(r){
   return '<div class="recipe">'+PK.filter(k=>r[k]).map(k=>`<span class="chip">${swatch(k)}× ${r[k]}</span>`).join('')+'</div>';
 }
 const starsHTML=n=>'<div class="stars">'+[0,1,2].map(i=>i<n?'★':'<span class="off">★</span>').join('')+'</div>';
-// Like the main game: 3★ within the recipe size, 2★ within +2 drops, else 1★; any hint caps at 2★.
+// As in the main game: 3★ within the recipe size, 2★ within +2 drops, else 1★; a hint caps it at 2★.
 function starsFor(){
-  const n=recipeSize(task.recipe), s=task.used<=n?3:task.used<=n+2?2:1;
-  return task.hints?Math.min(2,s):s;
+  const n=sum(task.recipe), s=task.used<=n?3:task.used<=n+2?2:1;
+  return task.hinted?Math.min(2,s):s;
 }
-function finishTask(skipped){
-  solved=true; running=false; showHintMark(null);
-  const stars=skipped?0:starsFor(), m=skipped?0:matchPct(mix(counts()),task.target);
-  results[ti]={stars,time:elapsed,skipped};
-  if(skipped){ drops=PK.flatMap(k=>Array(task.recipe[k]||0).fill(k)); update(); }  // show the answer in the bowl
-  else $('well').classList.add('win');
-  renderDots();
+function finishTask(){
+  solved=true; running=false; picking=false; markPaint(null);
+  const stars=starsFor(), m=matchPct(mix(counts()),task.target);
+  const fast=elapsed<FAST_SEC&&!task.hinted, coins=stars*COINS_PER_STAR+(fast?FAST_BONUS:0);
+  results[ti]={stars,time:elapsed,coins}; addCoins(coins);
+  $('well').classList.add('win'); renderDots(); update();
   const last=ti===tasks.length-1;
   setTimeout(()=>showCard(`
     <div class="pair"><div class="big" style="background:${hex(task.target)}"></div>
-      <div><h2>${skipped?'Ответ':'Совпадение '+m+'%'}</h2>${skipped?'<p>Задание пропущено</p>':starsHTML(stars)}</div></div>
+      <div><h2>Совпадение ${m}%</h2>${starsHTML(stars)}</div></div>
     ${recipeHTML(task.recipe)}
-    <p>Время: ${fmtTime(elapsed)}${skipped?'':` · капель: ${task.used} (минимум ${recipeSize(task.recipe)})`}${task.hints?` · подсказок: ${task.hints}`:''}</p>
-    <div class="actions"><button class="primary" data-a="next">${last?'Итоги уровня':'Дальше'}</button></div>`,true,
-    {next:()=>{closeCard(); if(last) finishLevel(); else {ti++;loadTask();running=true;}}}),skipped?150:650);
+    <p>Время ${fmtTime(elapsed)} · капель ${task.used} (минимум ${sum(task.recipe)})</p>
+    <div class="reward"><span>+${coins} ${COIN}</span>${fast?`<span>быстро: +${FAST_BONUS}</span>`:''}</div>
+    <div class="acts"><button class="primary" data-a="next">${last?'Итоги уровня':'Дальше'}</button></div>`,true,
+    {next:()=>{closeCard(); if(last) finishLevel(); else {ti++;loadTask();running=true;}}}),650);
 }
 function finishLevel(){
   const stars=results.reduce((s,r)=>s+r.stars,0), max=tasks.length*3, time=results.reduce((s,r)=>s+r.time,0);
-  const prev=save.best[L];
-  save.best[L]={stars:Math.max(stars,prev?.stars||0),time:Math.min(time,prev?.time??Infinity)}; persist();
+  const prev=save.best[L], bonus=prev?REPLAY_BONUS:FIRST_CLEAR_BONUS;
+  save.best[L]={stars:Math.max(stars,prev?.stars||0),time:Math.min(time,prev?.time??Infinity)};
+  // Leftover level drops go back into the life reserve.
+  syncLife(); const back=Math.max(0,Math.min(pot,LIFE_MAX-save.life)); save.life+=back; pot=0;
+  addCoins(bonus);
   const hasNext=L<LEVELS.length-1;
   showCard(`<h2>Уровень ${L+1} пройден!</h2>
     <div class="stats"><div><b>${stars}/${max}</b>звёзд</div><div><b>${fmtTime(time)}</b>время</div><div><b>${fmtTime(time/tasks.length)}</b>в среднем</div></div>
+    <div class="reward"><span>+${bonus} ${COIN} за уровень</span>${back?`<span>+${back} ${DROP} в запас</span>`:''}</div>
     ${prev?`<p>Рекорд: ${save.best[L].stars}/${max} ★ · ${fmtTime(save.best[L].time)}</p>`:''}
-    <div class="actions"><button class="secondary" data-a="again">Ещё раз</button>${hasNext?'<button class="primary" data-a="next">Следующий</button>':'<button class="primary" data-a="menu">Уровни</button>'}</div>`,false,
+    <div class="acts"><button class="secondary" data-a="again">Ещё раз</button>${hasNext?'<button class="primary" data-a="next">Следующий</button>':'<button class="primary" data-a="menu">Уровни</button>'}</div>`,false,
     {again:()=>startLevel(L),next:()=>startLevel(L+1),menu:showLevels});
 }
+// Pot and reserve are both empty: wait for a refill, watch an ad (stub), or buy drops with coins.
+function outOfDrops(){
+  const canBuy=save.coins>=LIFE_PACK.price;
+  showCard(`<h2>Капли закончились</h2>
+    <p>Капли уровня и запас пусты. Запас пополняется сам: +1 ${DROP} каждые ${LIFE_REGEN} с, до ${LIFE_MAX}.</p>
+    <p>Следующая капля через <b id="lifeWait">${fmtTime(nextLifeIn())}</b></p>
+    <div class="col">
+      <button class="primary" data-a="ad">Посмотреть рекламу: +${AD_DROPS} ${DROP}</button>
+      <button class="secondary" data-a="buy" ${canBuy?'':'disabled'}>Купить ${LIFE_PACK.drops} ${DROP} за ${LIFE_PACK.price} ${COIN}</button>
+      <button class="secondary" id="lifeGo" data-a="close" ${save.life>0?'':'disabled'}>Продолжить</button>
+    </div>`,false,
+    {ad:()=>showAd(()=>{save.life+=AD_DROPS;persist();renderWallet();bump('lifePill');closeCard();toast(`+${AD_DROPS} ${DROP} в запас`);}),
+     buy:()=>{addCoins(-LIFE_PACK.price);save.life+=LIFE_PACK.drops;persist();renderWallet();bump('lifePill');closeCard();},
+     close:closeCard});
+}
+function showAd(done){
+  let s=3;
+  showCard(`<h2>Реклама</h2><div class="adbox">Здесь будет рекламный ролик<br>(демо)<br><b id="adT">${s}</b></div>`,false,{});
+  const t=setInterval(()=>{s--; const e=$('adT'); if(e) e.textContent=s; if(s<=0){clearInterval(t);done();}},1000);
+}
 function showLevels(){
-  const wasRunning=running&&!paused; if(wasRunning) setPaused(true);
   const html=LEVELS.map((lv,i)=>{const b=save.best[i],open=unlocked(i);
-    return `<button class="lv${b?' done':''}" data-lv="${i}" ${open?'':'disabled'}><span class="n">${open?i+1:'🔒'}</span>
-      <span class="t">${lv.title}<small>${lv.sub}</small></span>
-      <span class="r">${b?`<b>★ ${b.stars}</b>${fmtTime(b.time)}`:''}</span></button>`;}).join('');
+    return `<button class="lv${b?' done':''}" data-lv="${i}" ${open?'':'disabled'}><span class="n">${open?i+1:icon('lock')}</span>
+      <span class="t">${lv.title}<small>${colorsLabel(lv.n)}</small></span>
+      <span class="r">${b?`<b>★ ${b.stars}/${lv.n*3}</b>${fmtTime(b.time)}`:''}</span></button>`;}).join('');
   showCard(`<h2>Уровни</h2><div class="lvlist">${html}</div>
-    ${tasks.length?'<div class="actions"><button class="secondary" data-a="close">Продолжить</button></div>':''}`,false,
-    {close:()=>{closeCard(); if(wasRunning) setPaused(false);}});
-  $('card').querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>startLevel(+b.dataset.lv));
+    ${tasks.length?'<div class="acts"><button class="secondary" data-a="close">Продолжить</button></div>':''}`,false,{close:closeCard});
+  $('card').querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{
+    if(+b.dataset.lv!==L&&drops.length+task.used>0&&results.length<tasks.length&&!confirm('Выйти из уровня? Потраченные капли не вернутся.')) return;
+    startLevel(+b.dataset.lv);
+  });
 }
 function showCard(html,low,acts={}){
   $('card').innerHTML=html; $('ov').classList.toggle('low',!!low); $('ov').hidden=false;
   $('card').querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>acts[b.dataset.a]());
-  $('card').querySelector('.primary,.secondary')?.focus();
+  $('card').querySelector('.primary:not(:disabled),.secondary:not(:disabled)')?.focus();
 }
 const closeCard=()=>{$('ov').hidden=true;};
 
+// ---------- Boosters ----------
+const canUse=b=>save.inv[b]>0||save.coins>=BOOSTERS[b].price;
+function spend(b){
+  const B=BOOSTERS[b];
+  if(save.inv[b]>0){save.inv[b]--;persist();}
+  else if(save.coins>=B.price){addCoins(-B.price);toast(`${B.name}: куплено за ${B.price} ${COIN}`);}
+  else{toast(`${B.name} стоит ${B.price} ${COIN}, у вас ${save.coins}`);return false;}
+  renderBoosters(); return true;
+}
+function lockedMsg(b){
+  if(save.inv[b]!=null) return false;
+  toast(`${BOOSTERS[b].name} откроется на уровне ${BOOSTERS[b].at+1}`); return true;
+}
+$('b_empty').onclick=()=>{
+  if(lockedMsg('empty')||!drops.length) return;
+  const n=drops.length, all=drops; drops=[]; hintShown=false; markPaint(null);
+  // As in the main game: with no booster and no coins the bowl is poured out without a refund.
+  if(!canUse('empty')){update();toast(`Миска вылита, ${n} ${plural(n,['капля','капли','капель'])} потеряно`);return;}
+  spend('empty'); all.forEach(refund); update(); toast('Миска вылита, капли вернулись');
+};
+$('b_undo').onclick=()=>{
+  if(lockedMsg('undo')||!drops.length||!spend('undo')) return;
+  refund(drops.pop()); picking=false; hintShown=false; markPaint(null); update();
+};
+$('b_pick').onclick=()=>{
+  if(lockedMsg('pick')) return;
+  if(picking){picking=false;update();return;}
+  if(!drops.length) return;
+  if(!canUse('pick')){spend('pick');return;}
+  picking=true; update(); toast('Нажмите на каплю, которую нужно убрать');
+};
+$('drops').addEventListener('click',e=>{
+  const s=e.target.closest('span[data-i]'); if(!s||!picking||!spend('pick')) return;
+  refund(drops.splice(+s.dataset.i,1)[0]); picking=false; hintShown=false; markPaint(null); update();
+});
+// Hint = only the next useful step, as in the main game: a wrong paint to take out, or the next paint to add.
+function nextHint(){
+  const r=task.recipe, c=counts();
+  const bad=Object.keys(c).find(k=>!r[k]);
+  if(bad) return {k:bad,remove:true};
+  let m=1; for(const k in c) m=Math.max(m,Math.ceil(c[k]/r[k]));
+  if(m*sum(r)>BOWL) return {reset:true};
+  let best=null,d=0; for(const k in r){const def=m*r[k]-(c[k]||0); if(def>d){d=def;best=k;}}
+  return {k:best};
+}
+$('b_hint').onclick=()=>{
+  if(lockedMsg('hint')||solved||!running||hintShown||!spend('hint')) return;
+  const h=nextHint(); task.hinted=true; hintShown=true; renderBoosters();
+  if(h.reset){markPaint(null);toast('Для этой пропорции капель слишком много: вылейте миску');return;}
+  markPaint(h.remove?null:h.k);
+  toast(h.remove?`Уберите ${swatch(h.k)} пипеткой или отменой`:`Добавьте ${swatch(h.k)}`);
+};
+
 // ---------- Input ----------
+$('bMenu').onclick=showLevels;
+$('bTimer').onclick=()=>setPaused(!paused);
 let dragged=false; // set when a press turned into a drag, so the click that follows is ignored
 $('paints').addEventListener('click',e=>{
   const b=e.target.closest('.paint'); if(!b) return;
@@ -417,35 +584,9 @@ $('paints').addEventListener('click',e=>{
   };
   addEventListener('pointerup',end); addEventListener('pointercancel',end);
 })();
-$('drops').addEventListener('click',e=>{
-  const b=e.target.closest('button[data-i]'); if(!b||solved||paused) return;
-  drops.splice(+b.dataset.i,1); showHintMark(null); update();
-});
-
-// ---------- Buttons ----------
-$('bMenu').onclick=showLevels;
-$('bReset').onclick=()=>{if(solved||!drops.length)return;drops=[];showHintMark(null);update();};
-$('bTimer').onclick=()=>{if(!solved) setPaused(!paused);};
-$('bSkip').onclick=()=>{if(!solved&&running) finishTask(true);};
-// Hint = only the next useful step, as in the main game: a wrong paint to take out, or the next paint to add.
-function nextHint(){
-  const r=task.recipe, c=counts();
-  const bad=Object.keys(c).find(k=>!r[k]);
-  if(bad) return {k:bad,remove:true};
-  let m=1; for(const k in c) m=Math.max(m,Math.ceil(c[k]/r[k]));
-  if(m*recipeSize(r)>BOWL) return {reset:true};
-  let best=null,d=0; for(const k in r){const def=m*r[k]-(c[k]||0); if(def>d){d=def;best=k;}}
-  return {k:best};
-}
-$('bHint').onclick=()=>{
-  if(solved||!running) return;
-  const h=nextHint(); task.hints++;
-  if(h.reset){showHintMark(null);toast('Капель слишком много для этой пропорции: начните заново');return;}
-  showHintMark(h.remove?null:h.k);
-  toast(h.remove?`Уберите ${swatch(h.k)}`:`Добавьте ${swatch(h.k)}`);
-};
 
 // Start: continue from the first level not yet cleared.
+syncLife();
 let first=LEVELS.findIndex((_,i)=>!save.best[i]); if(first<0) first=0;
 startLevel(first);
 </script>

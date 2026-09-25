@@ -157,6 +157,54 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 @keyframes cardin{from{transform:translateY(40px) scale(.9);opacity:0}}
 .overlay.low{align-items:flex-end;background:rgba(20,24,40,.12);-webkit-backdrop-filter:none;backdrop-filter:none;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 #fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:6}
+/* ---------- Scenes ---------- */
+.iconbtn{appearance:none;width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;padding:0;box-shadow:0 2px 6px rgba(20,24,40,.06)}
+.iconbtn .ico{width:20px;height:20px}
+.card .row .btn.iconbtn{flex:none;width:48px;height:auto}
+/* Home */
+.home{max-width:520px;margin:0 auto;min-height:calc(100dvh - 44px);display:flex;flex-direction:column;gap:12px;padding-bottom:84px}
+.topbar{display:flex;justify-content:space-between;align-items:center}
+.homeMain{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.homeMain .logo{height:clamp(110px,19dvh,190px);width:auto;mix-blend-mode:multiply;transform:rotate(-4deg);margin-bottom:6px}
+.nextPic{appearance:none;border:0;padding:8px;background:#fff;border-radius:22px;box-shadow:var(--shadow);width:min(100%,340px,calc((100dvh - 470px) * 4 / 3 + 16px));min-width:200px;cursor:pointer}
+.nextPic svg,.gcard svg{display:block;width:100%;height:auto;border-radius:15px;pointer-events:none}
+.nextLabel{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.nextTitle{font:800 28px/1.1 "Inter",system-ui,sans-serif;letter-spacing:-.5px}
+.nextTitle .tstars{color:var(--gold);font-size:.7em;margin-left:6px;letter-spacing:1px}.nextTitle .off{color:var(--line)}
+.btn.play{background:var(--accent);border-color:var(--accent);color:#fff;font-size:20px;padding:16px;width:min(100%,320px);margin-top:8px;box-shadow:0 8px 20px rgba(59,91,219,.35)}
+.home .chbar{max-width:340px}
+.tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:8px;padding:8px 16px calc(8px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-top:1px solid var(--line);z-index:3}
+.tab{appearance:none;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 26px;border-radius:14px;font:600 12px "Inter",system-ui,sans-serif;color:var(--muted);cursor:pointer}
+.tab[aria-current="true"]{color:var(--ink);background:var(--wall)}
+.gallery h2{font:800 24px "Inter",system-ui,sans-serif;margin:6px 0 2px;letter-spacing:-.4px}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.gcard{appearance:none;border:0;background:#fff;border-radius:18px;padding:6px 6px 10px;box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;gap:6px;text-align:left;font:inherit;color:inherit;position:relative}
+.gcard b{font-size:14px;padding:0 4px}.gcard small{padding:0 4px;color:var(--gold);letter-spacing:1px;min-height:16px}.gcard small .off{color:var(--line)}
+.gcard:disabled{cursor:default}.gcard:disabled>svg{opacity:.35;filter:grayscale(1)}
+.gcard .lockico{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:#fff;box-shadow:var(--shadow);color:var(--muted)}
+/* Game: compact bar + compact mixer so it all fits a phone screen */
+#game{gap:10px}
+.gamebar{display:flex;align-items:center;gap:10px}
+.gamebar .paintgauge{flex:1}
+.mixer{padding:12px 12px 12px;gap:10px}
+.swatches{grid-template-columns:1fr minmax(84px,.9fr) 1fr;align-items:start;gap:6px}
+.sw{gap:6px}
+.chip{max-width:78px;border-width:5px}
+.target-name{font-size:14px;line-height:1.2}
+.swatches .meter{display:flex;flex-direction:column;align-items:stretch;gap:5px;padding-top:14px;text-align:center}
+.swatches .meter b{font:800 24px/1 "Inter",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.swatches .meter .bar{flex:none;height:8px}
+.swatches .meter small{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.drops{gap:3px;min-height:14px}.drops span{width:10px;height:10px}.drops em{font-size:12px}
+.msg{font-size:13px;min-height:18px}
+.paints{padding:8px 4px;gap:4px}
+.paint{font-size:11px;gap:4px}
+.paint .blob{max-width:40px}
+.btn.boost .ico{width:40px;height:40px;padding:10px}
+.btn.boost{font-size:11px;gap:3px}
+.actions .btn.primary{margin-bottom:15px;padding:11px 10px}
+.stamp{font-size:26px}
+@media (max-height:700px){.frame{padding:5px;border-radius:18px}.chip{max-width:64px}}
 /* Layout: stacked on phones, side by side on wide landscape screens */
 .board,.stage{display:flex;flex-direction:column;gap:12px}
 @media (min-width:900px) and (orientation:landscape){
@@ -164,7 +212,10 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
   .wrap{max-width:1240px;gap:14px}
   .board{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:24px;align-items:start}
   /* keep the whole picture on screen: 4:3 picture, header + title + level bar + hud take ~250px */
-  .stage{width:100%;max-width:calc((100vh - 265px) * 4 / 3);justify-self:center;min-width:420px}
+  .stage{width:100%;max-width:calc((100vh - 110px) * 4 / 3);justify-self:center;min-width:420px}
+  .chip{max-width:96px}
+  .home{max-width:1000px}
+  .gallery .ggrid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
   .mixer{position:sticky;top:16px}
   /* result card sits over the mixer, so the restored picture stays in view */
   .overlay.low{align-items:center;justify-content:flex-end;padding-right:max(16px,calc((100vw - 1240px) / 2 + 36px))}
@@ -174,34 +225,44 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 </head>
 <body>
 
-<div class="wrap">
-  <header>
-    <div class="brand">
-      <img src="img/logo-card.jpg" alt="" width="20" height="30">
-      <span class="brandname">ColorFind</span>
-    </div>
-    <div class="pill coins" id="coins" title="Coins"><span class="coin"></span><span id="coinCount">0</span></div>
-  </header>
-
-  <div class="titlebar">
-    <h1><span id="levelTitle">Balloons</span><span class="tstars" id="levelStars"></span></h1>
-    <div class="sub" id="levelSub">Tap a faded part, mix its color, paint it back.</div>
+<!-- Home (menu) scene -->
+<main class="home" id="home">
+  <div class="topbar">
+    <div class="pill" id="homeStars">★ 0</div>
+    <div class="pill coins"><span class="coin"></span><span class="coinCount">0</span></div>
   </div>
+  <section class="homeMain" id="homeMain">
+    <img class="logo" src="img/logo-hero.jpg" alt="ColorFind" width="137" height="210">
+    <button class="nextPic" id="nextPic" aria-label="Play next picture"></button>
+    <div class="nextLabel" id="nextLabel">Picture 1</div>
+    <div class="nextTitle" id="nextTitle">Balloons</div>
+    <div class="chbar" id="homeCh" hidden></div>
+    <button class="btn play" id="playBtn">Play</button>
+  </section>
+  <section class="gallery" id="gallery" hidden>
+    <h2>Gallery</h2>
+    <div class="ggrid" id="ggrid"></div>
+  </section>
+  <nav class="tabbar" aria-label="Menu">
+    <button class="tab" data-tab="home" aria-current="true"></button>
+    <button class="tab" data-tab="gallery" aria-current="false"></button>
+  </nav>
+</main>
 
-  <nav class="levels" id="levels" aria-label="Pictures"></nav>
-
-  <div class="board">
-  <div class="stage">
-  <div class="hud">
+<!-- Game scene -->
+<div class="wrap" id="game" hidden>
+  <div class="gamebar">
+    <button class="iconbtn" id="backBtn" aria-label="Back to menu"></button>
     <div class="pill" id="progress">0 / 10</div>
     <div class="paintgauge" title="Paint left for this picture">
-      <span>Paint</span>
       <div class="bar"><i id="paintFill"></i></div>
       <span id="paintLeft">40</span>
     </div>
-    <div class="pill" id="starCount">★ 0</div>
+    <div class="pill coins" id="coins" title="Coins"><span class="coin"></span><span class="coinCount">0</span></div>
   </div>
 
+  <div class="board">
+  <div class="stage">
   <div class="frame">
     <svg class="scene" id="scene" viewBox="0 0 320 240" aria-label="Faded picture"></svg>
     <div class="stamp" id="stamp" hidden>Restored</div>
@@ -213,20 +274,18 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
   <section class="mixer" aria-label="Mixing table">
     <div class="swatches">
       <div class="sw">
-        <div class="lab">Target</div>
         <div class="chip" id="targetChip"></div>
         <div class="target-name" id="targetName">Sun</div>
       </div>
-      <div class="eq">→</div>
+      <div class="meter">
+        <b id="pct">0%</b>
+        <div class="bar"><i id="barFill"></i></div>
+        <small>match</small>
+      </div>
       <div class="sw">
-        <div class="lab">Your mix</div>
         <div class="chip empty" id="mixChip"></div>
         <div class="drops" id="drops"><em>add paint</em></div>
       </div>
-    </div>
-    <div class="meter">
-      <div class="bar"><i id="barFill"></i></div>
-      <div class="pct"><b id="pct">0%</b><small>Match</small></div>
     </div>
     <div class="msg" id="msg">Match 95% or more to paint.</div>
     <div class="hint" id="hint"></div>
@@ -255,6 +314,7 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
     </div>
     <button class="btn primary" id="rescueBtn" hidden></button>
     <div class="row">
+      <button class="btn iconbtn" id="endHomeBtn" aria-label="Menu"></button>
       <button class="btn" id="retryBtn">Replay</button>
       <button class="btn primary" id="nextBtn">Next picture</button>
     </div>
@@ -266,6 +326,16 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
     <p id="introText"></p>
     <div class="col" id="introBoosters"></div>
     <button class="btn primary" id="introBtn">Let's paint</button>
+  </div>
+</div>
+<div class="overlay" id="quitOverlay" hidden>
+  <div class="card">
+    <h2>Leave this picture?</h2>
+    <p>Parts you restored in this picture will be lost. Coins you earned stay.</p>
+    <div class="row">
+      <button class="btn" id="quitStay">Keep painting</button>
+      <button class="btn primary" id="quitLeave">Leave</button>
+    </div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -430,7 +500,10 @@ const ICONS={
   undo:'<path d="M9 5 4 10l5 5"/><path d="M4 10h10a5 5 0 0 1 0 10h-3"/>',
   pick:'<path d="m14.5 3.5 6 6-2.5 2.5-6-6z"/><path d="m13 8-8.5 8.5V20h3.5l8.5-8.5"/>',
   hint:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3Z"/>',
-  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'};
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  home:'<path d="M3 11 12 4l9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/>',
+  gallery:'<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="m3.5 18 5.5-5 4 3.5 3-2.5 4.5 4"/>',
+  back:'<path d="M15 5 8 12l7 7"/>'};
 const icon=k=>`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
 const BOOSTERS={
   empty:{name:'Empty',price:15,text:'Pours out the whole bowl and gives all its paint back.'},
@@ -462,25 +535,69 @@ const $=id=>document.getElementById(id);
 const scene=$('scene');
 let L, state;
 
-function renderLevels(){
-  $('levels').innerHTML=LEVELS.map((lv,i)=>{
-    const b=save.best[lv.id];
-    return `<button class="lvl" data-i="${i}" ${unlocked(i)?'':'disabled'} aria-current="${L===lv}">${i+1}. ${lv.title}${b!=null?`<span class="st">${'★'.repeat(b)}</span>`:unlocked(i)?'':' 🔒'}</button>`;
-  }).join('');
+// ---------- Menu scene: home (next picture + Play) and gallery (replay any picture) ----------
+const starRow=b=>[0,1,2].map(i=>`<span class="${i<b?'':'off'}">★</span>`).join('');
+function thumbSVG(lv,colored){
+  const byId=Object.fromEntries(lv.regions.map(r=>[r.id,r]));
+  const reg=r=>r.stroke
+    ?`<g fill="none" stroke="${colored?hex(r.target):BLANK_STROKE}" stroke-width="${r.stroke}" stroke-linecap="round">${r.svg}</g>`
+    :`<g fill="${colored?hex(r.target):BLANK}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round">${r.svg}</g>`;
+  return `<svg viewBox="0 0 320 240" aria-hidden="true">${lv.bg||''}${lv.order.map(id=>reg(byId[id])).join('')}${lv.decor}</svg>`;
 }
-$('levels').addEventListener('click',e=>{const b=e.target.closest('.lvl');if(b&&!b.disabled)start(+b.dataset.i);});
+// Next picture to play: first unfinished one, or the challenged one if it is unlocked.
+function nextIndex(){
+  if(save.challenge){const ci=LEVELS.findIndex(l=>l.id===save.challenge.level); if(ci>=0&&unlocked(ci)) return ci;}
+  const i=LEVELS.findIndex(l=>save.best[l.id]==null);
+  return i<0?LEVELS.length-1:i;
+}
+function renderMenu(){
+  const i=nextIndex(), lv=LEVELS[i], b=save.best[lv.id], allDone=LEVELS.every(l=>save.best[l.id]!=null);
+  $('nextPic').innerHTML=thumbSVG(lv,false);
+  $('nextLabel').textContent=allDone&&!save.challenge?'All pictures restored':`Picture ${i+1} of ${LEVELS.length}`;
+  $('nextTitle').innerHTML=esc(lv.title)+(b!=null?`<span class="tstars">${starRow(b)}</span>`:'');
+  $('playBtn').textContent=b!=null?'Play again':'Play';
+  $('homeStars').textContent='★ '+LEVELS.reduce((a,l)=>a+(save.best[l.id]||0),0);
+  const ch=save.challenge; $('homeCh').hidden=!ch;
+  if(ch){const cl=LEVELS.find(l=>l.id===ch.level);$('homeCh').textContent=`🏆 ${ch.from} challenged you on ${cl.title}. Beat ${ch.score}★.`;}
+  $('ggrid').innerHTML=LEVELS.map((l,k)=>{const bb=save.best[l.id], ok=unlocked(k);
+    return `<button class="gcard" data-i="${k}" ${ok?'':'disabled'} aria-label="${esc(l.title)}${ok?'':', locked'}">${thumbSVG(l,bb!=null)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}<b>${k+1}. ${esc(l.title)}</b><small>${bb!=null?starRow(bb):''}</small></button>`;}).join('');
+  renderCoins();
+}
+function showTab(t){
+  $('homeMain').hidden=t!=='home'; $('gallery').hidden=t!=='gallery';
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===t));
+}
+function goHome(tab){
+  state=null; parts=[]; hideCoach();
+  ['endOverlay','introOverlay','quitOverlay'].forEach(id=>$(id).hidden=true);
+  $('game').hidden=true; $('home').hidden=false;
+  renderMenu(); showTab(tab||'home'); scrollTo(0,0);
+}
+document.querySelectorAll('.tab').forEach(b=>{
+  b.innerHTML=icon(b.dataset.tab)+(b.dataset.tab==='home'?'Home':'Gallery');
+  b.onclick=()=>showTab(b.dataset.tab);
+});
+$('playBtn').onclick=$('nextPic').onclick=()=>start(nextIndex());
+$('ggrid').addEventListener('click',e=>{const c=e.target.closest('.gcard');if(c&&!c.disabled)start(+c.dataset.i);});
+$('backBtn').innerHTML=icon('back'); $('endHomeBtn').innerHTML=icon('home');
+$('backBtn').onclick=()=>{
+  if(state&&!state.finished&&Object.keys(state.done).length) $('quitOverlay').hidden=false; else goHome();
+};
+$('quitStay').onclick=()=>{$('quitOverlay').hidden=true;};
+$('quitLeave').onclick=()=>goHome();
+$('endHomeBtn').onclick=()=>goHome();
 
 function start(i){
   L=LEVELS[i]; L.index=i;
   state={done:{},stars:{},used:{},hinted:{},rescued:{},drops:[],picking:false,forced:false,hintMsg:null,paint:L.budget,earned:0,finished:false};
-  $('levelTitle').textContent=L.title; $('levelSub').textContent=L.sub;
+  $('home').hidden=true; $('game').hidden=false; scrollTo(0,0);
   $('credit').innerHTML=L.credit||'';
   const ks=L.paints||PAINTS.map(p=>p.k);
   $('paints').style.setProperty('--n',ks.length);
   $('paints').innerHTML=ks.map(k=>PMAP[k]).map(p=>`<button class="paint" data-k="${p.k}" aria-label="Add ${p.name}"><span class="blob" style="background:${hex(p.rgb)}"></span>${p.name}</button>`).join('');
   hideCoach(); parts=[];
   document.querySelector('.frame').classList.remove('celebrate'); $('stamp').hidden=true;
-  buildScene(); renderLevels(); updateHud(); renderCoins();
+  buildScene(); updateHud(); renderCoins();
   $('endOverlay').hidden=true;
   select(L.regions[0].id);
   showIntro();
@@ -524,6 +641,7 @@ function buildScene(){
 }
 const current=()=>L.regions.find(x=>x.id===state.sel);
 function select(id){
+  if(!state) return;
   state.sel=id; state.drops=[]; state.picking=false; state.hintMsg=null;
   scene.querySelectorAll('.region').forEach(g=>g.classList.toggle('sel',g.dataset.id===id));
   const r=current();
@@ -601,14 +719,12 @@ function updateHud(){
   $('paintLeft').textContent=state.paint;
   const f=$('paintFill'),pc=Math.min(100,state.paint/L.budget*100);
   f.style.width=pc+'%';f.style.background=pc>40?'var(--accent)':pc>15?'var(--gold)':'var(--warn)';
-  $('starCount').textContent='★ '+sumStars();
-  const b=save.best[L.id]; $('levelStars').innerHTML=b==null?'':[0,1,2].map(i=>`<span class="${i<b?'':'off'}">★</span>`).join('');
   const ch=save.challenge, bar=$('chBar'); bar.hidden=!ch;
   if(ch){const lv=LEVELS.find(l=>l.id===ch.level);
     bar.textContent=L.id===ch.level?`🏆 Beat ${ch.from}: ${ch.score}★  ·  You: ${sumStars()}★`:`🏆 ${ch.from} challenged you on ${lv.title}. Beat ${ch.score}★ there.`;}
 }
 function renderCoins(bump){
-  $('coinCount').textContent=save.coins;
+  document.querySelectorAll('.coinCount').forEach(e=>e.textContent=save.coins);
   const el=$('coins'); if(bump){el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');}
 }
 function addCoins(n){save.coins+=n; if(n>0) state.earned+=n; persist(); renderCoins(true);}
@@ -798,7 +914,7 @@ function win(){
   save.best[L.id]=Math.max(save.best[L.id]||0,s);
   const ch=save.challenge&&save.challenge.level===L.id?save.challenge:null, beaten=!!ch&&total>ch.score;
   if(beaten) save.challenge=null;
-  persist(); renderLevels(); updateHud();
+  persist(); renderMenu(); updateHud();
   $('endTitle').textContent=L.title+' restored';
   $('endStars').innerHTML=[0,1,2].map(i=>`<span class="${i<s?'':'off'}" style="animation-delay:${250+i*280}ms">★</span>`).join('');
   $('endText').innerHTML=`${total} / ${max}★  ·  +<b id="earnNum">0</b> <span class="coin"></span> earned  ·  ${state.paint} drops left`+
@@ -874,7 +990,7 @@ function copyText(t){
 }
 
 function outOfPaint(){
-  if(!$('endOverlay').hidden||state.finished) return;
+  if(!state||!$('endOverlay').hidden||state.finished) return;
   const r=current(), ok=save.coins>=RESCUE_PRICE;
   $('endTitle').textContent='Out of paint';
   $('endStars').textContent='';
@@ -901,10 +1017,7 @@ function rescue(){
 }
 let tt;function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),1800);}
 
-// first unfinished unlocked picture, or the challenged one if it is already unlocked
-let startAt=0; while(startAt<LEVELS.length-1&&save.best[LEVELS[startAt].id]!=null) startAt++;
-if(save.challenge){const ci=LEVELS.findIndex(l=>l.id===save.challenge.level); if(ci>=0&&unlocked(ci)) startAt=ci;}
-start(startAt);
+goHome();
 })();
 </script>
 </body>

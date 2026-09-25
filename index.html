@@ -208,7 +208,7 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .paint .blob{max-width:40px}
 .btn.boost .ico{width:40px;height:40px;padding:10px}
 .btn.boost{font-size:11px;gap:3px}
-/* Boosters get their own evenly spaced row; Paint it is a full-width button below */
+/* Boosters get their own evenly spaced row (painting happens automatically on a match) */
 .actions{flex-direction:column;align-items:stretch;gap:12px}
 .boosters{display:flex;justify-content:space-around;padding-top:8px}
 .boosters .btn.boost{flex:0 0 64px;position:relative}
@@ -309,7 +309,6 @@ body:has(#game:not([hidden])){padding-bottom:12px}
         <button class="btn boost" id="pickBtn"></button>
         <button class="btn boost" id="hintBtn"></button>
       </div>
-      <button class="btn primary" id="applyBtn">Paint it</button>
     </div>
   </section>
   </div>
@@ -394,7 +393,7 @@ const INK='#23283a';
 
 const LEVELS=[
 { id:'balloons', title:'Balloons', sub:'Each balloon needs just one paint.', budget:8, paints:['C','M','Y'], intro:'empty',
-  tip:{title:'Welcome, restorer',text:'Each faded part has a target color. Tap a paint to drop it in the bowl, then press <b>Paint it</b> once the match reaches 95%. Every drop uses paint from your pot. Restored parts earn coins.'},
+  tip:{title:'Welcome, restorer',text:'Each faded part has a target color. Tap a paint to drop it in the bowl, the part paints itself as soon as the match reaches 95%. Every drop uses paint from your pot. Restored parts earn coins.'},
   bg:`<rect width="320" height="240" fill="#eaf1fa"/><g fill="#fff" stroke="${INK}" stroke-width="1.5"><path d="M18 212a14 14 0 0 1 26-8a11 11 0 0 1 20 8z"/><path d="M252 214a16 16 0 0 1 30-8a12 12 0 0 1 22 8z"/></g>`,
   regions:[
     {id:'magenta',name:'Magenta balloon',recipe:{M:1},svg:'<ellipse cx="90" cy="98" rx="30" ry="38"/><path d="M85 142L90 134L95 142Z"/>'},
@@ -650,12 +649,12 @@ function buildScene(){
     L.regions.filter(r=>r.crack).map(r=>`<path class="crack" data-for="${r.id}" d="${r.crack}"/>`).join('')+
     '<g id="selLayer"></g><g id="fxLayer" pointer-events="none"></g>';
   scene.setAttribute('aria-label','Faded picture: '+L.title);
-  scene.querySelectorAll('.region').forEach(g=>g.addEventListener('click',()=>{if(!state.done[g.dataset.id]&&!state.forced)select(g.dataset.id);}));
+  scene.querySelectorAll('.region').forEach(g=>g.addEventListener('click',()=>{if(!state.done[g.dataset.id]&&!state.forced&&!state.applying)select(g.dataset.id);}));
 }
 const current=()=>L.regions.find(x=>x.id===state.sel);
 function select(id){
   if(!state) return;
-  state.sel=id; state.drops=[]; state.picking=false; state.hintMsg=null;
+  state.sel=id; state.drops=[]; state.picking=false; state.hintMsg=null; state.applying=false;
   scene.querySelectorAll('.region').forEach(g=>g.classList.toggle('sel',g.dataset.id===id));
   const r=current();
   $('selLayer').innerHTML=r.stroke?`<g class="selOutline thick" style="stroke-width:${r.stroke+6}">${r.svg}</g>`:`<g class="selOutline">${r.svg}</g>`;
@@ -675,14 +674,12 @@ function renderMix(override){
   const p=m?matchPct(m,r.target):0;
   $('pct').textContent=p+'%';
   const f=$('barFill');f.style.width=p+'%';f.style.background=p>=95?'var(--ok)':p>=75?'var(--gold)':'var(--warn)';
-  $('applyBtn').classList.toggle('ready',p>=95);
-  $('applyBtn').disabled=!m||state.finished;
   renderActions();
   const msg=$('msg');
   if(override){msg.textContent=override[0];msg.className='msg '+override[1];}
   else if(state.picking){msg.textContent='Tap the drop you want to take out.';msg.className='msg';}
   else if(!m){msg.textContent='Match 95% or more to paint. Every drop uses paint.';msg.className='msg';}
-  else if(p>=95){msg.textContent='Great match. Tap "Paint it".';msg.className='msg good';}
+  else if(p>=95){msg.textContent='Match! Painting…';msg.className='msg good';}
   else{msg.textContent=advice(m,r.target);msg.className='msg';}
 }
 function advice(m,t){
@@ -704,7 +701,7 @@ function nextHint(){
 function renderHint(){
   const h=state.hintMsg, el=$('hint');
   el.classList.toggle('on',!!h);
-  if(h) el.innerHTML=h.done?'Hint: your mix is right. Tap <b>Paint it</b>.'
+  if(h) el.innerHTML=h.done?'Hint: your mix is right.'
     :h.remove?`Hint: take out the <span class="dot" style="background:${hex(PMAP[h.k].rgb)}"></span> <b>${PMAP[h.k].name}</b>. ${current().name} has none.`
     :`Hint: add <span class="dot" style="background:${hex(PMAP[h.k].rgb)}"></span> <b>${PMAP[h.k].name}</b> next.`;
   renderActions();
@@ -772,7 +769,7 @@ $('coachDim').onclick=nudge;
 
 // ---------- Input ----------
 function addDrop(k){
-  if(!state||state.finished) return false;
+  if(!state||state.finished||state.applying) return false;
   if(state.forced){nudge();return false;}
   if(state.paint<=0){outOfPaint();return false;}
   if(state.drops.length>=12){renderMix(['The bowl is full. Take drops out or empty it.','bad']);return false;}
@@ -780,7 +777,18 @@ function addDrop(k){
   state.drops.push(k); state.paint--; state.used[state.sel]=(state.used[state.sel]||0)+1;
   updateHud(); renderHint(); renderMix();
   if(L.intro==='undo'&&!save.tut.undo&&!current().recipe[k]) forceUndo(k);
+  else afterMixChange();
   return true;
+}
+// No Paint it button: a mix that reaches 95% paints the part by itself after a short beat.
+function afterMixChange(){
+  const m=mix(counts()); if(!m||state.finished||state.forced) return;
+  if(matchPct(m,current().target)>=95){
+    state.applying=true; const st=state;
+    setTimeout(()=>{ if(state!==st) return; state.applying=false; apply(); },500);
+  }else if(state.paint<=0&&!canUse('undo')&&!canUse('pick')&&!canUse('empty')){
+    setTimeout(outOfPaint,900); // nothing left to fix the mix with
+  }
 }
 let dragged=false; // set when a press turned into a drag, so the click that follows is ignored
 $('paints').addEventListener('click',e=>{
@@ -821,24 +829,25 @@ $('paints').addEventListener('click',e=>{
   addEventListener('pointerup',end); addEventListener('pointercancel',end);
 })();
 $('emptyBtn').onclick=()=>{
-  if(isLocked('empty')||!state.drops.length) return;
+  if(state.applying||isLocked('empty')||!state.drops.length) return;
   const n=state.drops.length; state.drops=[]; state.hintMsg=null;
   if(!canUse('empty')){renderHint();renderMix([`Bowl poured out. ${n} drop${n>1?'s':''} of paint lost. An Empty booster gives the paint back.`,'bad']);return;}
   spend('empty'); state.paint+=n; state.used[state.sel]-=n; updateHud(); renderHint();
   renderMix([`Bowl emptied. ${n} drop${n>1?'s':''} of paint refunded.`,'']);
 };
 $('undoBtn').onclick=()=>{
-  if(isLocked('undo')||!state.drops.length) return;
+  if(state.applying||isLocked('undo')||!state.drops.length) return;
   if(state.forced){
     state.drops.pop(); refundDrop(); state.forced=false; save.tut.undo=true; persist(); hideCoach();
     renderMix([`That's Undo. You have ${save.inv.undo} left, then they cost ${BOOSTERS.undo.price} coins.`,'good']);
-    return;
+    afterMixChange(); return;
   }
   if(!spend('undo')) return;
   state.drops.pop(); state.picking=false; state.hintMsg=null; refundDrop(); renderHint(); renderMix(['Drop taken back. Paint refunded.','']);
+  afterMixChange();
 };
 $('pickBtn').onclick=()=>{
-  if(isLocked('pick')) return;
+  if(state.applying||isLocked('pick')) return;
   if(state.picking){state.picking=false;renderMix();return;}
   if(!state.drops.length) return;
   if(!canUse('pick')){spend('pick');return;}
@@ -849,12 +858,12 @@ $('drops').addEventListener('click',e=>{
   if(!spend('pick')) return;
   const k=state.drops.splice(+d.dataset.i,1)[0];
   state.picking=false; state.hintMsg=null; refundDrop(); renderHint(); renderMix([`${PMAP[k].name} taken out. Paint refunded.`,'']);
+  afterMixChange();
 });
 $('hintBtn').onclick=()=>{
-  if(isLocked('hint')||state.finished||state.hintMsg||!spend('hint')) return;
+  if(state.applying||isLocked('hint')||state.finished||state.hintMsg||!spend('hint')) return;
   state.hinted[state.sel]=true; state.hintMsg=nextHint(); renderHint();
 };
-$('applyBtn').onclick=apply;
 $('retryBtn').onclick=()=>start(L.index);
 $('nextBtn').onclick=()=>start(Math.min(L.index+1,LEVELS.length-1));
 $('rescueBtn').onclick=rescue;
@@ -873,7 +882,7 @@ function apply(){
   const used=state.used[r.id]||0;
   let s=used<=r.min?3:used<=r.min+2?2:1;
   if(state.hinted[r.id]||state.rescued[r.id]) s=Math.min(s,2);
-  state.done[r.id]=true; state.stars[r.id]=s;
+  state.done[r.id]=true; state.stars[r.id]=s; state.applying=true; // locked until the next part is selected
   const g=scene.querySelector(`.region[data-id="${r.id}"]`);
   g.setAttribute(r.stroke?'stroke':'fill',hex(r.target)); g.classList.remove('sel'); g.classList.add('done');
   const cr=scene.querySelector(`.crack[data-for="${r.id}"]`); if(cr) cr.classList.add('gone');

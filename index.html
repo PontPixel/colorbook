@@ -14,7 +14,8 @@
   color-scheme: light;
   --wall:#f4f5f8; --panel:#fff; --ink:#1f2330; --muted:#80869a; --line:#e3e6ec; --track:#e8eaef;
   --shadow:0 1px 2px rgba(20,24,40,.06),0 8px 24px rgba(20,24,40,.07);
-  --ok:#2f9e5b; --warn:#d0572f; --accent:#3b5bdb; --gold:#e0a100;
+  /* UI is black and white on purpose: all color belongs to the game itself */
+  --ok:var(--ink); --warn:var(--ink); --accent:var(--ink); --gold:var(--ink);
 }
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -102,8 +103,8 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .badge{position:absolute;top:-6px;left:calc(50% + 10px);background:var(--gold);color:#fff;border:2px solid #fff;border-radius:99px;padding:0 6px;font:700 11px/16px "Inter",system-ui,sans-serif;white-space:nowrap;display:flex;align-items:center;gap:3px}
 .badge.buy{background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line)}
 .btn.on:not(.boost){background:var(--accent);color:#fff}
-.coin{display:inline-block;width:.95em;height:.95em;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe27a,#e0a100 70%);border:1px solid #b88400;vertical-align:-2px;flex:none}
-.badge .coin{width:9px;height:9px;border-width:1px}
+.coin{display:inline-block;width:.95em;height:.95em;border-radius:50%;background:#fff;border:1.5px solid var(--ink);box-shadow:inset 0 0 0 1.5px #fff,inset 0 0 0 2.6px var(--ink);vertical-align:-2px;flex:none}
+.badge .coin{width:10px;height:10px;border-width:1.2px;box-shadow:inset 0 0 0 1.2px #fff,inset 0 0 0 2.1px var(--ink)}
 .pill.coins{display:flex;align-items:center;gap:6px}
 .pill.bump{animation:bump .4s}
 @keyframes bump{40%{transform:scale(1.15)}}
@@ -137,16 +138,16 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .coachTip.nudge{animation:shake .4s}
 .lift{position:relative;z-index:5;background:var(--panel);border-radius:16px;padding:8px}
 .actions .btn.coach{z-index:5}.actions .btn.coach .ico{animation:ring 1.1s ease-out infinite}
-@keyframes ring{0%{box-shadow:0 0 0 1px var(--line),0 0 0 0 rgba(59,91,219,.8)}100%{box-shadow:0 0 0 1px var(--line),0 0 0 16px rgba(59,91,219,0)}}
+@keyframes ring{0%{box-shadow:0 0 0 1px var(--line),0 0 0 0 rgba(31,35,48,.55)}100%{box-shadow:0 0 0 1px var(--line),0 0 0 16px rgba(31,35,48,0)}}
 /* Challenge */
-.chbar{background:#fff7dc;border:1px solid #f1d27a;border-radius:14px;padding:6px 12px;font:600 14px "Inter",system-ui,sans-serif;text-align:center}
+.chbar{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px 12px;font:600 14px "Inter",system-ui,sans-serif;text-align:center}
 .share{display:flex;flex-direction:column;gap:8px}
 .share input{font:600 15px "Inter",system-ui,sans-serif;border:1px solid var(--line);border-radius:99px;padding:9px 12px;text-align:center;background:#fff;color:var(--ink)}
 .btn.accent{background:var(--accent);color:#fff}
 .card .note{font-size:14px;color:var(--ink);font-weight:700}
 /* Celebration */
 .frame{position:relative;transition:border-color .5s,box-shadow .5s}
-.frame.celebrate{box-shadow:0 0 0 3px var(--gold),0 0 0 9px rgba(224,161,0,.2),0 0 48px rgba(224,161,0,.45);animation:framepop .7s cubic-bezier(.2,1.6,.4,1)}
+.frame.celebrate{box-shadow:0 0 0 3px var(--ink),0 0 0 9px rgba(31,35,48,.08);animation:framepop .7s cubic-bezier(.2,1.6,.4,1)}
 @keyframes framepop{40%{transform:scale(1.035)}}
 .region.flash{animation:flash .7s ease both}
 @keyframes flash{35%{filter:brightness(1.45) saturate(1.4)}}
@@ -154,7 +155,7 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 @keyframes shine{from{transform:translateX(0) skewX(-20deg)}to{transform:translateX(600px) skewX(-20deg)}}
 .spark{fill:#fff;stroke:var(--gold);stroke-width:1.2;transform-box:fill-box;transform-origin:center;animation:twinkle 1.1s ease-in-out 2 both}
 @keyframes twinkle{0%{transform:scale(0) rotate(0)}50%{transform:scale(1.3) rotate(90deg)}100%{transform:scale(0) rotate(180deg)}}
-.stamp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-10deg);font:700 32px/1 "Inter",system-ui,sans-serif;color:#c92a2a;border:4px solid #c92a2a;border-radius:10px;padding:8px 18px;letter-spacing:4px;text-transform:uppercase;background:rgba(255,255,255,.8);pointer-events:none;animation:stamp .45s cubic-bezier(.2,1.8,.5,1) both}
+.stamp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-10deg);font:700 32px/1 "Inter",system-ui,sans-serif;color:var(--ink);border:4px solid var(--ink);border-radius:10px;padding:8px 18px;letter-spacing:4px;text-transform:uppercase;background:rgba(255,255,255,.8);pointer-events:none;animation:stamp .45s cubic-bezier(.2,1.8,.5,1) both}
 @keyframes stamp{from{transform:translate(-50%,-50%) rotate(-10deg) scale(3);opacity:0}}
 .stars span{display:inline-block;animation:starpop .55s cubic-bezier(.2,1.8,.5,1) both}
 .stars span.off{color:var(--line)}
@@ -177,7 +178,7 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .nextLabel{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:6px}
 .nextTitle{font:800 28px/1.1 "Inter",system-ui,sans-serif;letter-spacing:-.5px}
 .nextTitle .tstars{color:var(--gold);font-size:.7em;margin-left:6px;letter-spacing:1px}.nextTitle .off{color:var(--line)}
-.btn.play{background:var(--accent);border-color:var(--accent);color:#fff;font-size:20px;padding:16px;width:min(100%,320px);margin-top:8px;box-shadow:0 8px 20px rgba(59,91,219,.35)}
+.btn.play{background:var(--accent);border-color:var(--accent);color:#fff;font-size:20px;padding:16px;width:min(100%,320px);margin-top:8px;box-shadow:0 8px 20px rgba(20,24,40,.22)}
 .home .chbar{max-width:340px}
 .tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:8px;padding:8px 16px calc(8px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-top:1px solid var(--line);z-index:3}
 .tab{appearance:none;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 26px;border-radius:14px;font:600 12px "Inter",system-ui,sans-serif;color:var(--muted);cursor:pointer}
@@ -192,22 +193,22 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 #game{gap:8px}
 .gamebar{display:flex;align-items:center;gap:10px}
 .gamebar .paintgauge{flex:1}
-.mixer{padding:12px;gap:8px}
+.mixer{padding:14px 12px;gap:10px}
 .swatches{grid-template-columns:1fr minmax(84px,.9fr) 1fr;align-items:start;gap:6px}
 .sw{gap:6px}
-.chip{max-width:78px;border-width:5px}
-.target-name{font-size:14px;line-height:1.2}
+.chip{max-width:90px;border-width:6px}
+.target-name{font-size:16px;line-height:1.2}
 .swatches .meter{display:flex;flex-direction:column;align-items:stretch;gap:5px;padding-top:14px;text-align:center}
-.swatches .meter b{font:800 24px/1 "Inter",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.swatches .meter b{font:800 30px/1 "Inter",system-ui,sans-serif;font-variant-numeric:tabular-nums}
 .swatches .meter .bar{flex:none;height:8px}
 .swatches .meter small{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.drops{gap:3px;min-height:14px}.drops span{width:10px;height:10px}.drops em{font-size:12px}
+.drops{gap:4px;min-height:16px}.drops span{width:12px;height:12px}.drops em{font-size:13px}
 .msg{font-size:13px;min-height:18px}
 .paints{padding:8px 4px;gap:4px}
-.paint{font-size:11px;gap:4px}
-.paint .blob{max-width:40px}
-.btn.boost .ico{width:40px;height:40px;padding:10px}
-.btn.boost{font-size:11px;gap:3px}
+.paint{font-size:12px;gap:6px}
+.paint .blob{max-width:50px}
+.btn.boost .ico{width:46px;height:46px;padding:12px}
+.btn.boost{font-size:12px;gap:4px}
 /* Boosters get their own evenly spaced row (painting happens automatically on a match) */
 .actions{flex-direction:column;align-items:stretch;gap:12px}
 .boosters{display:flex;justify-content:space-around;padding-top:8px}
@@ -215,7 +216,9 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .actions .btn.primary{flex:none;margin:0;padding:13px;font-size:16px}
 body:has(#game:not([hidden])){padding-bottom:12px}
 .stamp{font-size:26px}
-@media (max-height:700px){.frame{padding:5px;border-radius:18px}.chip{max-width:64px}}
+/* Taller phones get the full-size controls */
+@media (min-height:760px) and (max-width:899px){.mixer{padding:18px 14px;gap:14px}.chip{max-width:104px}.paint .blob{max-width:56px}.btn.boost .ico{width:52px;height:52px;padding:14px}.swatches .meter b{font-size:32px}}
+@media (max-height:640px){.frame{padding:5px;border-radius:18px}.chip{max-width:70px}.paint .blob{max-width:42px}.btn.boost .ico{width:42px;height:42px;padding:10px}}
 /* Layout: stacked on phones, side by side on wide landscape screens */
 .board,.stage{display:flex;flex-direction:column;gap:12px}
 @media (min-width:900px) and (orientation:landscape){
@@ -951,7 +954,7 @@ function celebrate(st){
     sp+=`<g transform="translate(${x|0} ${y|0}) scale(${s})"><path class="spark" style="animation-delay:${(300+Math.random()*1500)|0}ms" d="M0-9L2.2-2.2L9 0L2.2 2.2L0 9L-2.2 2.2L-9 0L-2.2-2.2Z"/></g>`;}
   $('fxLayer').innerHTML=`<defs><linearGradient id="shineG" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect class="shine" x="-150" y="-80" width="100" height="400" fill="url(#shineG)"/>`+sp;
   // 3. confetti in the picture's own colors: center pop, then two cannons from the bottom corners
-  const cols=[...new Set(L.regions.map(r=>hex(r.target)))].concat(['#e0a100','#ffffff']);
+  const cols=[...new Set(L.regions.map(r=>hex(r.target)))].concat(['#ffffff']);
   const fr=frame.getBoundingClientRect(), cx=fr.left+fr.width/2, cy=fr.top+fr.height/2;
   setTimeout(()=>{ if(state!==st) return;
     burst(cx,cy,cols,50,{speed:10,shapes:['drop','star','circle'],decay:.012,size:6});
@@ -959,7 +962,7 @@ function celebrate(st){
     burst(innerWidth,innerHeight,cols,70,{angle:-Math.PI+Math.PI/2.7,spread:.7,speed:22,shapes:['rect','drop','star','rect'],decay:.005,gravity:.35,size:6});
   },400);
   // 4. "Restored" stamp slams onto the picture
-  setTimeout(()=>{ if(state!==st) return; $('stamp').hidden=false; burst(cx,cy,['#c92a2a','#e0a100','#fff'],26,{speed:8,shapes:['star'],decay:.03,size:5}); },1350);
+  setTimeout(()=>{ if(state!==st) return; $('stamp').hidden=false; burst(cx,cy,[INK,'#ffffff'],26,{speed:8,shapes:['star'],decay:.03,size:5}); },1350);
 }
 function countUp(el,to){
   if(reduced||!to){el.textContent=to;return;}
@@ -982,8 +985,8 @@ function win(){
     (L.credit?`<br>${L.credit}.`:'')+(last?'<br>That was the last picture.':'');
   countUp($('earnNum'),state.earned);
   for(let i=0;i<s;i++) setTimeout(()=>{ if(state!==st) return; const b=$('endStars').children[i].getBoundingClientRect();
-    burst(b.left+b.width/2,b.top+b.height/2,['#e0a100','#ffd54a','#ffffff'],14,{speed:5,shapes:['star'],decay:.03,size:4,gravity:.1}); },450+i*280);
-  if(beaten) setTimeout(()=>{ if(state===st) burst(innerWidth/2,innerHeight/3,['#e0a100','#ffd54a','#c92a2a','#3b5bdb'],90,{speed:14,shapes:['rect','star','drop'],decay:.007,gravity:.25,size:6}); },900);
+    burst(b.left+b.width/2,b.top+b.height/2,[INK,'#ffffff'],14,{speed:5,shapes:['star'],decay:.03,size:4,gravity:.1}); },450+i*280);
+  if(beaten) setTimeout(()=>{ if(state===st) burst(innerWidth/2,innerHeight/3,[...new Set(L.regions.map(r=>hex(r.target)))],90,{speed:14,shapes:['rect','star','drop'],decay:.007,gravity:.25,size:6}); },900);
   // Share / challenge
   const proper=L.index>=FIRST_PROPER;
   $('shareBox').hidden=!proper;
@@ -1019,10 +1022,10 @@ async function makeShareFile(total,max){
   x.fillStyle='#dfe3ea'; x.fillRect(0,0,W,W);
   if(logo) x.drawImage(logo,60,42,65,100);
   x.textBaseline='middle'; x.fillStyle=INK; x.font='700 64px Inter, sans-serif'; x.fillText('ColorFind',145,92);
-  x.textAlign='right'; x.fillStyle='#c98f00'; x.font='700 40px Inter, sans-serif'; x.fillText(`★ ${total} / ${max}`,W-60,92);
+  x.textAlign='right'; x.fillStyle=INK; x.font='700 40px Inter, sans-serif'; x.fillText(`★ ${total} / ${max}`,W-60,92);
   const X=48,Y=170,FW=984,FH=744;
   rr(x,X,Y+10,FW,FH,28); x.fillStyle=INK; x.fill();
-  rr(x,X,Y,FW,FH,28); x.fillStyle='#fff'; x.fill(); x.lineWidth=8; x.strokeStyle='#e0a100'; x.stroke();
+  rr(x,X,Y,FW,FH,28); x.fillStyle='#fff'; x.fill(); x.lineWidth=8; x.strokeStyle=INK; x.stroke();
   x.save(); rr(x,X+12,Y+12,FW-24,FH-24,18); x.clip(); x.drawImage(pic,X+12,Y+12,FW-24,FH-24); x.restore();
   x.textAlign='center'; x.fillStyle=INK; x.font='700 46px Inter, sans-serif'; x.fillText(`${L.title} restored`,W/2,984);
   x.fillStyle='#646b80'; x.font='800 32px Inter, sans-serif'; x.fillText('Can you beat my score?',W/2,1036);

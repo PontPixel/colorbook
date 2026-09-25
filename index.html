@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>[hidden]{display:none!important}</style>
-<title>ColorFind</title>
+<title>ColorBook</title>
 <link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -247,7 +247,7 @@ body:has(#game:not([hidden])){padding-bottom:12px}
     <div class="pill coins"><span class="coin"></span><span class="coinCount">0</span></div>
   </div>
   <section class="homeMain" id="homeMain">
-    <img class="logo" src="img/logo-hero.jpg" alt="ColorFind" width="137" height="210">
+    <img class="logo" src="img/logo-hero.jpg" alt="ColorBook" width="137" height="210">
     <button class="nextPic" id="nextPic" aria-label="Play next picture"></button>
     <div class="nextLabel" id="nextLabel">Picture 1</div>
     <div class="nextTitle" id="nextTitle">Balloons</div>
@@ -393,6 +393,7 @@ const BLANK='#fbfbfc', BLANK_STROKE='#e2e4ea';
 // ---------- Pictures ----------
 function petals(cx,cy){let s='';for(let i=0;i<5;i++){const a=i/5*Math.PI*2-Math.PI/2;s+=`<circle cx="${(cx+Math.cos(a)*7).toFixed(1)}" cy="${(cy+Math.sin(a)*7).toFixed(1)}" r="5.5"/>`;}return s;}
 const INK='#23283a';
+const GAME_NAME='ColorBook'; // shared engine: each game sets its own name
 
 const LEVELS=[
 { id:'balloons', title:'Balloons', sub:'Each balloon needs just one paint.', budget:8, tier:'easy', paints:['C','M','Y'], intro:'empty',
@@ -1171,7 +1172,7 @@ async function makeShareFile(total,max){
   const W=1080,cv=document.createElement('canvas'); cv.width=cv.height=W; const x=cv.getContext('2d');
   x.fillStyle='#dfe3ea'; x.fillRect(0,0,W,W);
   if(logo) x.drawImage(logo,60,42,65,100);
-  x.textBaseline='middle'; x.fillStyle=INK; x.font='700 64px Inter, sans-serif'; x.fillText('ColorFind',145,92);
+  x.textBaseline='middle'; x.fillStyle=INK; x.font='700 64px Inter, sans-serif'; x.fillText(GAME_NAME,145,92);
   x.textAlign='right'; x.fillStyle=INK; x.font='700 40px Inter, sans-serif'; x.fillText(`★ ${total} / ${max}`,W-60,92);
   const X=48,Y=170,FW=984,FH=744;
   rr(x,X,Y+10,FW,FH,28); x.fillStyle=INK; x.fill();
@@ -1180,20 +1181,20 @@ async function makeShareFile(total,max){
   x.textAlign='center'; x.fillStyle=INK; x.font='700 46px Inter, sans-serif'; x.fillText(`${L.title} restored`,W/2,984);
   x.fillStyle='#646b80'; x.font='800 32px Inter, sans-serif'; x.fillText('Can you beat my score?',W/2,1036);
   const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
-  return new File([blob],`colorfind-${L.id}.png`,{type:'image/png'});
+  return new File([blob],`${GAME_NAME.toLowerCase()}-${L.id}.png`,{type:'image/png'});
 }
 function share(){
   const name=$('nameInput').value.trim().slice(0,16); save.name=name; persist();
   const {total,max,ch,beaten}=state.shareCtx;
   const u=new URL(location.pathname,location.origin); u.searchParams.set('c',L.id); u.searchParams.set('s',total); if(name) u.searchParams.set('n',name);
   const link=u.href, row=emojiRow();
-  const text=ch?(beaten?`I beat your ${ch.score}★! I got ${total}/${max}★ on "${L.title}" in ColorFind.\n${row}\nYour move.`
-                      :`I got ${total}/${max}★ on "${L.title}" in ColorFind. You're still ahead with ${ch.score}★, for now.\n${row}`)
-               :`I restored "${L.title}" in ColorFind with ${total}/${max}★\n${row}\nCan you beat me?`;
+  const text=ch?(beaten?`I beat your ${ch.score}★! I got ${total}/${max}★ on "${L.title}" in ${GAME_NAME}.\n${row}\nYour move.`
+                      :`I got ${total}/${max}★ on "${L.title}" in ${GAME_NAME}. You're still ahead with ${ch.score}★, for now.\n${row}`)
+               :`I restored "${L.title}" in ${GAME_NAME} with ${total}/${max}★\n${row}\nCan you beat me?`;
   const f=state.shareFile, fail=e=>{if(!e||e.name!=='AbortError') copyText(text+'\n'+link);};
   try{
-    if(f&&navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'ColorFind',text:text+'\n'+link}).catch(fail);return;}
-    if(navigator.share){navigator.share({title:'ColorFind',text,url:link}).catch(fail);return;}
+    if(f&&navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:GAME_NAME,text:text+'\n'+link}).catch(fail);return;}
+    if(navigator.share){navigator.share({title:GAME_NAME,text,url:link}).catch(fail);return;}
   }catch(e){}
   copyText(text+'\n'+link);
 }

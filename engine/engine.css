@@ -22,10 +22,14 @@
   --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;background:var(--wall);color:var(--ink);font:500 15px/1.4 "Inter",system-ui,sans-serif;
-  padding-inline:16px;padding-block:16px 28px;-webkit-tap-highlight-color:transparent}
-.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+/* The page itself never scrolls (no rubber band on iPhone): each scene is a fixed column whose bar stays put,
+   and only its content area scrolls. --w is the content width; side padding centers it inside the scroller. */
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{margin:0;position:fixed;inset:0;background:var(--wall);color:var(--ink);font:500 15px/1.4 "Inter",system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+.wrap{--w:520px;height:100%;display:flex;flex-direction:column;gap:14px;padding-top:16px}
+.wrap>.gamebar,.home>.topbar{flex:none;width:min(calc(100% - 32px),var(--w));margin:0 auto}
+.board,.homeMain,.gallery{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-inline:max(16px,calc((100% - var(--w)) / 2))}
+.board{padding-bottom:12px}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .brandname{font:800 16px/1 "Inter",system-ui,sans-serif;letter-spacing:-.2px}
 .titlebar{text-align:center;display:flex;flex-direction:column;gap:4px}
@@ -177,9 +181,13 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .iconbtn .ico{width:20px;height:20px}
 .card .row .btn.iconbtn{flex:none;width:48px;height:auto}
 /* Home */
-.home{max-width:520px;margin:0 auto;min-height:calc(100dvh - 44px);display:flex;flex-direction:column;gap:12px;padding-bottom:84px}
+.home{--w:520px;height:100%;display:flex;flex-direction:column;gap:12px;padding-top:16px}
+.homeMain,.gallery{padding-bottom:84px}
 .topbar{display:flex;justify-content:space-between;align-items:center}
-.homeMain{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.homeMain{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+/* centered while it fits, scrolls from the top when it doesn't (justify-content:center would cut off the top) */
+.homeMain::before,.homeMain::after{content:""}
+.homeMain::before{margin:auto 0 -10px}.homeMain::after{margin:-10px 0 auto}
 .homeMain .logo{height:clamp(110px,19dvh,190px);width:auto;mix-blend-mode:multiply;transform:rotate(-4deg);margin-bottom:6px}
 .nextPic{appearance:none;border:0;padding:8px;background:var(--panel);border-radius:22px;box-shadow:var(--shadow);width:min(100%,340px,calc((100dvh - 470px) * 4 / 3 + 16px));min-width:200px;cursor:pointer}
 .nextPic svg,.gcard svg{display:block;width:100%;height:auto;border-radius:15px;pointer-events:none}
@@ -220,23 +228,24 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .boosters{display:flex;justify-content:space-around;padding-top:8px}
 .boosters .btn.boost{flex:0 0 64px;position:relative}
 .actions .btn.primary{flex:none;margin:0;padding:13px;font-size:16px}
-body:has(#game:not([hidden])){padding-bottom:12px}
 .stamp{font-size:26px}
 /* Taller phones get the full-size controls */
 @media (min-height:760px) and (max-width:899px){.mixer{padding:18px 14px;gap:14px}.chip{max-width:116px}.paint .blob{max-width:56px}.btn.boost .ico{width:52px;height:52px;padding:14px}}
 @media (max-height:640px){.frame{padding:5px;border-radius:18px}.chip{max-width:84px}.paint .blob{max-width:42px}.btn.boost .ico{width:42px;height:42px;padding:10px}}
 /* Layout: stacked on phones, side by side on wide landscape screens */
 .board,.stage{display:flex;flex-direction:column;gap:12px}
+/* phones: the picture shrinks a little on short screens so bar + picture + mixer fit with no scrolling (4:3 picture; ~446px for the rest) */
+.stage{width:100%;max-width:max(260px,calc((100dvh - 446px) * 4 / 3));align-self:center}
 @media (min-width:900px) and (orientation:landscape){
-  body{padding-block:20px}
-  .wrap{max-width:1240px;gap:14px}
+  .wrap{--w:1240px;gap:14px;padding-top:20px}
+  .board{padding-bottom:20px}
   .board{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:24px;align-items:start}
   /* keep the whole picture on screen: 4:3 picture, header + title + level bar + hud take ~250px */
   .stage{width:100%;max-width:calc((100vh - 110px) * 4 / 3);justify-self:center;min-width:420px}
   .chip{max-width:116px}
-  .home{max-width:1000px}
+  .home{--w:1000px}
   .gallery .ggrid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
-  .mixer{position:sticky;top:16px}
+  .mixer{position:sticky;top:0}
   /* sticky makes its own stacking context, which would trap the coach tip and Undo under the dim layer */
   body.coaching .mixer{position:static}
   /* result card sits over the mixer, so the restored picture stays in view */
@@ -250,6 +259,11 @@ body:has(#game:not([hidden])){padding-bottom:12px}
 #quizOfferBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #quizOfferBtn[hidden]{display:none}
 .home.hasQuiz .nextPic{width:min(100%,340px,calc((100dvh - 530px) * 4 / 3 + 16px))}
+.home.hasDaily .nextPic{width:min(100%,340px,calc((100dvh - 530px) * 4 / 3 + 16px))}
+.btn.quizbtn.done{color:var(--muted)}
+.btn.quizbtn .dlab{display:flex;flex-direction:column;line-height:1.2;text-align:left}
+.btn.quizbtn .dlab small{font-size:13px;font-weight:600;color:var(--muted)}
+#dailyPicBtn{padding-top:8px;padding-bottom:8px}
 .quizcard{gap:10px}
 .quizImg{margin:0 auto;width:min(100%,260px)}
 .quizImg svg{display:block;width:100%;height:auto;border-radius:12px;box-shadow:0 0 0 1px var(--line)}
@@ -298,6 +312,7 @@ body:has(#game:not([hidden])){padding-bottom:12px}
 @keyframes dropfall{from{transform:rotate(-45deg)}to{transform:translate(-18px,46px) rotate(-160deg);opacity:0}}
 /* ---------- Gallery hall (dramatic: the hall is part of the picture world, always dark) ---------- */
 .hallMode .homeMain{justify-content:flex-start;gap:8px}
+.hallMode .homeMain::before{display:none}
 .hallWrap{width:100%;display:flex;flex-direction:column;gap:8px}
 .hallRoom{display:flex;flex-direction:column;align-items:center;gap:1px}
 .hallRoom small{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}

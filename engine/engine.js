@@ -5,6 +5,8 @@ const {PAINTS,PMAP,mix,hex,lab,dE,matchPct,BLANK,BLANK_STROKE,INK}=CF;
 const G=window.GAME, LEVELS=G.levels, GAME_NAME=G.name;
 const {t,tn}=I18N; if(G.strings) I18N.add(G.strings);
 const HALL=G.hall||null; // optional gallery-hall home screen (ColorGallery)
+const DAILY=G.daily||null; // optional daily picture with a streak (ColorBook)
+const sfx=(n,a)=>{if(window.SFX) SFX.play(n,a);};
 const T=l=>t(l.title), N=r=>t(r.name), PN=k=>t(PMAP[k].name); // localized level title, part name, paint name
 document.body.insertAdjacentHTML('afterbegin',`
 <!-- Home (menu) scene -->
@@ -29,6 +31,7 @@ document.body.insertAdjacentHTML('afterbegin',`
     </div>
     <div class="chbar" id="homeCh" hidden></div>
     <button class="btn play" id="playBtn">${t('Play')}</button>
+    <button class="btn quizbtn" id="dailyPicBtn" hidden></button>
     <button class="btn quizbtn" id="dailyQuizBtn" hidden></button>
   </section>
   <section class="gallery" id="gallery" hidden>
@@ -149,6 +152,7 @@ document.body.insertAdjacentHTML('afterbegin',`
       <div class="seg" id="setTheme"><button data-v="auto">${t('Auto')}</button><button data-v="light">${t('Light')}</button><button data-v="dark">${t('Dark')}</button></div></div>
     <div class="setrow"><span>${t('Language')}</span>
       <div class="seg" id="setLang"><button data-v="auto">${t('Auto')}</button><button data-v="en">English</button><button data-v="fr">Français</button><button data-v="ru">Русский</button></div></div>
+    <div class="setrow"><span>${t('Sound')}</span><button class="switch" id="setSound" role="switch" aria-checked="true" aria-label="${t('Sound')}"><i></i></button></div>
     <div class="setrow"><span>${t('Vibration')}</span><button class="switch" id="setVib" role="switch" aria-checked="true" aria-label="${t('Vibration')}"><i></i></button></div>
     <p class="setnote" id="vibNote" hidden>${t("This browser can't vibrate (iPhone Safari doesn't support it).")}</p>
     <button class="btn primary" id="settingsDone">${t('Done')}</button>
@@ -182,6 +186,7 @@ const ICONS={
   auto:'<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>',
   hall:'<path d="M3 21h18M5 21V10M19 21V10M9 21v-7M15 21v-7M2 10l10-6 10 6Z"/>',
+  daily:'<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9.5 15 2 2 3.5-4"/>',
   quiz:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17h.01"/>'};
 const icon=k=>`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
 const BOOSTERS={
@@ -240,7 +245,7 @@ function renderMenu(){
   if(ch){const cl=LEVELS.find(l=>l.id===ch.level);$('homeCh').textContent='🏆 '+t('{from} challenged you on {title}. Beat {score}★.',{from:ch.from,title:T(cl),score:ch.score});}
   $('ggrid').innerHTML=LEVELS.map((l,k)=>{const bb=save.best[l.id], ok=unlocked(k);
     return `<button class="gcard" data-i="${k}" ${ok?'':'disabled'} aria-label="${esc(T(l))}${ok?'':', '+t('locked')}">${thumbSVG(l,bb!=null)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}<b>${k+1}. ${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${bb!=null?starRow(bb):''}</small></button>`;}).join('');
-  renderDailyQuiz();
+  renderDailyQuiz(); renderDailyPic();
   if(HALL) renderHall();
   renderCoins();
 }
@@ -253,7 +258,7 @@ function goHome(tab){
   state=null; parts=[]; hideCoach();
   ['endOverlay','introOverlay','quitOverlay','quizOverlay','settingsOverlay'].forEach(id=>$(id).hidden=true);
   $('game').hidden=true; $('home').hidden=false;
-  renderMenu(); showTab(tab||'home'); scrollTo(0,0);
+  renderMenu(); showTab(tab||'home'); $('homeMain').scrollTop=0;
 }
 document.querySelectorAll('.tab').forEach(b=>{
   const home=b.dataset.tab==='home';
@@ -271,10 +276,11 @@ $('quitStay').onclick=()=>{$('quitOverlay').hidden=true;};
 $('quitLeave').onclick=()=>goHome();
 $('endHomeBtn').onclick=()=>goHome();
 
-function start(i){
+function start(i,o={}){
   L=LEVELS[i]; L.index=i;
-  state={done:{},stars:{},used:{},hinted:{},rescued:{},drops:[],picking:false,forced:false,hintMsg:null,paint:L.budget,earned:0,finished:false,quizUsed:false};
-  $('home').hidden=true; $('game').hidden=false; scrollTo(0,0);
+  const daily=!!(o.daily&&DAILY), budget=daily?dailyBudget(L):L.budget;
+  state={done:{},stars:{},used:{},hinted:{},rescued:{},drops:[],picking:false,forced:false,hintMsg:null,paint:budget,budget,daily,earned:0,finished:false,quizUsed:false};
+  $('home').hidden=true; $('game').hidden=false; document.querySelector('.board').scrollTop=0;
   $('credit').innerHTML=L.credit?t(L.credit):'';
   const ks=L.paints||PAINTS.map(p=>p.k);
   $('paints').style.setProperty('--n',ks.length);
@@ -296,11 +302,15 @@ function showIntro(){
   const chal=save.challenge&&save.challenge.fresh?save.challenge:null;
   if(chal) chal.fresh=false;
   save.seen[L.id]=true; persist(); renderActions();
-  if(!tip&&!fresh.length&&!chal&&!tierNote) return;
-  $('introTitle').textContent=chal?t('{from} challenged you!',{from:chal.from}):tip?t(tip.title):tierNote?t('{tier} picture',{tier:TIERS[L.tier].label}):t('New booster');
+  if(!tip&&!fresh.length&&!chal&&!tierNote&&!state.daily) return;
+  $('introTitle').textContent=state.daily&&!tip?t('Daily picture'):chal?t('{from} challenged you!',{from:chal.from}):tip?t(tip.title):tierNote?t('{tier} picture',{tier:TIERS[L.tier].label}):t('New booster');
   $('introText').innerHTML=tip?t(tip.text):'';
   $('introText').hidden=!tip;
   let html='';
+  if(state.daily){
+    const s=dailyStreakNext();
+    html+=`<div class="booster">${icon('daily')}<b>${t('Daily picture: {title}',{title:esc(T(L))})}</b><br>${t('Less paint than usual: {drops}.',{drops:tn(state.budget,'drop')})} ${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</div>`;
+  }
   if(chal){
     const ci=LEVELS.findIndex(l=>l.id===chal.level), n=LEVELS.slice(0,ci).filter(l=>save.best[l.id]==null).length;
     html+=`<div class="booster">🏆 ${t('Restore <b>{title}</b> with more than <b>{score}★</b>.',{title:esc(T(LEVELS[ci])),score:chal.score})}`+
@@ -357,8 +367,8 @@ function renderMix(override){
   else if(p>=95){msg.textContent=t('Match! Painting…');msg.className='msg good';}
   else{msg.textContent=advice(m,r.target);msg.className='msg';}
 }
-function advice(m,t){
-  const dl=lab(m)[0]-lab(t)[0];
+function advice(m,tg){
+  const dl=lab(m)[0]-lab(tg)[0];
   const hasBW=!L.paints||L.paints.includes('W');
   if(dl>10) return hasBW?t('Too light. Add color or a touch of black.'):t('Not quite. Check which paints the target needs.');
   if(dl<-10) return hasBW?t('Too dark. Try adding white.'):t('Not quite. Check which paints the target needs.');
@@ -402,9 +412,9 @@ function renderActions(){
 }
 function updateHud(){
   $('progress').textContent=Object.keys(state.done).length+' / '+L.regions.length;
-  $('tierPill').hidden=!TIERS[L.tier].label; $('tierPill').textContent=TIERS[L.tier].label;
+  const tl=state.daily?t('Daily'):TIERS[L.tier].label; $('tierPill').hidden=!tl; $('tierPill').textContent=tl;
   $('paintLeft').textContent=state.paint;
-  const f=$('paintFill'),pc=Math.min(100,state.paint/L.budget*100);
+  const f=$('paintFill'),pc=Math.min(100,state.paint/state.budget*100);
   f.style.width=pc+'%';f.style.background=pc>40?'var(--accent)':pc>15?'var(--gold)':'var(--warn)';
   const ch=save.challenge, bar=$('chBar'); bar.hidden=!ch;
   if(ch){const lv=LEVELS.find(l=>l.id===ch.level);
@@ -423,8 +433,8 @@ function isLocked(b){
 function canUse(b){return save.inv[b]>0||save.coins>=BOOSTERS[b].price;}
 function spend(b){
   if(save.inv[b]>0){save.inv[b]--;persist();}
-  else if(save.coins>=BOOSTERS[b].price){addCoins(-BOOSTERS[b].price);toast(t('{name} bought: {coins}',{name:BOOSTERS[b].name,coins:tn(BOOSTERS[b].price,'coin')}));}
-  else{toast(t('{name} costs {price}. You have {have}.',{name:BOOSTERS[b].name,price:tn(BOOSTERS[b].price,'coin'),have:save.coins}));buzz(40);return false;}
+  else if(save.coins>=BOOSTERS[b].price){addCoins(-BOOSTERS[b].price); sfx('coin');toast(t('{name} bought: {coins}',{name:BOOSTERS[b].name,coins:tn(BOOSTERS[b].price,'coin')}));}
+  else{toast(t('{name} costs {price}. You have {have}.',{name:BOOSTERS[b].name,price:tn(BOOSTERS[b].price,'coin'),have:save.coins}));buzz(40);sfx('wrong');return false;}
   renderActions(); return true;
 }
 function refundDrop(){state.paint++; state.used[state.sel]--; updateHud();}
@@ -433,7 +443,7 @@ function refundDrop(){state.paint++; state.used[state.sel]--; updateHud();}
 function forceUndo(k){
   state.forced=true;
   $('coachTip').innerHTML=t('Oops! {part} has no <b>{paint}</b> in it.',{part:esc(N(current())),paint:PN(k)})+'<br>'+t('Tap <b>Undo</b> to take that drop back. This one is free.');
-  buzz([40,50,40]);
+  buzz([40,50,40]); sfx('wrong');
   $('coachTip').hidden=false; $('coachDim').hidden=false;
   $('undoBtn').classList.add('coach'); document.querySelector('.swatches').classList.add('lift');
   document.body.classList.add('coaching');
@@ -452,9 +462,9 @@ function addDrop(k){
   if(!state||state.finished||state.applying) return false;
   if(state.forced){nudge();return false;}
   if(state.paint<=0){outOfPaint();return false;}
-  if(state.drops.length>=12){renderMix([t('The bowl is full. Take drops out or empty it.'),'bad']);buzz(40);return false;}
+  if(state.drops.length>=12){renderMix([t('The bowl is full. Take drops out or empty it.'),'bad']);buzz(40);sfx('wrong');return false;}
   state.picking=false; state.hintMsg=null;
-  state.drops.push(k); state.paint--; state.used[state.sel]=(state.used[state.sel]||0)+1; buzz(8);
+  state.drops.push(k); state.paint--; state.used[state.sel]=(state.used[state.sel]||0)+1; buzz(8); sfx('drop',k);
   updateHud(); renderHint(); renderMix();
   if(L.intro==='undo'&&!save.tut.undo&&!current().recipe[k]) forceUndo(k);
   else afterMixChange();
@@ -521,7 +531,7 @@ $('emptyBtn').onclick=()=>{
 };
 // Empty animation: the bowl tips, the paint drains and spills over the rim, and the drop row falls away.
 function pourOut(done){
-  const chip=$('mixChip'), st=state; buzz(15);
+  const chip=$('mixChip'), st=state; buzz(15); sfx('pour');
   if(reduced){done();return;}
   state.applying=true;
   const col=chip.style.background||INK, r=chip.getBoundingClientRect();
@@ -533,12 +543,12 @@ function pourOut(done){
 $('undoBtn').onclick=()=>{
   if(state.applying||isLocked('undo')||!state.drops.length) return;
   if(state.forced){
-    state.drops.pop(); refundDrop(); state.forced=false; save.tut.undo=true; persist(); hideCoach();
+    state.drops.pop(); refundDrop(); sfx('undo'); state.forced=false; save.tut.undo=true; persist(); hideCoach();
     renderMix([t("That's Undo. You have {n} left, then they cost {price}.",{n:save.inv.undo,price:tn(BOOSTERS.undo.price,'coin')}),'good']);
     afterMixChange(); return;
   }
   if(!spend('undo')) return;
-  state.drops.pop(); state.picking=false; state.hintMsg=null; refundDrop(); renderHint(); renderMix([t('Drop taken back. Paint refunded.'),'']);
+  state.drops.pop(); state.picking=false; state.hintMsg=null; refundDrop(); sfx('undo'); renderHint(); renderMix([t('Drop taken back. Paint refunded.'),'']);
   afterMixChange();
 };
 $('pickBtn').onclick=()=>{
@@ -552,14 +562,14 @@ $('drops').addEventListener('click',e=>{
   const d=e.target.closest('span[data-i]'); if(!d||!state.picking) return;
   if(!spend('pick')) return;
   const k=state.drops.splice(+d.dataset.i,1)[0];
-  state.picking=false; state.hintMsg=null; refundDrop(); renderHint(); renderMix([t('{paint} taken out. Paint refunded.',{paint:PN(k)}),'']);
+  state.picking=false; state.hintMsg=null; refundDrop(); sfx('undo'); renderHint(); renderMix([t('{paint} taken out. Paint refunded.',{paint:PN(k)}),'']);
   afterMixChange();
 });
 $('hintBtn').onclick=()=>{
   if(state.applying||isLocked('hint')||state.finished||state.hintMsg||!spend('hint')) return;
   state.hinted[state.sel]=true; state.hintMsg=nextHint(); renderHint();
 };
-$('retryBtn').onclick=()=>start(L.index);
+$('retryBtn').onclick=()=>start(L.index,{daily:state&&state.daily});
 $('nextBtn').onclick=()=>start(Math.min(L.index+1,LEVELS.length-1));
 $('rescueBtn').onclick=rescue;
 $('shareBtn').onclick=share;
@@ -569,7 +579,7 @@ function apply(){
   const r=current(),m=mix(counts()); if(!m) return;
   const p=matchPct(m,r.target);
   if(p<95){
-    const chip=$('mixChip');chip.classList.remove('shake');void chip.offsetWidth;chip.classList.add('shake');
+    const chip=$('mixChip');chip.classList.remove('shake');void chip.offsetWidth;chip.classList.add('shake'); sfx('wrong');
     renderMix([t('{p}% is not close enough.',{p})+' '+advice(m,r.target),'bad']);
     if(state.paint<=0) setTimeout(outOfPaint,700);
     return;
@@ -585,6 +595,7 @@ function apply(){
   burst(gb.left+gb.width/2,gb.top+gb.height/2,[hex(r.target),hex(r.target),'#ffffff'],18,{speed:5,size:4,decay:.028,gravity:.12});
   const c=s*COINS_PER_STAR*TIERS[L.tier].mult; addCoins(c);
   // Like ColorFind: show drops used against the minimum (the recipe size) for this part.
+  sfx('restore',Object.keys(state.done).length/L.regions.length);
   toast(`${N(r)} ${'★'.repeat(s)}${'☆'.repeat(3-s)} · ${used<=r.min?t('perfect: {drops}',{drops:tn(used,'drop')}):t('{drops}, min {min}',{drops:tn(used,'drop'),min:r.min})} · +${tn(c,'coin')}`);
   buzz(25);
   state.drops=[]; state.picking=false; state.hintMsg=null; updateHud(); renderHint();
@@ -639,7 +650,7 @@ function finishPicture(){
 }
 function celebrate(st){
   const frame=document.querySelector('.frame');
-  frame.classList.remove('celebrate'); void frame.offsetWidth; frame.classList.add('celebrate');
+  frame.classList.remove('celebrate'); void frame.offsetWidth; frame.classList.add('celebrate'); setTimeout(()=>{if(state===st) sfx('fanfare');},350);
   // 1. light wave: regions flash left to right
   [...scene.querySelectorAll('.region')].map(g=>{const b=g.getBoundingClientRect();return {g,x:b.left+b.width/2};})
     .sort((a,b)=>a.x-b.x).forEach((o,i)=>{o.g.style.animationDelay=(i*80)+'ms';o.g.classList.remove('flash');void o.g.getBoundingClientRect();o.g.classList.add('flash');});
@@ -656,7 +667,7 @@ function celebrate(st){
     burst(innerWidth,innerHeight,cols,70,{angle:-Math.PI+Math.PI/2.7,spread:.7,speed:22,shapes:['rect','drop','star','rect'],decay:.005,gravity:.35,size:6});
   },400);
   // 4. "Restored" stamp slams onto the picture
-  setTimeout(()=>{ if(state!==st) return; $('stamp').hidden=false; burst(cx,cy,[INK,'#ffffff'],26,{speed:8,shapes:['star'],decay:.03,size:5}); },1350);
+  setTimeout(()=>{ if(state!==st) return; $('stamp').hidden=false; sfx('stamp'); burst(cx,cy,[INK,'#ffffff'],26,{speed:8,shapes:['star'],decay:.03,size:5}); },1350);
 }
 function countUp(el,to){
   if(reduced||!to){el.textContent=to;return;}
@@ -671,16 +682,20 @@ function win(){
   save.best[L.id]=Math.max(save.best[L.id]||0,s);
   const ch=save.challenge&&save.challenge.level===L.id?save.challenge:null, beaten=!!ch&&total>ch.score;
   if(beaten) save.challenge=null;
+  let daily=null;
+  if(state.daily&&!dailyDone()){const streak=dailyStreakNext(), c=dailyReward(streak); save.daily={last:dayKey(),streak}; addCoins(c); daily={streak,c};
+    setTimeout(()=>{if(state===st) sfx('daily');},1400);}
   persist(); renderMenu(); updateHud(); buzz([30,60,30,60,70]);
   $('endTitle').textContent=t('{title} restored',{title:T(L)});
   $('endStars').innerHTML=[0,1,2].map(i=>`<span class="${i<s?'':'off'}" style="animation-delay:${250+i*280}ms">★</span>`).join('');
   const usedAll=L.regions.reduce((a,r)=>a+(state.used[r.id]||0),0), minAll=L.regions.reduce((a,r)=>a+r.min,0);
   $('endText').innerHTML=`${total} / ${max}★  ·  +<b id="earnNum">0</b> <span class="coin"></span> ${t('earned')}`+
     `<br>${t('Drops used <b>{used}</b> · minimum <b>{min}</b>',{used:usedAll,min:minAll})}${usedAll<=minAll?' · '+t('perfect!'):''}`+
+    (daily?`<br><b>${t('Daily picture done! +{coins} · streak: {days}.',{coins:tn(daily.c,'coin'),days:tn(daily.streak,'day')})}</b>`:'')+
     (ch?(beaten?`<br><b>${t("You beat {from}'s {score}★!",{from:esc(ch.from),score:ch.score})}</b>`:'<br>'+t('{from} still leads: {score}★ vs your {you}★. Replay to beat it.',{from:esc(ch.from),score:ch.score,you:total})):'')+
     (L.credit?`<br>${t(L.credit)}.`:'')+(QZ&&factFor(L.id)?`<br><i>${t('Did you know?')}</i> ${esc(t(factFor(L.id).fact))}`:'')+(last?'<br>'+t('That was the last picture.'):'');
   countUp($('earnNum'),state.earned);
-  for(let i=0;i<s;i++) setTimeout(()=>{ if(state!==st) return; const b=$('endStars').children[i].getBoundingClientRect();
+  for(let i=0;i<s;i++) setTimeout(()=>{ if(state!==st) return; sfx('star',i); const b=$('endStars').children[i].getBoundingClientRect();
     burst(b.left+b.width/2,b.top+b.height/2,[INK,'#ffffff'],14,{speed:5,shapes:['star'],decay:.03,size:4,gravity:.1}); },450+i*280);
   if(beaten) setTimeout(()=>{ if(state===st) burst(innerWidth/2,innerHeight/3,[...new Set(L.regions.map(r=>hex(r.target)))],90,{speed:14,shapes:['rect','star','drop'],decay:.007,gravity:.25,size:6}); },900);
   // Share / challenge
@@ -752,7 +767,7 @@ function copyText(t){
 function outOfPaint(){
   if(!state||!$('endOverlay').hidden||state.finished) return;
   const r=current(), ok=save.coins>=RESCUE_PRICE;
-  $('endTitle').textContent=t('Out of paint'); buzz([60,40,60]);
+  $('endTitle').textContent=t('Out of paint'); buzz([60,40,60]); sfx('fail');
   $('endStars').textContent='';
   $('endText').innerHTML=t('Parts restored: {done} of {all}.',{done:Object.keys(state.done).length,all:L.regions.length})+' '+
     (ok?t('Restart <b>{part}</b> with fresh paint and keep the rest of your work.',{part:esc(N(r))}):t('Restarting a part costs {price}. You have {have}.',{price:tn(RESCUE_PRICE,'coin'),have:save.coins}));
@@ -777,6 +792,26 @@ function rescue(){
   updateHud(); select(r.id);
   toast(t('{part} restarted. Paint refilled.',{part:N(r)}));
 }
+// ---------- Daily picture (only for games that define G.daily) ----------
+// Every day one restored picture comes back with less paint. Restoring it pays coins that grow with the streak.
+const dayHash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;};
+function dailyPool(){
+  const done=LEVELS.map((l,i)=>i).filter(i=>save.best[LEVELS[i].id]!=null), hard=done.filter(i=>LEVELS[i].tier!=='easy');
+  return hard.length>=2?hard:done; // skip the tutorials once there is enough else to pick from
+}
+function dailyIndex(){const p=dailyPool(); return p.length?p[dayHash(GAME_NAME+dayKey())%p.length]:-1;}
+function dailyBudget(l){return Math.min(l.budget,Math.ceil(l.regions.reduce((a,r)=>a+r.min,0)*DAILY.ratio));}
+const dailyDone=()=>!!save.daily&&save.daily.last===dayKey();
+function dailyStreakNext(){const d=save.daily; if(!d) return 1; if(d.last===dayKey()) return d.streak; return d.last===dayKey(new Date(Date.now()-864e5))?d.streak+1:1;}
+const dailyReward=s=>DAILY.coins[Math.min(s,DAILY.coins.length)-1];
+function renderDailyPic(){
+  const b=$('dailyPicBtn'), i=DAILY?dailyIndex():-1; b.hidden=i<0; $('home').classList.toggle('hasDaily',i>=0); if(i<0) return;
+  const s=dailyStreakNext(), lv=LEVELS[i];
+  b.classList.toggle('done',dailyDone());
+  b.innerHTML=icon('daily')+`<span class="dlab"><b>${dailyDone()?t('Daily picture done · streak: {days}',{days:tn(s,'day')}):t('Daily picture')+(s>1?' · '+t('day {n}',{n:s}):'')}</b>`+
+    `<small>${esc(T(lv))}${dailyDone()?'':` · +${dailyReward(s)} <span class="coin"></span>`}</small></span>`;
+}
+$('dailyPicBtn').onclick=()=>{const i=dailyIndex(); if(i>=0) start(i,{daily:true});};
 // ---------- Art quiz (only for games that define G.quiz) ----------
 const QZ=G.quiz||null;
 const levelOf=id=>LEVELS.find(l=>l.id===id);
@@ -847,7 +882,7 @@ $('quizOpts').addEventListener('click',e=>{
     const reward=QZ.dailyCoins[Math.min(st,QZ.dailyCoins.length)-1];
     if(ok){addCoins(reward); msg=t('Correct! +{coins} · streak: {days}.',{coins:tn(reward,'coin'),days:tn(st,'day')});} else msg=t("Not quite. It's {answer}. Your streak continues: {days}.",{answer:esc(showAns(q,q.right)),days:tn(st,'day')});
   }
-  persist(); buzz(ok?[25,40,25]:60);
+  persist(); buzz(ok?[25,40,25]:60); sfx(ok?'coin':'wrong');
   $('quizResult').innerHTML=`<b>${msg}</b><br>${esc(t(q.f.fact))}`; $('quizResult').hidden=false;
   $('quizDone').textContent=kind==='rescue'&&ok?t('Keep painting'):t('Continue'); $('quizDone').hidden=false;
 });
@@ -911,6 +946,7 @@ function applyTheme(){ if(theme==='auto') delete document.documentElement.datase
 function renderSettings(){
   document.querySelectorAll('#setTheme button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===theme));
   document.querySelectorAll('#setLang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===I18N.pref||(I18N.pref==='auto'&&b.dataset.v==='auto')));
+  const snd=!!window.SFX&&SFX.supported; $('setSound').setAttribute('aria-checked',snd&&SFX.enabled); $('setSound').disabled=!snd;
   $('setVib').setAttribute('aria-checked',vibOn&&canVibrate); $('setVib').disabled=!canVibrate; $('vibNote').hidden=canVibrate;
 }
 $('settingsBtn').innerHTML=icon('gear');
@@ -918,6 +954,7 @@ $('settingsBtn').onclick=()=>{renderSettings(); $('settingsOverlay').hidden=fals
 $('settingsDone').onclick=()=>{$('settingsOverlay').hidden=true;};
 $('setTheme').onclick=e=>{const b=e.target.closest('button'); if(!b) return; theme=b.dataset.v; try{localStorage.setItem(THEME_KEY,theme);}catch(err){} applyTheme(); renderSettings();};
 $('setLang').onclick=e=>{const b=e.target.closest('button'); if(!b||b.dataset.v===I18N.pref) return; I18N.setPref(b.dataset.v); location.reload();};
+$('setSound').onclick=()=>{ if(!window.SFX) return; SFX.enabled=!SFX.enabled; renderSettings(); sfx('drop','Y'); };
 $('setVib').onclick=()=>{vibOn=!vibOn; try{localStorage.setItem(VIB_KEY,vibOn?'on':'off');}catch(e){} renderSettings(); buzz(30);};
 applyTheme();
 let tt;function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),1800);}

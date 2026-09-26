@@ -116,3 +116,21 @@ ru:{
 '{name} unlocks in picture {n}: {title}':'«{name}» откроется на картинке {n}: {title}','{name}, locked until picture {n}':'«{name}» закрыт до картинки {n}','{n} left':'осталось {n}','{paint} taken out. Paint refunded.':'Убрано: {paint}. Краска возвращена.',
 '{part} restarted. Paint refilled.':'«{part}» заново. Краска пополнена.','{p}% is not close enough.':'{p}% — недостаточно близко.','{p}% match':'совпадение {p}%','{tier} picture':'Картинка: {tier}','{tier} picture.':'Картинка: {tier}.','{title} restored':'«{title}» восстановлена'
 }});
+// Sound and daily picture
+I18N.add({
+fr:{
+'Sound':'Son','Daily':'Du jour','Daily picture':'Image du jour','Daily picture: {title}':'Image du jour : {title}',
+'Less paint than usual: {drops}.':'Moins de peinture que d’habitude : {drops}.',
+"Today's reward is already yours. This one is for fun.":'La récompense du jour est déjà à vous. Celle-ci, c’est pour le plaisir.',
+'Restore it for {coins}. Streak: {days}.':'Restaurez-la pour {coins}. Série : {days}.',
+'Daily picture done! +{coins} · streak: {days}.':'Image du jour terminée ! +{coins} · série : {days}.',
+'Daily picture done · streak: {days}':'Image du jour faite · série : {days}'
+},
+ru:{
+'Sound':'Звук','Daily':'Сегодня','Daily picture':'Картинка дня','Daily picture: {title}':'Картинка дня: {title}',
+'Less paint than usual: {drops}.':'Краски меньше обычного: {drops}.',
+"Today's reward is already yours. This one is for fun.":'Сегодняшняя награда уже ваша. Эта — просто для удовольствия.',
+'Restore it for {coins}. Streak: {days}.':'Восстановите её и получите {coins}. Серия: {days}.',
+'Daily picture done! +{coins} · streak: {days}.':'Картинка дня готова! +{coins} · серия: {days}.',
+'Daily picture done · streak: {days}':'Картинка дня пройдена · серия: {days}'
+}});

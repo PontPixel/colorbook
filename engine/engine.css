@@ -271,3 +271,65 @@ body:has(#game:not([hidden])){padding-bottom:12px}
   :root:not([data-theme="light"]) .paint[data-k="K"] .blob{box-shadow:inset 0 0 0 1.5px #3a3f4f}}
 :root[data-theme="dark"] .homeMain .logo,:root[data-theme="dark"] .brand img{mix-blend-mode:normal;border-radius:8px}
 :root[data-theme="dark"] .paint[data-k="K"] .blob{box-shadow:inset 0 0 0 1.5px #3a3f4f}
+
+/* ---------- Settings ---------- */
+.settings{gap:14px;text-align:left}
+.settings h2{text-align:center}
+.setrow{display:flex;flex-direction:column;gap:6px}
+.setrow>span{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--soft);border-radius:14px;padding:4px}
+.seg button{appearance:none;border:0;background:none;flex:1 1 auto;padding:9px 8px;border-radius:10px;font:600 14px "Inter",system-ui,sans-serif;color:var(--muted2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.setrow:has(.switch){flex-direction:row;align-items:center;justify-content:space-between}
+.switch{appearance:none;border:0;width:52px;height:30px;border-radius:99px;background:var(--line);position:relative;cursor:pointer;padding:0;transition:background .2s}
+.switch i{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--panel);box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.switch[aria-checked="true"]{background:var(--ink)}
+.switch[aria-checked="true"] i{transform:translateX(22px)}
+.switch:disabled{opacity:.4;cursor:default}
+.setnote{font-size:13px;margin:-6px 0 0!important}
+/* ---------- Empty: the bowl tips, drains and the drops fall away ---------- */
+.chip{position:relative}
+.chip::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 35%,var(--chip-a),var(--chip-b));opacity:0;pointer-events:none}
+.chip.pour{animation:pour .62s ease-in-out}
+.chip.pour::after{animation:drain .62s ease-in forwards}
+@keyframes pour{35%,75%{transform:rotate(-32deg)}100%{transform:rotate(0)}}
+@keyframes drain{0%,25%{opacity:1;clip-path:inset(0 0 100% 0)}100%{opacity:1;clip-path:inset(0 0 0 0)}}
+.drops span.fall{animation:dropfall .5s ease-in forwards}
+@keyframes dropfall{from{transform:rotate(-45deg)}to{transform:translate(-18px,46px) rotate(-160deg);opacity:0}}
+/* ---------- Gallery hall (dramatic: the hall is part of the picture world, always dark) ---------- */
+.hallMode .homeMain{justify-content:flex-start;gap:8px}
+.hallWrap{width:100%;display:flex;flex-direction:column;gap:8px}
+.hallRoom{display:flex;flex-direction:column;align-items:center;gap:1px}
+.hallRoom small{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.hallRoom b{font:800 19px/1.2 "Inter",system-ui,sans-serif;letter-spacing:-.3px}
+.hallRoom span{font-size:12px;color:var(--muted)}
+.hall{position:relative;height:clamp(236px,39dvh,360px);border-radius:22px;overflow:hidden;background:#17181e;box-shadow:var(--shadow)}
+.hall::before{content:"";position:absolute;left:0;right:0;top:14px;height:3px;background:#2b2e37;z-index:1}
+.hall::after{content:"";position:absolute;left:0;right:0;bottom:0;height:20%;background:#0d0e12;border-top:2px solid #23252d;pointer-events:none}
+.hallTrack{position:relative;z-index:2;display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 21%}
+.hallTrack::-webkit-scrollbar{display:none}
+.slot{appearance:none;border:0;background:none;padding:0;flex:0 0 58%;scroll-snap-align:center;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:transform .3s,opacity .3s;transform:scale(.86);opacity:.6;color:#c9ccd6;font:inherit}
+.slot.center{transform:scale(1);opacity:1}
+.slot .lamp{position:absolute;top:14px;left:50%;width:12px;height:8px;margin-left:-6px;border-radius:2px;background:#3a3d47}
+.slot .lamp::after{content:"";position:absolute;left:50%;top:7px;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#fff4d6;box-shadow:0 0 10px 3px rgba(255,244,214,.6)}
+.slot .cone{position:absolute;top:20px;left:-8%;right:-8%;height:82%;background:linear-gradient(#fff4d61f,#fff4d608);clip-path:polygon(47% 0,53% 0,100% 100%,0 100%);pointer-events:none}
+.slot.center .cone{background:linear-gradient(#fff4d633,#fff4d60d)}
+.slot.locked .cone{opacity:.35}
+.hframe{position:relative;width:82%;margin-top:18px;border:6px solid #08090b;background:#08090b;box-shadow:0 14px 30px rgba(0,0,0,.6)}
+.hframe svg{display:block;width:100%;height:auto}
+.slot.next .hframe{outline:2px solid #c9a45a;outline-offset:-10px}
+.cloth{position:absolute;inset:-4px;width:calc(100% + 8px);height:calc(100% + 8px)}
+.slot.locked .hframe svg:first-child{visibility:hidden}
+.hplaque{font:600 11px/1 "Inter",system-ui,sans-serif;background:#1c1e26;color:#c9ccd6;border-radius:4px;padding:5px 9px;letter-spacing:.02em}
+.hplaque .off{color:#4a4e5c}
+.slot.next .hplaque{background:#f3efe4;color:#101116}
+.rope{position:absolute;bottom:4%;width:86%;height:auto}
+.hallDots{display:flex;justify-content:center;gap:6px}
+.hallDots i{width:6px;height:6px;border-radius:50%;background:var(--line)}
+.hallDots i.got{background:var(--muted)}
+.hallDots i.on{width:16px;border-radius:9px;background:var(--ink)}
+.hallPlaque{background:var(--panel);border-radius:16px;padding:10px 14px;box-shadow:0 0 0 1px var(--line);text-align:left}
+.hallPlaque .t{font:700 15px/1.25 "Inter",system-ui,sans-serif}
+.hallPlaque .s{font-size:12px;color:var(--muted);margin-top:2px}
+.hallMode .btn.play{margin-top:2px;padding:14px}
+.hallMode .btn.play:disabled{opacity:.45}

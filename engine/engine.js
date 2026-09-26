@@ -3,30 +3,39 @@
 (function(){
 const {PAINTS,PMAP,mix,hex,lab,dE,matchPct,BLANK,BLANK_STROKE,INK}=CF;
 const G=window.GAME, LEVELS=G.levels, GAME_NAME=G.name;
+const {t,tn}=I18N; if(G.strings) I18N.add(G.strings);
+const HALL=G.hall||null; // optional gallery-hall home screen (ColorGallery)
+const T=l=>t(l.title), N=r=>t(r.name), PN=k=>t(PMAP[k].name); // localized level title, part name, paint name
 document.body.insertAdjacentHTML('afterbegin',`
 <!-- Home (menu) scene -->
-<main class="home" id="home">
+<main class="home${HALL?' hallMode':''}" id="home">
   <div class="topbar">
     <div class="pill" id="homeStars">★ 0</div>
     <div class="topr">
-      <button class="iconbtn themebtn" id="themeBtn" aria-label="Theme"></button>
+      <button class="iconbtn" id="settingsBtn" aria-label="${t('Settings')}"></button>
       <div class="pill coins"><span class="coin"></span><span class="coinCount">0</span></div>
     </div>
   </div>
   <section class="homeMain" id="homeMain">
     <img class="logo" src="${G.logo}" alt="${GAME_NAME}" width="137" height="210">
-    <button class="nextPic" id="nextPic" aria-label="Play next picture"></button>
-    <div class="nextLabel" id="nextLabel">Picture 1</div>
-    <div class="nextTitle" id="nextTitle">Balloons</div>
+    <button class="nextPic" id="nextPic" aria-label="${t('Play next picture')}"></button>
+    <div class="nextLabel" id="nextLabel"></div>
+    <div class="nextTitle" id="nextTitle"></div>
+    <div class="hallWrap" id="hallWrap" hidden>
+      <div class="hallRoom"><small id="hallRoomNo"></small><b id="hallRoomName"></b><span id="hallRoomProg"></span></div>
+      <div class="hall"><div class="hallTrack" id="hallTrack"></div></div>
+      <div class="hallDots" id="hallDots"></div>
+      <div class="hallPlaque"><div class="t" id="hallTitle"></div><div class="s" id="hallSub"></div></div>
+    </div>
     <div class="chbar" id="homeCh" hidden></div>
-    <button class="btn play" id="playBtn">Play</button>
+    <button class="btn play" id="playBtn">${t('Play')}</button>
     <button class="btn quizbtn" id="dailyQuizBtn" hidden></button>
   </section>
   <section class="gallery" id="gallery" hidden>
-    <h2>Gallery</h2>
+    <h2>${t(HALL?'Collection':'Gallery')}</h2>
     <div class="ggrid" id="ggrid"></div>
   </section>
-  <nav class="tabbar" aria-label="Menu">
+  <nav class="tabbar" aria-label="${t('Menu')}">
     <button class="tab" data-tab="home" aria-current="true"></button>
     <button class="tab" data-tab="gallery" aria-current="false"></button>
   </nav>
@@ -35,41 +44,41 @@ document.body.insertAdjacentHTML('afterbegin',`
 <!-- Game scene -->
 <div class="wrap" id="game" hidden>
   <div class="gamebar">
-    <button class="iconbtn" id="backBtn" aria-label="Back to menu"></button>
+    <button class="iconbtn" id="backBtn" aria-label="${t('Back to menu')}"></button>
     <div class="pill" id="progress">0 / 10</div>
     <div class="pill tier" id="tierPill" hidden></div>
-    <div class="paintgauge" title="Paint left for this picture">
+    <div class="paintgauge" title="${t('Paint left for this picture')}">
       <div class="bar"><i id="paintFill"></i></div>
       <span id="paintLeft">40</span>
     </div>
-    <div class="pill coins" id="coins" title="Coins"><span class="coin"></span><span class="coinCount">0</span></div>
+    <div class="pill coins" id="coins" title="${t('Coins')}"><span class="coin"></span><span class="coinCount">0</span></div>
   </div>
 
   <div class="board">
   <div class="stage">
   <div class="frame">
-    <svg class="scene" id="scene" viewBox="0 0 320 240" aria-label="Faded picture"></svg>
-    <div class="stamp" id="stamp" hidden>Restored</div>
+    <svg class="scene" id="scene" viewBox="0 0 320 240" aria-label="${t('Faded picture')}"></svg>
+    <div class="stamp" id="stamp" hidden>${t('Restored')}</div>
   </div>
   <div class="credit" id="credit"></div>
   <div class="chbar" id="chBar" hidden></div>
   </div>
 
-  <section class="mixer" aria-label="Mixing table">
+  <section class="mixer" aria-label="${t('Mixing table')}">
     <div class="swatches">
       <div class="sw">
         <div class="chip" id="targetChip"></div>
-        <div class="target-name" id="targetName">Sun</div>
+        <div class="target-name" id="targetName"></div>
       </div>
       <div class="sw">
         <div class="chip empty" id="mixChip"></div>
-        <div class="drops" id="drops"><em>add paint</em></div>
+        <div class="drops" id="drops"></div>
       </div>
     </div>
-    <div class="meter" id="meter" role="progressbar" aria-label="Match" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div class="meter" id="meter" role="progressbar" aria-label="${t('Match')}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="bar"><i id="barFill"></i></div>
     </div>
-    <div class="msg" id="msg">Match 95% or more to paint.</div>
+    <div class="msg" id="msg"></div>
     <div class="hint" id="hint"></div>
     <div class="paints" id="paints"></div>
     <div class="coachTip" id="coachTip" hidden></div>
@@ -87,20 +96,20 @@ document.body.insertAdjacentHTML('afterbegin',`
 
 <div class="overlay" id="endOverlay" hidden>
   <div class="card">
-    <h2 id="endTitle">Picture restored</h2>
+    <h2 id="endTitle"></h2>
     <div class="stars" id="endStars"></div>
     <p id="endText"></p>
     <div class="share" id="shareBox" hidden>
       <div class="note" id="shareNote"></div>
-      <input id="nameInput" maxlength="16" placeholder="Your name (optional)" autocomplete="nickname" aria-label="Your name">
-      <button class="btn accent" id="shareBtn">Challenge a friend</button>
+      <input id="nameInput" maxlength="16" placeholder="${t('Your name (optional)')}" autocomplete="nickname" aria-label="${t('Your name')}">
+      <button class="btn accent" id="shareBtn">${t('Challenge a friend')}</button>
     </div>
     <button class="btn accent" id="quizOfferBtn" hidden></button>
     <button class="btn primary" id="rescueBtn" hidden></button>
     <div class="row">
-      <button class="btn iconbtn" id="endHomeBtn" aria-label="Menu"></button>
-      <button class="btn" id="retryBtn">Replay</button>
-      <button class="btn primary" id="nextBtn">Next picture</button>
+      <button class="btn iconbtn" id="endHomeBtn" aria-label="${t('Menu')}"></button>
+      <button class="btn" id="retryBtn">${t('Replay')}</button>
+      <button class="btn primary" id="nextBtn">${t('Next picture')}</button>
     </div>
   </div>
 </div>
@@ -109,28 +118,40 @@ document.body.insertAdjacentHTML('afterbegin',`
     <h2 id="introTitle"></h2>
     <p id="introText"></p>
     <div class="col" id="introBoosters"></div>
-    <button class="btn primary" id="introBtn">Let's paint</button>
+    <button class="btn primary" id="introBtn">${t("Let's paint")}</button>
   </div>
 </div>
 <div class="overlay" id="quizOverlay" hidden>
   <div class="card quizcard">
     <div class="quizImg" id="quizImg"></div>
-    <div class="quizEyebrow" id="quizEyebrow">Art quiz</div>
+    <div class="quizEyebrow" id="quizEyebrow"></div>
     <div class="quizTitle" id="quizTitle"></div>
     <h2 id="quizQ"></h2>
     <div class="quizOpts" id="quizOpts"></div>
     <p class="quizResult" id="quizResult" hidden></p>
-    <button class="btn primary" id="quizDone" hidden>Continue</button>
+    <button class="btn primary" id="quizDone" hidden>${t('Continue')}</button>
   </div>
 </div>
 <div class="overlay" id="quitOverlay" hidden>
   <div class="card">
-    <h2>Leave this picture?</h2>
-    <p>Parts you restored in this picture will be lost. Coins you earned stay.</p>
+    <h2>${t('Leave this picture?')}</h2>
+    <p>${t('Parts you restored in this picture will be lost. Coins you earned stay.')}</p>
     <div class="row">
-      <button class="btn" id="quitStay">Keep painting</button>
-      <button class="btn primary" id="quitLeave">Leave</button>
+      <button class="btn" id="quitStay">${t('Keep painting')}</button>
+      <button class="btn primary" id="quitLeave">${t('Leave')}</button>
     </div>
+  </div>
+</div>
+<div class="overlay" id="settingsOverlay" hidden>
+  <div class="card settings">
+    <h2>${t('Settings')}</h2>
+    <div class="setrow"><span>${t('Theme')}</span>
+      <div class="seg" id="setTheme"><button data-v="auto">${t('Auto')}</button><button data-v="light">${t('Light')}</button><button data-v="dark">${t('Dark')}</button></div></div>
+    <div class="setrow"><span>${t('Language')}</span>
+      <div class="seg" id="setLang"><button data-v="auto">${t('Auto')}</button><button data-v="en">English</button><button data-v="fr">Français</button><button data-v="ru">Русский</button></div></div>
+    <div class="setrow"><span>${t('Vibration')}</span><button class="switch" id="setVib" role="switch" aria-checked="true" aria-label="${t('Vibration')}"><i></i></button></div>
+    <p class="setnote" id="vibNote" hidden>${t("This browser can't vibrate (iPhone Safari doesn't support it).")}</p>
+    <button class="btn primary" id="settingsDone">${t('Done')}</button>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -139,7 +160,7 @@ document.body.insertAdjacentHTML('afterbegin',`
 `);
 
 // Tier = paint slack (budget / sum of recipe sizes) and coin multiplier.
-const TIERS={easy:{ratio:1.8,mult:1,label:''},normal:{ratio:1.45,mult:1,label:''},hard:{ratio:1.25,mult:2,label:'Hard'},nightmare:{ratio:1.12,mult:3,label:'Nightmare'}};
+const TIERS={easy:{ratio:1.8,mult:1,label:''},normal:{ratio:1.45,mult:1,label:''},hard:{ratio:1.25,mult:2,label:t('Hard')},nightmare:{ratio:1.12,mult:3,label:t('Nightmare')}};
 LEVELS.forEach(L=>{
   L.regions.forEach(r=>{r.target=mix(r.recipe);r.min=Object.values(r.recipe).reduce((a,b)=>a+b,0);});
   L.tier=L.tier||'normal';
@@ -159,13 +180,15 @@ const ICONS={
   sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>',
   moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/>',
   auto:'<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>',
+  hall:'<path d="M3 21h18M5 21V10M19 21V10M9 21v-7M15 21v-7M2 10l10-6 10 6Z"/>',
   quiz:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17h.01"/>'};
 const icon=k=>`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
 const BOOSTERS={
-  empty:{name:'Empty',price:15,text:'Pours out the whole bowl and gives all its paint back.'},
-  undo:{name:'Undo',price:20,text:'Takes back your last drop and refunds its paint.'},
-  pick:{name:'Pick',price:30,text:'Tap it, then tap any drop in the bowl to remove just that color. The paint comes back.'},
-  hint:{name:'Hint',price:40,text:'Shows the next paint to add for the part you are on. That part can earn at most 2 stars.'}};
+  empty:{name:t('Empty'),price:15,text:t('Pours out the whole bowl and gives all its paint back.')},
+  undo:{name:t('Undo'),price:20,text:t('Takes back your last drop and refunds its paint.')},
+  pick:{name:t('Pick'),price:30,text:t('Tap it, then tap any drop in the bowl to remove just that color. The paint comes back.')},
+  hint:{name:t('Hint'),price:40,text:t('Shows the next paint to add for the part you are on. That part can earn at most 2 stars.')}};
 const FREE_BOOSTERS=3, RESCUE_PRICE=30, COINS_PER_STAR=3, FIRST_CLEAR_BONUS=20, REPLAY_BONUS=5;
 const introAt=b=>LEVELS.findIndex(l=>l.intro===b);
 const FIRST_PROPER=LEVELS.findIndex(l=>l.id===G.firstProper); // share/challenge from here on
@@ -182,7 +205,7 @@ const unlocked=i=>i===0||save.best[LEVELS[i-1].id]!=null||save.best[LEVELS[i].id
   let q; try{q=new URLSearchParams(location.search);}catch(e){return;}
   const c=q.get('c'), sc=parseInt(q.get('s'),10);
   if(!c||!LEVELS.some(l=>l.id===c)||!(sc>=0&&sc<=999)) return;
-  save.challenge={level:c,score:sc,from:(q.get('n')||'A friend').trim().slice(0,16)||'A friend',fresh:true}; persist();
+  save.challenge={level:c,score:sc,from:(q.get('n')||t('A friend')).trim().slice(0,16)||t('A friend'),fresh:true}; persist();
   try{history.replaceState(null,'',location.pathname);}catch(e){}
 })();
 
@@ -209,32 +232,36 @@ function nextIndex(){
 function renderMenu(){
   const i=nextIndex(), lv=LEVELS[i], b=save.best[lv.id], allDone=LEVELS.every(l=>save.best[l.id]!=null);
   $('nextPic').innerHTML=thumbSVG(lv,false);
-  $('nextLabel').textContent=allDone&&!save.challenge?'All pictures restored':`Picture ${i+1} of ${LEVELS.length}`+(TIERS[lv.tier].label?` · ${TIERS[lv.tier].label}`:'');
-  $('nextTitle').innerHTML=esc(lv.title)+(b!=null?`<span class="tstars">${starRow(b)}</span>`:'');
-  $('playBtn').textContent=b!=null?'Play again':'Play';
+  $('nextLabel').textContent=allDone&&!save.challenge?t('All pictures restored'):t('Picture {i} of {n}',{i:i+1,n:LEVELS.length})+(TIERS[lv.tier].label?` · ${TIERS[lv.tier].label}`:'');
+  $('nextTitle').innerHTML=esc(T(lv))+(b!=null?`<span class="tstars">${starRow(b)}</span>`:'');
+  $('playBtn').textContent=b!=null?t('Play again'):t('Play');
   $('homeStars').textContent='★ '+LEVELS.reduce((a,l)=>a+(save.best[l.id]||0),0);
   const ch=save.challenge; $('homeCh').hidden=!ch;
-  if(ch){const cl=LEVELS.find(l=>l.id===ch.level);$('homeCh').textContent=`🏆 ${ch.from} challenged you on ${cl.title}. Beat ${ch.score}★.`;}
+  if(ch){const cl=LEVELS.find(l=>l.id===ch.level);$('homeCh').textContent='🏆 '+t('{from} challenged you on {title}. Beat {score}★.',{from:ch.from,title:T(cl),score:ch.score});}
   $('ggrid').innerHTML=LEVELS.map((l,k)=>{const bb=save.best[l.id], ok=unlocked(k);
-    return `<button class="gcard" data-i="${k}" ${ok?'':'disabled'} aria-label="${esc(l.title)}${ok?'':', locked'}">${thumbSVG(l,bb!=null)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}<b>${k+1}. ${esc(l.title)}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${bb!=null?starRow(bb):''}</small></button>`;}).join('');
+    return `<button class="gcard" data-i="${k}" ${ok?'':'disabled'} aria-label="${esc(T(l))}${ok?'':', '+t('locked')}">${thumbSVG(l,bb!=null)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}<b>${k+1}. ${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${bb!=null?starRow(bb):''}</small></button>`;}).join('');
   renderDailyQuiz();
+  if(HALL) renderHall();
   renderCoins();
 }
 function showTab(t){
   $('homeMain').hidden=t!=='home'; $('gallery').hidden=t!=='gallery';
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===t));
+  if(HALL&&t==='home') requestAnimationFrame(()=>centerOn(hallCenter,false));
 }
 function goHome(tab){
   state=null; parts=[]; hideCoach();
-  ['endOverlay','introOverlay','quitOverlay','quizOverlay'].forEach(id=>$(id).hidden=true);
+  ['endOverlay','introOverlay','quitOverlay','quizOverlay','settingsOverlay'].forEach(id=>$(id).hidden=true);
   $('game').hidden=true; $('home').hidden=false;
   renderMenu(); showTab(tab||'home'); scrollTo(0,0);
 }
 document.querySelectorAll('.tab').forEach(b=>{
-  b.innerHTML=icon(b.dataset.tab)+(b.dataset.tab==='home'?'Home':'Gallery');
+  const home=b.dataset.tab==='home';
+  b.innerHTML=icon(home?(HALL?'hall':'home'):'gallery')+(home?t(HALL?'Hall':'Home'):t(HALL?'Collection':'Gallery'));
   b.onclick=()=>showTab(b.dataset.tab);
 });
-$('playBtn').onclick=$('nextPic').onclick=()=>start(nextIndex());
+$('playBtn').onclick=()=>{ if(HALL){ if(unlocked(hallCenter)) start(hallCenter); } else start(nextIndex()); };
+$('nextPic').onclick=()=>start(nextIndex());
 $('ggrid').addEventListener('click',e=>{const c=e.target.closest('.gcard');if(c&&!c.disabled)start(+c.dataset.i);});
 $('backBtn').innerHTML=icon('back'); $('endHomeBtn').innerHTML=icon('home');
 $('backBtn').onclick=()=>{
@@ -248,10 +275,10 @@ function start(i){
   L=LEVELS[i]; L.index=i;
   state={done:{},stars:{},used:{},hinted:{},rescued:{},drops:[],picking:false,forced:false,hintMsg:null,paint:L.budget,earned:0,finished:false,quizUsed:false};
   $('home').hidden=true; $('game').hidden=false; scrollTo(0,0);
-  $('credit').innerHTML=L.credit||'';
+  $('credit').innerHTML=L.credit?t(L.credit):'';
   const ks=L.paints||PAINTS.map(p=>p.k);
   $('paints').style.setProperty('--n',ks.length);
-  $('paints').innerHTML=ks.map(k=>PMAP[k]).map(p=>`<button class="paint" data-k="${p.k}" aria-label="Add ${p.name}"><span class="blob" style="background:${hex(p.rgb)}"></span>${p.name}</button>`).join('');
+  $('paints').innerHTML=ks.map(k=>PMAP[k]).map(p=>`<button class="paint" data-k="${p.k}" aria-label="${t('Add {paint}',{paint:t(p.name)})}"><span class="blob" style="background:${hex(p.rgb)}"></span>${t(p.name)}</button>`).join('');
   hideCoach(); parts=[];
   document.querySelector('.frame').classList.remove('celebrate'); $('stamp').hidden=true;
   buildScene(); updateHud(); renderCoins();
@@ -270,17 +297,17 @@ function showIntro(){
   if(chal) chal.fresh=false;
   save.seen[L.id]=true; persist(); renderActions();
   if(!tip&&!fresh.length&&!chal&&!tierNote) return;
-  $('introTitle').textContent=chal?`${chal.from} challenged you!`:tip?tip.title:tierNote?`${TIERS[L.tier].label} picture`:'New booster';
-  $('introText').innerHTML=tip?tip.text:'';
+  $('introTitle').textContent=chal?t('{from} challenged you!',{from:chal.from}):tip?t(tip.title):tierNote?t('{tier} picture',{tier:TIERS[L.tier].label}):t('New booster');
+  $('introText').innerHTML=tip?t(tip.text):'';
   $('introText').hidden=!tip;
   let html='';
   if(chal){
     const ci=LEVELS.findIndex(l=>l.id===chal.level), n=LEVELS.slice(0,ci).filter(l=>save.best[l.id]==null).length;
-    html+=`<div class="booster">🏆 Restore <b>${LEVELS[ci].title}</b> with more than <b>${chal.score}★</b>.`+
-      (n&&!unlocked(ci)?` First, finish ${n} quick warm-up picture${n>1?'s':''} to unlock it.`:'')+'</div>';
+    html+=`<div class="booster">🏆 ${t('Restore <b>{title}</b> with more than <b>{score}★</b>.',{title:esc(T(LEVELS[ci])),score:chal.score})}`+
+      (n&&!unlocked(ci)?' '+t('First, finish the warm-up pictures to unlock it ({pics}).',{pics:tn(n,'picture')}):'')+'</div>';
   }
-  if(tierNote) html+=`<div class="booster"><b>${TIERS[L.tier].label} picture.</b> ${L.tier==='nightmare'?'Very little spare paint and colors that look almost the same.':'Less spare paint and closer shades than usual.'} Boosters help here. Rewards are ×${TIERS[L.tier].mult}.</div>`;
-  html+=fresh.map(b=>`<div class="booster">${icon(b)}<b>New booster: ${BOOSTERS[b].name}</b><br>${BOOSTERS[b].text}<br>You get ${FREE_BOOSTERS} free. After that, ${BOOSTERS[b].price} <span class="coin"></span> each.</div>`).join('');
+  if(tierNote) html+=`<div class="booster"><b>${t('{tier} picture.',{tier:TIERS[L.tier].label})}</b> ${L.tier==='nightmare'?t('Very little spare paint and colors that look almost the same.'):t('Less spare paint and closer shades than usual.')} ${t('Boosters help here. Rewards are ×{m}.',{m:TIERS[L.tier].mult})}</div>`;
+  html+=fresh.map(b=>`<div class="booster">${icon(b)}<b>${t('New booster: {name}',{name:BOOSTERS[b].name})}</b><br>${BOOSTERS[b].text}<br>${t('You get {n} free. After that, {price} each.',{n:FREE_BOOSTERS,price:BOOSTERS[b].price+' <span class="coin"></span>'})}</div>`).join('');
   $('introBoosters').innerHTML=html;
   $('introOverlay').hidden=false;
 }
@@ -296,7 +323,7 @@ function buildScene(){
   scene.innerHTML=`<g pointer-events="none">${L.bg||''}</g>`+L.order.map(id=>regionEl(byId[id])).join('')+L.decor+
     L.regions.filter(r=>r.crack).map(r=>`<path class="crack" data-for="${r.id}" d="${r.crack}"/>`).join('')+
     '<g id="selLayer"></g><g id="fxLayer" pointer-events="none"></g>';
-  scene.setAttribute('aria-label','Faded picture: '+L.title);
+  scene.setAttribute('aria-label',t('Faded picture')+': '+T(L));
   scene.querySelectorAll('.region').forEach(g=>g.addEventListener('click',()=>{if(!state.done[g.dataset.id]&&!state.forced&&!state.applying)select(g.dataset.id);}));
 }
 const current=()=>L.regions.find(x=>x.id===state.sel);
@@ -307,7 +334,7 @@ function select(id){
   const r=current();
   $('selLayer').innerHTML=r.stroke?`<g class="selOutline thick" style="stroke-width:${r.stroke+6}">${r.svg}</g>`:`<g class="selOutline">${r.svg}</g>`;
   $('targetChip').style.background=hex(r.target);
-  $('targetName').textContent=r.name;
+  $('targetName').textContent=N(r);
   renderHint(); renderMix();
 }
 function counts(){const c={};state.drops.forEach(k=>c[k]=(c[k]||0)+1);return c;}
@@ -318,24 +345,24 @@ function renderMix(override){
   if(!state.drops.length) state.picking=false;
   chip.classList.toggle('empty',!m); chip.style.background=m?hex(m):'';
   $('drops').classList.toggle('picking',state.picking);
-  $('drops').innerHTML=state.drops.length?state.drops.map((k,i)=>`<span data-i="${i}" title="${PMAP[k].name}" style="background:${hex(PMAP[k].rgb)}"></span>`).join(''):'<em>add paint</em>';
+  $('drops').innerHTML=state.drops.length?state.drops.map((k,i)=>`<span data-i="${i}" title="${PN(k)}" style="background:${hex(PMAP[k].rgb)}"></span>`).join(''):`<em>${t('add paint')}</em>`;
   const p=m?matchPct(m,r.target):0;
-  $('meter').setAttribute('aria-valuenow',p); $('meter').setAttribute('aria-valuetext',p+'% match');
+  $('meter').setAttribute('aria-valuenow',p); $('meter').setAttribute('aria-valuetext',t('{p}% match',{p}));
   const f=$('barFill');f.style.width=p+'%';f.style.background=p>=95?'var(--ok)':p>=75?'var(--gold)':'var(--warn)';
   renderActions();
   const msg=$('msg');
   if(override){msg.textContent=override[0];msg.className='msg '+override[1];}
-  else if(state.picking){msg.textContent='Tap the drop you want to take out.';msg.className='msg';}
-  else if(!m){msg.textContent='Mix to match. Every drop uses paint.';msg.className='msg';}
-  else if(p>=95){msg.textContent='Match! Painting…';msg.className='msg good';}
+  else if(state.picking){msg.textContent=t('Tap the drop you want to take out.');msg.className='msg';}
+  else if(!m){msg.textContent=t('Mix to match. Every drop uses paint.');msg.className='msg';}
+  else if(p>=95){msg.textContent=t('Match! Painting…');msg.className='msg good';}
   else{msg.textContent=advice(m,r.target);msg.className='msg';}
 }
 function advice(m,t){
   const dl=lab(m)[0]-lab(t)[0];
   const hasBW=!L.paints||L.paints.includes('W');
-  if(dl>10) return hasBW?'Too light. Add color or a touch of black.':'Not quite. Check which paints the target needs.';
-  if(dl<-10) return hasBW?'Too dark. Try adding white.':'Not quite. Check which paints the target needs.';
-  return 'Brightness is close. The hue is off.';
+  if(dl>10) return hasBW?t('Too light. Add color or a touch of black.'):t('Not quite. Check which paints the target needs.');
+  if(dl<-10) return hasBW?t('Too dark. Try adding white.'):t('Not quite. Check which paints the target needs.');
+  return t('Brightness is close. The hue is off.');
 }
 // Hint = only the next useful step toward the recipe, given what is already in the bowl.
 function nextHint(){
@@ -349,9 +376,10 @@ function nextHint(){
 function renderHint(){
   const h=state.hintMsg, el=$('hint');
   el.classList.toggle('on',!!h);
-  if(h) el.innerHTML=h.done?'Hint: your mix is right.'
-    :h.remove?`Hint: take out the <span class="dot" style="background:${hex(PMAP[h.k].rgb)}"></span> <b>${PMAP[h.k].name}</b>. ${current().name} has none.`
-    :`Hint: add <span class="dot" style="background:${hex(PMAP[h.k].rgb)}"></span> <b>${PMAP[h.k].name}</b> next.`;
+  const dot=h&&h.k?`<span class="dot" style="background:${hex(PMAP[h.k].rgb)}"></span> <b>${PN(h.k)}</b>`:'';
+  if(h) el.innerHTML=h.done?t('Hint: your mix is right.')
+    :h.remove?t('Hint: take out the {paint}. {part} has none.',{paint:dot,part:esc(N(current()))})
+    :t('Hint: add {paint} next.',{paint:dot});
   renderActions();
 }
 function renderActions(){
@@ -360,11 +388,11 @@ function renderActions(){
   for(const b in BOOSTERS){
     const btn=$(b+'Btn'), n=save.inv[b], locked=n==null, lv=introAt(b);
     btn.classList.toggle('locked',locked);
-    const badge=locked?'':state.forced&&b==='undo'?'<span class="badge">FREE</span>'
+    const badge=locked?'':state.forced&&b==='undo'?`<span class="badge">${t('FREE')}</span>`
       :`<span class="badge${n?'':' buy'}">${n?n:BOOSTERS[b].price+'<span class="coin"></span>'}</span>`;
-    btn.innerHTML=icon(locked?'lock':b)+`<span>${locked?'Pic '+(lv+1):BOOSTERS[b].name}</span>`+badge;
-    btn.title=locked?`${BOOSTERS[b].name} unlocks in picture ${lv+1}: ${LEVELS[lv].title}`:BOOSTERS[b].text;
-    btn.setAttribute('aria-label',locked?`${BOOSTERS[b].name}, locked until picture ${lv+1}`:`${BOOSTERS[b].name}, ${n?n+' left':BOOSTERS[b].price+' coins'}`);
+    btn.innerHTML=icon(locked?'lock':b)+`<span>${locked?t('Pic {n}',{n:lv+1}):BOOSTERS[b].name}</span>`+badge;
+    btn.title=locked?t('{name} unlocks in picture {n}: {title}',{name:BOOSTERS[b].name,n:lv+1,title:T(LEVELS[lv])}):BOOSTERS[b].text;
+    btn.setAttribute('aria-label',locked?t('{name}, locked until picture {n}',{name:BOOSTERS[b].name,n:lv+1}):`${BOOSTERS[b].name}, ${n?t('{n} left',{n}):tn(BOOSTERS[b].price,'coin')}`);
     btn.disabled=false;
   }
   if(save.inv.empty!=null) $('emptyBtn').disabled=!has;
@@ -380,7 +408,7 @@ function updateHud(){
   f.style.width=pc+'%';f.style.background=pc>40?'var(--accent)':pc>15?'var(--gold)':'var(--warn)';
   const ch=save.challenge, bar=$('chBar'); bar.hidden=!ch;
   if(ch){const lv=LEVELS.find(l=>l.id===ch.level);
-    bar.textContent=L.id===ch.level?`🏆 Beat ${ch.from}: ${ch.score}★  ·  You: ${sumStars()}★`:`🏆 ${ch.from} challenged you on ${lv.title}. Beat ${ch.score}★ there.`;}
+    bar.textContent='🏆 '+(L.id===ch.level?t('Beat {from}: {score}★  ·  You: {you}★',{from:ch.from,score:ch.score,you:sumStars()}):t('{from} challenged you on {title}. Beat {score}★ there.',{from:ch.from,title:T(lv),score:ch.score}));}
 }
 function renderCoins(bump){
   document.querySelectorAll('.coinCount').forEach(e=>e.textContent=save.coins);
@@ -389,14 +417,14 @@ function renderCoins(bump){
 function addCoins(n){save.coins+=n; if(n>0&&state) state.earned+=n; persist(); renderCoins(true);}
 function isLocked(b){
   if(save.inv[b]!=null) return false;
-  const lv=introAt(b); toast(`${BOOSTERS[b].name} unlocks in picture ${lv+1}: ${LEVELS[lv].title}`); return true;
+  const lv=introAt(b); toast(t('{name} unlocks in picture {n}: {title}',{name:BOOSTERS[b].name,n:lv+1,title:T(LEVELS[lv])})); return true;
 }
 // Use one booster from the inventory, or buy it with coins when the inventory is empty.
 function canUse(b){return save.inv[b]>0||save.coins>=BOOSTERS[b].price;}
 function spend(b){
   if(save.inv[b]>0){save.inv[b]--;persist();}
-  else if(save.coins>=BOOSTERS[b].price){addCoins(-BOOSTERS[b].price);toast(`${BOOSTERS[b].name} bought for ${BOOSTERS[b].price} coins`);}
-  else{toast(`${BOOSTERS[b].name} costs ${BOOSTERS[b].price} coins. You have ${save.coins}.`);return false;}
+  else if(save.coins>=BOOSTERS[b].price){addCoins(-BOOSTERS[b].price);toast(t('{name} bought: {coins}',{name:BOOSTERS[b].name,coins:tn(BOOSTERS[b].price,'coin')}));}
+  else{toast(t('{name} costs {price}. You have {have}.',{name:BOOSTERS[b].name,price:tn(BOOSTERS[b].price,'coin'),have:save.coins}));buzz(40);return false;}
   renderActions(); return true;
 }
 function refundDrop(){state.paint++; state.used[state.sel]--; updateHud();}
@@ -404,7 +432,8 @@ function refundDrop(){state.paint++; state.used[state.sel]--; updateHud();}
 // ---------- Forced free Undo (first wrong color on the picture that introduces Undo) ----------
 function forceUndo(k){
   state.forced=true;
-  $('coachTip').innerHTML=`Oops! ${current().name} has no <b>${PMAP[k].name}</b> in it.<br>Tap <b>Undo</b> to take that drop back. This one is free.`;
+  $('coachTip').innerHTML=t('Oops! {part} has no <b>{paint}</b> in it.',{part:esc(N(current())),paint:PN(k)})+'<br>'+t('Tap <b>Undo</b> to take that drop back. This one is free.');
+  buzz([40,50,40]);
   $('coachTip').hidden=false; $('coachDim').hidden=false;
   $('undoBtn').classList.add('coach'); document.querySelector('.swatches').classList.add('lift');
   document.body.classList.add('coaching');
@@ -423,9 +452,9 @@ function addDrop(k){
   if(!state||state.finished||state.applying) return false;
   if(state.forced){nudge();return false;}
   if(state.paint<=0){outOfPaint();return false;}
-  if(state.drops.length>=12){renderMix(['The bowl is full. Take drops out or empty it.','bad']);return false;}
+  if(state.drops.length>=12){renderMix([t('The bowl is full. Take drops out or empty it.'),'bad']);buzz(40);return false;}
   state.picking=false; state.hintMsg=null;
-  state.drops.push(k); state.paint--; state.used[state.sel]=(state.used[state.sel]||0)+1;
+  state.drops.push(k); state.paint--; state.used[state.sel]=(state.used[state.sel]||0)+1; buzz(8);
   updateHud(); renderHint(); renderMix();
   if(L.intro==='undo'&&!save.tut.undo&&!current().recipe[k]) forceUndo(k);
   else afterMixChange();
@@ -481,20 +510,35 @@ $('paints').addEventListener('click',e=>{
 })();
 $('emptyBtn').onclick=()=>{
   if(state.applying||isLocked('empty')||!state.drops.length) return;
-  const n=state.drops.length; state.drops=[]; state.hintMsg=null;
-  if(!canUse('empty')){renderHint();renderMix([`Bowl poured out. ${n} drop${n>1?'s':''} of paint lost. An Empty booster gives the paint back.`,'bad']);return;}
-  spend('empty'); state.paint+=n; state.used[state.sel]-=n; updateHud(); renderHint();
-  renderMix([`Bowl emptied. ${n} drop${n>1?'s':''} of paint refunded.`,'']);
+  const n=state.drops.length, paid=canUse('empty');
+  if(paid) spend('empty');
+  pourOut(()=>{
+    state.drops=[]; state.hintMsg=null;
+    if(!paid){renderHint();renderMix([t('Bowl poured out. Paint lost: {drops}. An Empty booster gives the paint back.',{drops:tn(n,'drop')}),'bad']);return;}
+    state.paint+=n; state.used[state.sel]-=n; updateHud(); renderHint();
+    renderMix([t('Bowl emptied. Paint refunded: {drops}.',{drops:tn(n,'drop')}),'']);
+  });
 };
+// Empty animation: the bowl tips, the paint drains and spills over the rim, and the drop row falls away.
+function pourOut(done){
+  const chip=$('mixChip'), st=state; buzz(15);
+  if(reduced){done();return;}
+  state.applying=true;
+  const col=chip.style.background||INK, r=chip.getBoundingClientRect();
+  chip.classList.remove('pour'); void chip.offsetWidth; chip.classList.add('pour');
+  $('drops').querySelectorAll('span').forEach((d,i)=>{d.style.animationDelay=(i*40)+'ms'; d.classList.add('fall');});
+  setTimeout(()=>{ if(state===st) burst(r.left+r.width*.12,r.top+r.height*.3,[col,col,col,'#ffffff'],16,{angle:Math.PI*1.08,spread:.7,speed:5,size:4,decay:.02,gravity:.3}); },170);
+  setTimeout(()=>{ chip.classList.remove('pour'); if(state!==st) return; state.applying=false; done(); },620);
+}
 $('undoBtn').onclick=()=>{
   if(state.applying||isLocked('undo')||!state.drops.length) return;
   if(state.forced){
     state.drops.pop(); refundDrop(); state.forced=false; save.tut.undo=true; persist(); hideCoach();
-    renderMix([`That's Undo. You have ${save.inv.undo} left, then they cost ${BOOSTERS.undo.price} coins.`,'good']);
+    renderMix([t("That's Undo. You have {n} left, then they cost {price}.",{n:save.inv.undo,price:tn(BOOSTERS.undo.price,'coin')}),'good']);
     afterMixChange(); return;
   }
   if(!spend('undo')) return;
-  state.drops.pop(); state.picking=false; state.hintMsg=null; refundDrop(); renderHint(); renderMix(['Drop taken back. Paint refunded.','']);
+  state.drops.pop(); state.picking=false; state.hintMsg=null; refundDrop(); renderHint(); renderMix([t('Drop taken back. Paint refunded.'),'']);
   afterMixChange();
 };
 $('pickBtn').onclick=()=>{
@@ -508,7 +552,7 @@ $('drops').addEventListener('click',e=>{
   const d=e.target.closest('span[data-i]'); if(!d||!state.picking) return;
   if(!spend('pick')) return;
   const k=state.drops.splice(+d.dataset.i,1)[0];
-  state.picking=false; state.hintMsg=null; refundDrop(); renderHint(); renderMix([`${PMAP[k].name} taken out. Paint refunded.`,'']);
+  state.picking=false; state.hintMsg=null; refundDrop(); renderHint(); renderMix([t('{paint} taken out. Paint refunded.',{paint:PN(k)}),'']);
   afterMixChange();
 });
 $('hintBtn').onclick=()=>{
@@ -526,7 +570,7 @@ function apply(){
   const p=matchPct(m,r.target);
   if(p<95){
     const chip=$('mixChip');chip.classList.remove('shake');void chip.offsetWidth;chip.classList.add('shake');
-    renderMix([p+'% is not close enough. '+advice(m,r.target),'bad']);
+    renderMix([t('{p}% is not close enough.',{p})+' '+advice(m,r.target),'bad']);
     if(state.paint<=0) setTimeout(outOfPaint,700);
     return;
   }
@@ -541,7 +585,8 @@ function apply(){
   burst(gb.left+gb.width/2,gb.top+gb.height/2,[hex(r.target),hex(r.target),'#ffffff'],18,{speed:5,size:4,decay:.028,gravity:.12});
   const c=s*COINS_PER_STAR*TIERS[L.tier].mult; addCoins(c);
   // Like ColorFind: show drops used against the minimum (the recipe size) for this part.
-  toast(`${r.name} ${'★'.repeat(s)}${'☆'.repeat(3-s)} · ${used<=r.min?`perfect, ${used} drop${used>1?'s':''}`:`${used} drops, min ${r.min}`} · +${c} coins`);
+  toast(`${N(r)} ${'★'.repeat(s)}${'☆'.repeat(3-s)} · ${used<=r.min?t('perfect: {drops}',{drops:tn(used,'drop')}):t('{drops}, min {min}',{drops:tn(used,'drop'),min:r.min})} · +${tn(c,'coin')}`);
+  buzz(25);
   state.drops=[]; state.picking=false; state.hintMsg=null; updateHud(); renderHint();
   const next=L.regions.find(x=>!state.done[x.id]);
   if(!next){state.finished=true;finishPicture();}
@@ -626,14 +671,14 @@ function win(){
   save.best[L.id]=Math.max(save.best[L.id]||0,s);
   const ch=save.challenge&&save.challenge.level===L.id?save.challenge:null, beaten=!!ch&&total>ch.score;
   if(beaten) save.challenge=null;
-  persist(); renderMenu(); updateHud();
-  $('endTitle').textContent=L.title+' restored';
+  persist(); renderMenu(); updateHud(); buzz([30,60,30,60,70]);
+  $('endTitle').textContent=t('{title} restored',{title:T(L)});
   $('endStars').innerHTML=[0,1,2].map(i=>`<span class="${i<s?'':'off'}" style="animation-delay:${250+i*280}ms">★</span>`).join('');
   const usedAll=L.regions.reduce((a,r)=>a+(state.used[r.id]||0),0), minAll=L.regions.reduce((a,r)=>a+r.min,0);
-  $('endText').innerHTML=`${total} / ${max}★  ·  +<b id="earnNum">0</b> <span class="coin"></span> earned`+
-    `<br>Drops used <b>${usedAll}</b> · minimum <b>${minAll}</b>${usedAll<=minAll?' · perfect!':''}`+
-    (ch?(beaten?`<br><b>You beat ${esc(ch.from)}'s ${ch.score}★!</b>`:`<br>${esc(ch.from)} still leads: ${ch.score}★ vs your ${total}★. Replay to beat it.`):'')+
-    (L.credit?`<br>${L.credit}.`:'')+(QZ&&factFor(L.id)?`<br><i>Did you know?</i> ${esc(factFor(L.id).fact)}`:'')+(last?'<br>That was the last picture.':'');
+  $('endText').innerHTML=`${total} / ${max}★  ·  +<b id="earnNum">0</b> <span class="coin"></span> ${t('earned')}`+
+    `<br>${t('Drops used <b>{used}</b> · minimum <b>{min}</b>',{used:usedAll,min:minAll})}${usedAll<=minAll?' · '+t('perfect!'):''}`+
+    (ch?(beaten?`<br><b>${t("You beat {from}'s {score}★!",{from:esc(ch.from),score:ch.score})}</b>`:'<br>'+t('{from} still leads: {score}★ vs your {you}★. Replay to beat it.',{from:esc(ch.from),score:ch.score,you:total})):'')+
+    (L.credit?`<br>${t(L.credit)}.`:'')+(QZ&&factFor(L.id)?`<br><i>${t('Did you know?')}</i> ${esc(t(factFor(L.id).fact))}`:'')+(last?'<br>'+t('That was the last picture.'):'');
   countUp($('earnNum'),state.earned);
   for(let i=0;i<s;i++) setTimeout(()=>{ if(state!==st) return; const b=$('endStars').children[i].getBoundingClientRect();
     burst(b.left+b.width/2,b.top+b.height/2,[INK,'#ffffff'],14,{speed:5,shapes:['star'],decay:.03,size:4,gravity:.1}); },450+i*280);
@@ -644,13 +689,13 @@ function win(){
   if(proper){
     state.shareCtx={total,max,ch,beaten}; state.shareFile=null;
     $('nameInput').value=save.name||'';
-    $('shareNote').textContent=ch?(beaten?`Tell ${ch.from} you won.`:`Send ${ch.from} your score anyway?`):`Think a friend can beat ${total}★? Send them this picture.`;
-    $('shareBtn').textContent=ch?'Send your score back':'Challenge a friend';
+    $('shareNote').textContent=ch?(beaten?t('Tell {from} you won.',{from:ch.from}):t('Send {from} your score anyway?',{from:ch.from})):t('Think a friend can beat {score}★? Send them this picture.',{score:total});
+    $('shareBtn').textContent=ch?t('Send your score back'):t('Challenge a friend');
     makeShareFile(total,max).then(f=>{if(state===st) state.shareFile=f;}).catch(()=>{});
   }
   $('rescueBtn').hidden=true; $('quizOfferBtn').hidden=true;
   $('endOverlay').classList.add('low');
-  $('retryBtn').textContent='Replay';
+  $('retryBtn').textContent=t('Replay');
   $('nextBtn').hidden=last;
   $('endOverlay').hidden=false;
 }
@@ -678,8 +723,8 @@ async function makeShareFile(total,max){
   rr(x,X,Y+10,FW,FH,28); x.fillStyle=INK; x.fill();
   rr(x,X,Y,FW,FH,28); x.fillStyle='#fff'; x.fill(); x.lineWidth=8; x.strokeStyle=INK; x.stroke();
   x.save(); rr(x,X+12,Y+12,FW-24,FH-24,18); x.clip(); x.drawImage(pic,X+12,Y+12,FW-24,FH-24); x.restore();
-  x.textAlign='center'; x.fillStyle=INK; x.font='700 46px Inter, sans-serif'; x.fillText(`${L.title} restored`,W/2,984);
-  x.fillStyle='#646b80'; x.font='800 32px Inter, sans-serif'; x.fillText('Can you beat my score?',W/2,1036);
+  x.textAlign='center'; x.fillStyle=INK; x.font='700 46px Inter, sans-serif'; x.fillText(t('{title} restored',{title:T(L)}),W/2,984);
+  x.fillStyle='#646b80'; x.font='800 32px Inter, sans-serif'; x.fillText(t('Can you beat my score?'),W/2,1036);
   const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
   return new File([blob],`${GAME_NAME.toLowerCase()}-${L.id}.png`,{type:'image/png'});
 }
@@ -688,9 +733,10 @@ function share(){
   const {total,max,ch,beaten}=state.shareCtx;
   const u=new URL(location.pathname,location.origin); u.searchParams.set('c',L.id); u.searchParams.set('s',total); if(name) u.searchParams.set('n',name);
   const link=u.href, row=emojiRow();
-  const text=ch?(beaten?`I beat your ${ch.score}★! I got ${total}/${max}★ on "${L.title}" in ${GAME_NAME}.\n${row}\nYour move.`
-                      :`I got ${total}/${max}★ on "${L.title}" in ${GAME_NAME}. You're still ahead with ${ch.score}★, for now.\n${row}`)
-               :`I restored "${L.title}" in ${GAME_NAME} with ${total}/${max}★\n${row}\nCan you beat me?`;
+  const v={score:ch&&ch.score,total,max,title:T(L),game:GAME_NAME};
+  const text=ch?(beaten?t('I beat your {score}★! I got {total}/{max}★ on "{title}" in {game}.',v)+`\n${row}\n`+t('Your move.')
+                      :t('I got {total}/{max}★ on "{title}" in {game}. You\'re still ahead with {score}★, for now.',v)+`\n${row}`)
+               :t('I restored "{title}" in {game} with {total}/{max}★',v)+`\n${row}\n`+t('Can you beat me?');
   const f=state.shareFile, fail=e=>{if(!e||e.name!=='AbortError') copyText(text+'\n'+link);};
   try{
     if(f&&navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:GAME_NAME,text:text+'\n'+link}).catch(fail);return;}
@@ -699,24 +745,24 @@ function share(){
   copyText(text+'\n'+link);
 }
 function copyText(t){
-  const ok=()=>toast('Challenge copied. Paste it to your friend.'), no=()=>prompt('Copy this and send it to your friend:',t);
+  const ok=()=>toast(I18N.t('Challenge copied. Paste it to your friend.')), no=()=>prompt(I18N.t('Copy this and send it to your friend:'),t);
   try{navigator.clipboard.writeText(t).then(ok,no);}catch(e){no();}
 }
 
 function outOfPaint(){
   if(!state||!$('endOverlay').hidden||state.finished) return;
   const r=current(), ok=save.coins>=RESCUE_PRICE;
-  $('endTitle').textContent='Out of paint';
+  $('endTitle').textContent=t('Out of paint'); buzz([60,40,60]);
   $('endStars').textContent='';
-  $('endText').innerHTML=`You restored ${Object.keys(state.done).length} of ${L.regions.length} parts. `+
-    (ok?`Restart the <b>${r.name}</b> with fresh paint and keep the rest of your work.`:`Restarting a part costs ${RESCUE_PRICE} coins. You have ${save.coins}.`);
+  $('endText').innerHTML=t('Parts restored: {done} of {all}.',{done:Object.keys(state.done).length,all:L.regions.length})+' '+
+    (ok?t('Restart <b>{part}</b> with fresh paint and keep the rest of your work.',{part:esc(N(r))}):t('Restarting a part costs {price}. You have {have}.',{price:tn(RESCUE_PRICE,'coin'),have:save.coins}));
   const qb=$('quizOfferBtn'), canQuiz=rescueQuizAvailable(); qb.hidden=!canQuiz;
-  if(canQuiz) qb.innerHTML=`${icon('quiz')} Art quiz: answer for +${QZ.rescuePaint} paint`;
+  if(canQuiz) qb.innerHTML=`${icon('quiz')} ${t('Art quiz: answer for +{n} paint',{n:QZ.rescuePaint})}`;
   const rb=$('rescueBtn'); rb.hidden=false; rb.disabled=!ok;
-  rb.innerHTML=`Restart ${r.name} · ${RESCUE_PRICE} <span class="coin"></span>`;
+  rb.innerHTML=`${t('Restart {part}',{part:esc(N(r))})} · ${RESCUE_PRICE} <span class="coin"></span>`;
   $('shareBox').hidden=true;
   $('endOverlay').classList.remove('low');
-  $('retryBtn').textContent='Start picture over';
+  $('retryBtn').textContent=t('Start picture over');
   $('nextBtn').hidden=true;
   $('endOverlay').hidden=false;
 }
@@ -729,7 +775,7 @@ function rescue(){
   state.used[r.id]=0; state.rescued[r.id]=true;
   $('endOverlay').hidden=true;
   updateHud(); select(r.id);
-  toast(`${r.name} restarted. Paint refilled.`);
+  toast(t('{part} restarted. Paint refilled.',{part:N(r)}));
 }
 // ---------- Art quiz (only for games that define G.quiz) ----------
 const QZ=G.quiz||null;
@@ -739,13 +785,19 @@ const dayKey=d=>{d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+
 function qstate(){const q=save.quiz=save.quiz||{}, t=dayKey(); if(q.outDay!==t){q.outDay=t;q.outCount=0;} return q;}
 function nextStreak(){const q=qstate(); if(q.lastDaily===dayKey()) return q.streak||1; return q.lastDaily===dayKey(new Date(Date.now()-864e5))?(q.streak||0)+1:1;}
 const ordinal=n=>n+(n%10===1&&n!==11?'st':n%10===2&&n!==12?'nd':n%10===3&&n!==13?'rd':'th')+' century';
+const ROMAN=n=>['','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI'][n]||String(n);
+// Answers are stored in English; this shows them in the player's language (centuries are generated).
+function showAns(q,v){
+  if(q.t==='century'){const n=parseInt(v,10); return I18N.lang==='fr'?ROMAN(n)+'e siècle':I18N.lang==='ru'?ROMAN(n)+' век':v;}
+  return t(v);
+}
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
 const QTYPES={
-  artist:f=>levelOf(f.id)?'Who painted this?':`Who painted ${f.title}?`,
-  century:f=>levelOf(f.id)?'In which century was it made?':`In which century was ${f.title} made?`,
-  style:f=>levelOf(f.id)?'Which style is it?':`Which style is ${f.title}?`,
-  museum:f=>levelOf(f.id)?'Which museum holds it today?':`Where does ${f.title} hang today?`,
-  country:f=>levelOf(f.id)?'Which country was the artist from?':`Which country was the artist of ${f.title} from?`};
+  artist:f=>levelOf(f.id)?t('Who painted this?'):t('Who painted {title}?',{title:t(f.title)}),
+  century:f=>levelOf(f.id)?t('In which century was it made?'):t('In which century was {title} made?',{title:t(f.title)}),
+  style:f=>levelOf(f.id)?t('Which style is it?'):t('Which style is {title}?',{title:t(f.title)}),
+  museum:f=>levelOf(f.id)?t('Which museum holds it today?'):t('Where does {title} hang today?',{title:t(f.title)}),
+  country:f=>levelOf(f.id)?t('Which country was the artist from?'):t('Which country was the artist of {title} from?',{title:t(f.title)})};
 // One question: the right answer plus plausible wrong ones (same art group, neighboring centuries).
 function makeQuestion(f,types){
   const avail=types.filter(t=>f[t]); const t=avail[Math.random()*avail.length|0], right=f[t];
@@ -764,7 +816,7 @@ function renderDailyQuiz(){
   const b=$('dailyQuizBtn'); $('home').classList.toggle('hasQuiz',!!QZ); b.hidden=!QZ; if(!QZ) return;
   const s=nextStreak();
   b.disabled=!dailyAvailable();
-  b.innerHTML=icon('quiz')+(b.disabled?`Daily quiz done · ${s}-day streak`:`Daily art quiz`+(s>1?` · day ${s}`:''));
+  b.innerHTML=icon('quiz')+(b.disabled?t('Daily quiz done · streak: {days}',{days:tn(s,'day')}):t('Daily art quiz')+(s>1?' · '+t('day {n}',{n:s}):''));
 }
 let quizCtx=null;
 function openQuiz(kind){
@@ -772,12 +824,12 @@ function openQuiz(kind){
   const f=pool[Math.random()*pool.length|0], q=makeQuestion(f,types), lv=levelOf(f.id);
   quizCtx={kind,q,answered:false,ok:false};
   if(kind==='rescue') $('endOverlay').hidden=true;
-  $('quizImg').innerHTML=lv?thumbSVG(lv,true):`<div class="quizTitleCard">${esc(f.title)}</div>`;
-  $('quizEyebrow').textContent=kind==='daily'?`Daily art quiz · day ${nextStreak()}`:`Art quiz · +${QZ.rescuePaint} paint`;
+  $('quizImg').innerHTML=lv?thumbSVG(lv,true):`<div class="quizTitleCard">${esc(t(f.title))}</div>`;
+  $('quizEyebrow').textContent=kind==='daily'?t('Daily art quiz')+' · '+t('day {n}',{n:nextStreak()}):t('Art quiz · +{n} paint',{n:QZ.rescuePaint});
   const gives=f.title.toLowerCase().includes(String(q.right).toLowerCase())||String(q.right).toLowerCase().includes(f.title.toLowerCase());
-  $('quizTitle').textContent=lv&&!gives?f.title:''; // hide the title when it would give the answer away
+  $('quizTitle').textContent=lv&&!gives?t(f.title):''; // hide the title when it would give the answer away
   $('quizQ').textContent=q.q;
-  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="btn qopt" data-i="${i}">${esc(o)}</button>`).join('');
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="btn qopt" data-i="${i}">${esc(showAns(q,o))}</button>`).join('');
   $('quizResult').hidden=true; $('quizDone').hidden=true;
   $('quizOverlay').hidden=false;
 }
@@ -789,32 +841,84 @@ $('quizOpts').addEventListener('click',e=>{
   let msg;
   if(kind==='rescue'){
     qstate().outCount++; state.quizUsed=true;
-    if(ok){state.paint+=QZ.rescuePaint; msg=`Correct! +${QZ.rescuePaint} paint.`;} else msg=`Not quite. It's ${esc(q.right)}.`;
+    if(ok){state.paint+=QZ.rescuePaint; msg=t('Correct! +{n} paint.',{n:QZ.rescuePaint});} else msg=t("Not quite. It's {answer}.",{answer:esc(showAns(q,q.right))});
   }else{
     const qs=qstate(), st=nextStreak(); qs.streak=st; qs.lastDaily=dayKey();
     const reward=QZ.dailyCoins[Math.min(st,QZ.dailyCoins.length)-1];
-    if(ok){addCoins(reward); msg=`Correct! +${reward} coins · ${st}-day streak.`;} else msg=`Not quite. It's ${esc(q.right)}. Your streak continues: ${st} day${st>1?'s':''}.`;
+    if(ok){addCoins(reward); msg=t('Correct! +{coins} · streak: {days}.',{coins:tn(reward,'coin'),days:tn(st,'day')});} else msg=t("Not quite. It's {answer}. Your streak continues: {days}.",{answer:esc(showAns(q,q.right)),days:tn(st,'day')});
   }
-  persist();
-  $('quizResult').innerHTML=`<b>${msg}</b><br>${esc(q.f.fact)}`; $('quizResult').hidden=false;
-  $('quizDone').textContent=kind==='rescue'&&ok?'Keep painting':'Continue'; $('quizDone').hidden=false;
+  persist(); buzz(ok?[25,40,25]:60);
+  $('quizResult').innerHTML=`<b>${msg}</b><br>${esc(t(q.f.fact))}`; $('quizResult').hidden=false;
+  $('quizDone').textContent=kind==='rescue'&&ok?t('Keep painting'):t('Continue'); $('quizDone').hidden=false;
 });
 $('quizDone').onclick=()=>{
   const c=quizCtx; quizCtx=null; $('quizOverlay').hidden=true; if(!c) return;
-  if(c.kind==='rescue'){ if(c.ok){updateHud(); renderMix(); toast(`+${QZ.rescuePaint} paint`);} else outOfPaint(); }
+  if(c.kind==='rescue'){ if(c.ok){updateHud(); renderMix(); toast(t('+{n} paint',{n:QZ.rescuePaint}));} else outOfPaint(); }
   else renderMenu();
 };
 $('quizOfferBtn').onclick=()=>{if(rescueQuizAvailable()) openQuiz('rescue');};
 $('dailyQuizBtn').onclick=()=>{if(dailyAvailable()) openQuiz('daily');};
-// ---------- Theme: Auto (follow the device) → Light → Dark, shared by all games on this site ----------
-const THEME_KEY='pontpixel-theme', THEME_NAME={auto:'Auto',light:'Light',dark:'Dark'};
-let theme='auto'; try{theme=localStorage.getItem(THEME_KEY)||'auto';}catch(e){}
-function applyTheme(){
-  if(theme==='auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme=theme;
-  $('themeBtn').innerHTML=icon(theme==='light'?'sun':theme==='dark'?'moon':'auto');
-  $('themeBtn').setAttribute('aria-label',`Theme: ${THEME_NAME[theme]}`); $('themeBtn').title=`Theme: ${THEME_NAME[theme]}`;
+// ---------- Gallery hall: home screen for games with G.hall (paintings hang in rooms, in level order) ----------
+let hallCenter=0;
+const CLOTH=`<svg class="cloth" viewBox="0 0 100 80" preserveAspectRatio="none" aria-hidden="true"><path d="M-2 -2H102V78Q86 71 72 80T44 75T18 80T-2 75Z" fill="#2a2c34"/><path d="M16 0Q13 40 20 78M40 0Q36 40 44 77M64 0Q68 40 61 78M86 0Q84 40 90 76" stroke="#1d1f25" stroke-width="3" fill="none"/></svg>`;
+const ROPE=`<svg class="rope" viewBox="0 0 140 30" aria-hidden="true"><path d="M8 7V30M132 7V30" stroke="#b8a46a" stroke-width="3" stroke-linecap="round"/><circle cx="8" cy="6" r="4" fill="#c9a45a"/><circle cx="132" cy="6" r="4" fill="#c9a45a"/><path d="M8 11Q70 27 132 11" fill="none" stroke="#7a1f2b" stroke-width="4"/></svg>`;
+function roomOf(i){let k=0; for(let r=0;r<HALL.rooms.length;r++){const c=HALL.rooms[r].count; if(i<k+c) return {room:HALL.rooms[r],idx:r,start:k,count:c}; k+=c;} return {room:{name:''},idx:0,start:0,count:LEVELS.length};}
+function renderHall(){
+  $('hallWrap').hidden=false; ['nextPic','nextLabel','nextTitle'].forEach(id=>$(id).hidden=true); document.querySelector('.homeMain .logo').hidden=true;
+  const ni=nextIndex();
+  $('hallTrack').innerHTML=LEVELS.map((l,i)=>{
+    const done=save.best[l.id]!=null, ok=unlocked(i), next=i===ni&&!done;
+    const cls=done?'done':!ok?'locked':next?'next':'open';
+    const lab=done?starRow(save.best[l.id]):!ok?t('Locked'):next?t('Next'):t('Open');
+    return `<button class="slot ${cls}" data-i="${i}" aria-label="${esc(T(l))}"><i class="cone"></i><i class="lamp"></i><span class="hframe">${thumbSVG(l,done)}${ok?'':CLOTH}</span><span class="hplaque">${lab}</span>${next?ROPE:''}</button>`;
+  }).join('');
+  requestAnimationFrame(()=>centerOn(ni,false));
 }
-$('themeBtn').onclick=()=>{theme={auto:'light',light:'dark',dark:'auto'}[theme]; try{localStorage.setItem(THEME_KEY,theme);}catch(e){} applyTheme(); toast(`Theme: ${THEME_NAME[theme]}`);};
+function centerOn(i,smooth){
+  const tr=$('hallTrack'), el=tr.children[i]; if(!el) return;
+  tr.scrollTo({left:el.offsetLeft-(tr.clientWidth-el.offsetWidth)/2,behavior:smooth?'smooth':'auto'});
+  setCenter(i);
+}
+function setCenter(i){
+  hallCenter=i; const l=LEVELS[i], f=factFor(l.id), ro=roomOf(i), ok=unlocked(i), done=save.best[l.id]!=null;
+  [...$('hallTrack').children].forEach((el,k)=>el.classList.toggle('center',k===i));
+  $('hallRoomNo').textContent=t('Room {n}',{n:ROMAN(ro.idx+1)});
+  $('hallRoomName').textContent=t(ro.room.name);
+  const got=LEVELS.slice(ro.start,ro.start+ro.count).filter(x=>save.best[x.id]!=null).length;
+  $('hallRoomProg').textContent=t('{done} of {all} restored',{done:got,all:ro.count});
+  $('hallDots').innerHTML=LEVELS.slice(ro.start,ro.start+ro.count).map((x,k)=>`<i class="${ro.start+k===i?'on':save.best[x.id]!=null?'got':''}"></i>`).join('');
+  $('hallTitle').textContent=t(f?f.title:l.title);
+  $('hallSub').textContent=[f&&t(f.artist),TIERS[l.tier].label,tn(l.regions.length,'part')].filter(Boolean).join(' · ');
+  const pb=$('playBtn'); pb.disabled=!ok; pb.textContent=!ok?t('Locked'):done?t('Restore again'):t('Restore it');
+}
+if(HALL){
+  let raf=0;
+  $('hallTrack').addEventListener('scroll',()=>{ cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>{
+    const tr=$('hallTrack'), mid=tr.scrollLeft+tr.clientWidth/2; let best=0,bd=1e9;
+    [...tr.children].forEach((el,k)=>{const d=Math.abs(el.offsetLeft+el.offsetWidth/2-mid); if(d<bd){bd=d;best=k;}});
+    if(best!==hallCenter) setCenter(best);
+  });});
+  $('hallTrack').addEventListener('click',e=>{const sl=e.target.closest('.slot'); if(!sl) return; const i=+sl.dataset.i;
+    if(i!==hallCenter) centerOn(i,true); else if(unlocked(i)) start(i);});
+  addEventListener('resize',()=>{ if(!$('home').hidden) centerOn(hallCenter,false); });
+}
+// ---------- Settings: theme, language, vibration (shared by all games on this site) ----------
+const THEME_KEY='pontpixel-theme', VIB_KEY='pontpixel-vibration';
+let theme='auto', vibOn=true; try{theme=localStorage.getItem(THEME_KEY)||'auto'; vibOn=localStorage.getItem(VIB_KEY)!=='off';}catch(e){}
+const canVibrate=typeof navigator.vibrate==='function';
+function buzz(p){ if(vibOn&&canVibrate){try{navigator.vibrate(p);}catch(e){}} }
+function applyTheme(){ if(theme==='auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme=theme; }
+function renderSettings(){
+  document.querySelectorAll('#setTheme button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===theme));
+  document.querySelectorAll('#setLang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===I18N.pref||(I18N.pref==='auto'&&b.dataset.v==='auto')));
+  $('setVib').setAttribute('aria-checked',vibOn&&canVibrate); $('setVib').disabled=!canVibrate; $('vibNote').hidden=canVibrate;
+}
+$('settingsBtn').innerHTML=icon('gear');
+$('settingsBtn').onclick=()=>{renderSettings(); $('settingsOverlay').hidden=false;};
+$('settingsDone').onclick=()=>{$('settingsOverlay').hidden=true;};
+$('setTheme').onclick=e=>{const b=e.target.closest('button'); if(!b) return; theme=b.dataset.v; try{localStorage.setItem(THEME_KEY,theme);}catch(err){} applyTheme(); renderSettings();};
+$('setLang').onclick=e=>{const b=e.target.closest('button'); if(!b||b.dataset.v===I18N.pref) return; I18N.setPref(b.dataset.v); location.reload();};
+$('setVib').onclick=()=>{vibOn=!vibOn; try{localStorage.setItem(VIB_KEY,vibOn?'on':'off');}catch(e){} renderSettings(); buzz(30);};
 applyTheme();
 let tt;function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),1800);}
 

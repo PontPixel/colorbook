@@ -94,6 +94,40 @@ const LEVELS=[
     <line x1="263" y1="130" x2="263" y2="92" stroke="${INK}" stroke-width="1.5"/></g>`
 }
 ];
+// Content translations (keys = the English text above)
+const STRINGS={
+fr:{
+'Balloons':'Ballons','Welcome, restorer':'Bienvenue, restaurateur',
+'Each faded part has a target color. Tap a paint to drop it in the bowl, the part paints itself as soon as the match reaches 95%. Every drop uses paint from your pot. Restored parts earn coins.':'Chaque partie décolorée a une couleur cible. Touchez une peinture pour en verser une goutte dans le bol : la partie se colore dès que la correspondance atteint 95 %. Chaque goutte coûte de la peinture. Les parties restaurées rapportent des pièces.',
+'Magenta balloon':'Ballon magenta','Yellow balloon':'Ballon jaune','Cyan balloon':'Ballon cyan',
+'Fruit bowl':'Coupe de fruits','Mixing two colors':'Mélanger deux couleurs',
+'Red, green and blue are not in your paint set. Mix them: one drop of each of two paints.':'Le rouge, le vert et le bleu ne sont pas dans vos peintures. Mélangez-les : une goutte de deux peintures différentes.',
+'Apple':'Pomme','Pear':'Poire','Plum':'Prune','Penguin':'Pingouin','Light and dark':'Clair et foncé',
+'This picture needs only <b>White</b> and <b>Black</b>. One drop of each makes <b>gray</b>. More white makes it lighter, more black makes it darker.':'Cette image ne demande que du <b>Blanc</b> et du <b>Noir</b>. Une goutte de chaque donne du <b>gris</b>. Plus de blanc éclaircit, plus de noir assombrit.',
+'Belly':'Ventre','Ice':'Glace','Beach':'Plage','All five paints':'Les cinq peintures',
+'All five paints are open now. Mix a color, then add <b>White</b> to make it lighter or <b>Black</b> to make it darker.':'Les cinq peintures sont disponibles. Mélangez une couleur, puis ajoutez du <b>Blanc</b> pour l’éclaircir ou du <b>Noir</b> pour l’assombrir.',
+'Sun':'Soleil','Sea':'Mer','Sky':'Ciel','Sand':'Sable','Umbrella':'Parasol','Rock':'Rocher',
+'Cottage':'Chaumière','A bigger picture':'Une image plus grande',
+'Ten parts share one paint pot, so plan your drops. You can tap any faded part to work on it. If the pot runs dry, coins can rescue the part you are on.':'Dix parties partagent un seul pot de peinture : prévoyez vos gouttes. Touchez n’importe quelle partie décolorée pour la travailler. Si le pot est vide, des pièces peuvent sauver la partie en cours.',
+'Flowers':'Fleurs','Lit windows':'Fenêtres éclairées','Door':'Porte','Roof':'Toit','Walls':'Murs','Treetop':'Feuillage','Tree trunk':'Tronc','Grass':'Herbe',
+'Kitchen shelf':'Étagère de cuisine','Lemon':'Citron','Mug':'Tasse','Leaves':'Feuilles','Teapot':'Théière','Flower pot':'Pot de fleurs','Picture frame':'Cadre','Shelf':'Étagère','Wall':'Mur'
+},
+ru:{
+'Balloons':'Воздушные шары','Welcome, restorer':'Добро пожаловать, реставратор',
+'Each faded part has a target color. Tap a paint to drop it in the bowl, the part paints itself as soon as the match reaches 95%. Every drop uses paint from your pot. Restored parts earn coins.':'У каждой выцветшей части есть нужный цвет. Нажмите на краску, чтобы капнуть её в миску: часть раскрасится, как только совпадение дойдёт до 95%. Каждая капля тратит краску. За восстановленные части дают монеты.',
+'Magenta balloon':'Пурпурный шар','Yellow balloon':'Жёлтый шар','Cyan balloon':'Голубой шар',
+'Fruit bowl':'Ваза с фруктами','Mixing two colors':'Смешиваем два цвета',
+'Red, green and blue are not in your paint set. Mix them: one drop of each of two paints.':'Красной, зелёной и синей краски нет в наборе. Смешайте их: по одной капле двух красок.',
+'Apple':'Яблоко','Pear':'Груша','Plum':'Слива','Penguin':'Пингвин','Light and dark':'Светлое и тёмное',
+'This picture needs only <b>White</b> and <b>Black</b>. One drop of each makes <b>gray</b>. More white makes it lighter, more black makes it darker.':'Здесь нужны только <b>белая</b> и <b>чёрная</b>. По капле каждой дают <b>серый</b>. Больше белой — светлее, больше чёрной — темнее.',
+'Belly':'Животик','Ice':'Лёд','Beach':'Пляж','All five paints':'Все пять красок',
+'All five paints are open now. Mix a color, then add <b>White</b> to make it lighter or <b>Black</b> to make it darker.':'Теперь открыты все пять красок. Смешайте цвет, потом добавьте <b>белой</b>, чтобы осветлить, или <b>чёрной</b>, чтобы затемнить.',
+'Sun':'Солнце','Sea':'Море','Sky':'Небо','Sand':'Песок','Umbrella':'Зонтик','Rock':'Камень',
+'Cottage':'Домик','A bigger picture':'Картинка побольше',
+'Ten parts share one paint pot, so plan your drops. You can tap any faded part to work on it. If the pot runs dry, coins can rescue the part you are on.':'У десяти частей один запас краски, так что планируйте капли. Нажмите на любую выцветшую часть, чтобы заняться ею. Если краска кончится, монеты помогут спасти текущую часть.',
+'Flowers':'Цветы','Lit windows':'Светящиеся окна','Door':'Дверь','Roof':'Крыша','Walls':'Стены','Treetop':'Крона','Tree trunk':'Ствол','Grass':'Трава',
+'Kitchen shelf':'Кухонная полка','Lemon':'Лимон','Mug':'Кружка','Leaves':'Листья','Teapot':'Чайник','Flower pot':'Цветочный горшок','Picture frame':'Рамка','Shelf':'Полка','Wall':'Стена'
+}};
 window.GAME={name:'ColorBook', saveKey:'paintMender', firstProper:'house',
-  logo:'img/logo-hero.jpg', shareLogo:'img/logo-card.jpg', levels:LEVELS};
+  logo:'img/logo-hero.jpg', shareLogo:'img/logo-card.jpg', levels:LEVELS, strings:STRINGS};
 })();

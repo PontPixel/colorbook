@@ -226,3 +226,23 @@ body:has(#game:not([hidden])){padding-bottom:12px}
   .overlay.low{align-items:center;justify-content:flex-end;padding-right:max(16px,calc((100vw - 1240px) / 2 + 36px))}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- Art quiz (games with G.quiz) ---------- */
+.btn.quizbtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:min(100%,320px);background:#fff;font-size:15px}
+.btn.quizbtn .ico,.btn.accent .ico{width:18px;height:18px}
+#quizOfferBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+#quizOfferBtn[hidden]{display:none}
+.home.hasQuiz .nextPic{width:min(100%,340px,calc((100dvh - 530px) * 4 / 3 + 16px))}
+.quizcard{gap:10px}
+.quizImg{margin:0 auto;width:min(100%,260px)}
+.quizImg svg{display:block;width:100%;height:auto;border-radius:12px;box-shadow:0 0 0 1px var(--line)}
+.quizTitleCard{aspect-ratio:4/3;display:grid;place-items:center;border-radius:12px;background:var(--wall);font:800 22px/1.2 "Inter",system-ui,sans-serif;padding:16px;box-shadow:0 0 0 1px var(--line)}
+.quizEyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.quizTitle{font-size:14px;color:var(--muted);margin-top:-6px}
+.quizcard h2{font-size:20px}
+.quizOpts{display:flex;flex-direction:column;gap:8px}
+.btn.qopt{padding:11px 14px;font-size:15px;text-align:center}
+.btn.qopt:disabled{opacity:1}
+.btn.qopt.right{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.qopt.wrong{text-decoration:line-through;color:var(--muted)}
+.quizResult{font-size:14px;color:var(--ink)!important;text-align:center}

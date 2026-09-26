@@ -17,6 +17,7 @@ document.body.insertAdjacentHTML('afterbegin',`
     <div class="nextTitle" id="nextTitle">Balloons</div>
     <div class="chbar" id="homeCh" hidden></div>
     <button class="btn play" id="playBtn">Play</button>
+    <button class="btn quizbtn" id="dailyQuizBtn" hidden></button>
   </section>
   <section class="gallery" id="gallery" hidden>
     <h2>Gallery</h2>
@@ -91,6 +92,7 @@ document.body.insertAdjacentHTML('afterbegin',`
       <input id="nameInput" maxlength="16" placeholder="Your name (optional)" autocomplete="nickname" aria-label="Your name">
       <button class="btn accent" id="shareBtn">Challenge a friend</button>
     </div>
+    <button class="btn accent" id="quizOfferBtn" hidden></button>
     <button class="btn primary" id="rescueBtn" hidden></button>
     <div class="row">
       <button class="btn iconbtn" id="endHomeBtn" aria-label="Menu"></button>
@@ -105,6 +107,17 @@ document.body.insertAdjacentHTML('afterbegin',`
     <p id="introText"></p>
     <div class="col" id="introBoosters"></div>
     <button class="btn primary" id="introBtn">Let's paint</button>
+  </div>
+</div>
+<div class="overlay" id="quizOverlay" hidden>
+  <div class="card quizcard">
+    <div class="quizImg" id="quizImg"></div>
+    <div class="quizEyebrow" id="quizEyebrow">Art quiz</div>
+    <div class="quizTitle" id="quizTitle"></div>
+    <h2 id="quizQ"></h2>
+    <div class="quizOpts" id="quizOpts"></div>
+    <p class="quizResult" id="quizResult" hidden></p>
+    <button class="btn primary" id="quizDone" hidden>Continue</button>
   </div>
 </div>
 <div class="overlay" id="quitOverlay" hidden>
@@ -139,7 +152,8 @@ const ICONS={
   lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   home:'<path d="M3 11 12 4l9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/>',
   gallery:'<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="m3.5 18 5.5-5 4 3.5 3-2.5 4.5 4"/>',
-  back:'<path d="M15 5 8 12l7 7"/>'};
+  back:'<path d="M15 5 8 12l7 7"/>',
+  quiz:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17h.01"/>'};
 const icon=k=>`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
 const BOOSTERS={
   empty:{name:'Empty',price:15,text:'Pours out the whole bowl and gives all its paint back.'},
@@ -197,6 +211,7 @@ function renderMenu(){
   if(ch){const cl=LEVELS.find(l=>l.id===ch.level);$('homeCh').textContent=`🏆 ${ch.from} challenged you on ${cl.title}. Beat ${ch.score}★.`;}
   $('ggrid').innerHTML=LEVELS.map((l,k)=>{const bb=save.best[l.id], ok=unlocked(k);
     return `<button class="gcard" data-i="${k}" ${ok?'':'disabled'} aria-label="${esc(l.title)}${ok?'':', locked'}">${thumbSVG(l,bb!=null)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}<b>${k+1}. ${esc(l.title)}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${bb!=null?starRow(bb):''}</small></button>`;}).join('');
+  renderDailyQuiz();
   renderCoins();
 }
 function showTab(t){
@@ -205,7 +220,7 @@ function showTab(t){
 }
 function goHome(tab){
   state=null; parts=[]; hideCoach();
-  ['endOverlay','introOverlay','quitOverlay'].forEach(id=>$(id).hidden=true);
+  ['endOverlay','introOverlay','quitOverlay','quizOverlay'].forEach(id=>$(id).hidden=true);
   $('game').hidden=true; $('home').hidden=false;
   renderMenu(); showTab(tab||'home'); scrollTo(0,0);
 }
@@ -225,7 +240,7 @@ $('endHomeBtn').onclick=()=>goHome();
 
 function start(i){
   L=LEVELS[i]; L.index=i;
-  state={done:{},stars:{},used:{},hinted:{},rescued:{},drops:[],picking:false,forced:false,hintMsg:null,paint:L.budget,earned:0,finished:false};
+  state={done:{},stars:{},used:{},hinted:{},rescued:{},drops:[],picking:false,forced:false,hintMsg:null,paint:L.budget,earned:0,finished:false,quizUsed:false};
   $('home').hidden=true; $('game').hidden=false; scrollTo(0,0);
   $('credit').innerHTML=L.credit||'';
   const ks=L.paints||PAINTS.map(p=>p.k);
@@ -365,7 +380,7 @@ function renderCoins(bump){
   document.querySelectorAll('.coinCount').forEach(e=>e.textContent=save.coins);
   const el=$('coins'); if(bump){el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');}
 }
-function addCoins(n){save.coins+=n; if(n>0) state.earned+=n; persist(); renderCoins(true);}
+function addCoins(n){save.coins+=n; if(n>0&&state) state.earned+=n; persist(); renderCoins(true);}
 function isLocked(b){
   if(save.inv[b]!=null) return false;
   const lv=introAt(b); toast(`${BOOSTERS[b].name} unlocks in picture ${lv+1}: ${LEVELS[lv].title}`); return true;
@@ -607,7 +622,7 @@ function win(){
   $('endStars').innerHTML=[0,1,2].map(i=>`<span class="${i<s?'':'off'}" style="animation-delay:${250+i*280}ms">★</span>`).join('');
   $('endText').innerHTML=`${total} / ${max}★  ·  +<b id="earnNum">0</b> <span class="coin"></span> earned  ·  ${state.paint} drops left`+
     (ch?(beaten?`<br><b>You beat ${esc(ch.from)}'s ${ch.score}★!</b>`:`<br>${esc(ch.from)} still leads: ${ch.score}★ vs your ${total}★. Replay to beat it.`):'')+
-    (L.credit?`<br>${L.credit}.`:'')+(last?'<br>That was the last picture.':'');
+    (L.credit?`<br>${L.credit}.`:'')+(QZ&&factFor(L.id)?`<br><i>Did you know?</i> ${esc(factFor(L.id).fact)}`:'')+(last?'<br>That was the last picture.':'');
   countUp($('earnNum'),state.earned);
   for(let i=0;i<s;i++) setTimeout(()=>{ if(state!==st) return; const b=$('endStars').children[i].getBoundingClientRect();
     burst(b.left+b.width/2,b.top+b.height/2,[INK,'#ffffff'],14,{speed:5,shapes:['star'],decay:.03,size:4,gravity:.1}); },450+i*280);
@@ -622,7 +637,7 @@ function win(){
     $('shareBtn').textContent=ch?'Send your score back':'Challenge a friend';
     makeShareFile(total,max).then(f=>{if(state===st) state.shareFile=f;}).catch(()=>{});
   }
-  $('rescueBtn').hidden=true;
+  $('rescueBtn').hidden=true; $('quizOfferBtn').hidden=true;
   $('endOverlay').classList.add('low');
   $('retryBtn').textContent='Replay';
   $('nextBtn').hidden=last;
@@ -684,6 +699,8 @@ function outOfPaint(){
   $('endStars').textContent='';
   $('endText').innerHTML=`You restored ${Object.keys(state.done).length} of ${L.regions.length} parts. `+
     (ok?`Restart the <b>${r.name}</b> with fresh paint and keep the rest of your work.`:`Restarting a part costs ${RESCUE_PRICE} coins. You have ${save.coins}.`);
+  const qb=$('quizOfferBtn'), canQuiz=rescueQuizAvailable(); qb.hidden=!canQuiz;
+  if(canQuiz) qb.innerHTML=`${icon('quiz')} Art quiz: answer for +${QZ.rescuePaint} paint`;
   const rb=$('rescueBtn'); rb.hidden=false; rb.disabled=!ok;
   rb.innerHTML=`Restart ${r.name} · ${RESCUE_PRICE} <span class="coin"></span>`;
   $('shareBox').hidden=true;
@@ -703,6 +720,81 @@ function rescue(){
   updateHud(); select(r.id);
   toast(`${r.name} restarted. Paint refilled.`);
 }
+// ---------- Art quiz (only for games that define G.quiz) ----------
+const QZ=G.quiz||null;
+const levelOf=id=>LEVELS.find(l=>l.id===id);
+const factFor=id=>QZ&&QZ.facts.find(f=>f.id===id);
+const dayKey=d=>{d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+function qstate(){const q=save.quiz=save.quiz||{}, t=dayKey(); if(q.outDay!==t){q.outDay=t;q.outCount=0;} return q;}
+function nextStreak(){const q=qstate(); if(q.lastDaily===dayKey()) return q.streak||1; return q.lastDaily===dayKey(new Date(Date.now()-864e5))?(q.streak||0)+1:1;}
+const ordinal=n=>n+(n%10===1&&n!==11?'st':n%10===2&&n!==12?'nd':n%10===3&&n!==13?'rd':'th')+' century';
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
+const QTYPES={
+  artist:f=>levelOf(f.id)?'Who painted this?':`Who painted ${f.title}?`,
+  century:f=>levelOf(f.id)?'In which century was it made?':`In which century was ${f.title} made?`,
+  style:f=>levelOf(f.id)?'Which style is it?':`Which style is ${f.title}?`,
+  museum:f=>levelOf(f.id)?'Which museum holds it today?':`Where does ${f.title} hang today?`,
+  country:f=>levelOf(f.id)?'Which country was the artist from?':`Which country was the artist of ${f.title} from?`};
+// One question: the right answer plus plausible wrong ones (same art group, neighboring centuries).
+function makeQuestion(f,types){
+  const avail=types.filter(t=>f[t]); const t=avail[Math.random()*avail.length|0], right=f[t];
+  let pool;
+  if(t==='artist') pool=QZ.artistGroups[f.group]||[].concat(...Object.values(QZ.artistGroups));
+  else if(t==='century'){const c=parseInt(right,10); pool=[c-2,c-1,c+1,c+2].filter(n=>n>=12&&n<=21).map(ordinal);}
+  else pool=QZ.pools[{style:'styles',museum:'museums',country:'countries'}[t]];
+  const wrong=shuffle(pool.filter(x=>x!==right)).slice(0,QZ.options-1);
+  return {f,t,q:QTYPES[t](f),right,opts:shuffle([right,...wrong])};
+}
+// Out-of-paint quiz asks about paintings the player has met: restored ones plus the current one.
+function rescuePool(){return QZ.facts.filter(f=>levelOf(f.id)&&(save.best[f.id]!=null||(L&&f.id===L.id))&&QZ.easyTypes.some(t=>f[t]));}
+function rescueQuizAvailable(){return !!QZ&&!!state&&!state.quizUsed&&qstate().outCount<QZ.rescuePerDay&&rescuePool().length>0;}
+function dailyAvailable(){return !!QZ&&qstate().lastDaily!==dayKey();}
+function renderDailyQuiz(){
+  const b=$('dailyQuizBtn'); $('home').classList.toggle('hasQuiz',!!QZ); b.hidden=!QZ; if(!QZ) return;
+  const s=nextStreak();
+  b.disabled=!dailyAvailable();
+  b.innerHTML=icon('quiz')+(b.disabled?`Daily quiz done · ${s}-day streak`:`Daily art quiz`+(s>1?` · day ${s}`:''));
+}
+let quizCtx=null;
+function openQuiz(kind){
+  const pool=kind==='rescue'?rescuePool():QZ.facts, types=kind==='rescue'?QZ.easyTypes:QZ.allTypes;
+  const f=pool[Math.random()*pool.length|0], q=makeQuestion(f,types), lv=levelOf(f.id);
+  quizCtx={kind,q,answered:false,ok:false};
+  if(kind==='rescue') $('endOverlay').hidden=true;
+  $('quizImg').innerHTML=lv?thumbSVG(lv,true):`<div class="quizTitleCard">${esc(f.title)}</div>`;
+  $('quizEyebrow').textContent=kind==='daily'?`Daily art quiz · day ${nextStreak()}`:`Art quiz · +${QZ.rescuePaint} paint`;
+  const gives=f.title.toLowerCase().includes(String(q.right).toLowerCase())||String(q.right).toLowerCase().includes(f.title.toLowerCase());
+  $('quizTitle').textContent=lv&&!gives?f.title:''; // hide the title when it would give the answer away
+  $('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="btn qopt" data-i="${i}">${esc(o)}</button>`).join('');
+  $('quizResult').hidden=true; $('quizDone').hidden=true;
+  $('quizOverlay').hidden=false;
+}
+$('quizOpts').addEventListener('click',e=>{
+  const b=e.target.closest('.qopt'); if(!b||!quizCtx||quizCtx.answered) return;
+  quizCtx.answered=true;
+  const {q,kind}=quizCtx, ok=q.opts[+b.dataset.i]===q.right; quizCtx.ok=ok;
+  [...$('quizOpts').children].forEach((el,i)=>{el.disabled=true; if(q.opts[i]===q.right) el.classList.add('right'); else if(el===b) el.classList.add('wrong');});
+  let msg;
+  if(kind==='rescue'){
+    qstate().outCount++; state.quizUsed=true;
+    if(ok){state.paint+=QZ.rescuePaint; msg=`Correct! +${QZ.rescuePaint} paint.`;} else msg=`Not quite. It's ${esc(q.right)}.`;
+  }else{
+    const qs=qstate(), st=nextStreak(); qs.streak=st; qs.lastDaily=dayKey();
+    const reward=QZ.dailyCoins[Math.min(st,QZ.dailyCoins.length)-1];
+    if(ok){addCoins(reward); msg=`Correct! +${reward} coins · ${st}-day streak.`;} else msg=`Not quite. It's ${esc(q.right)}. Your streak continues: ${st} day${st>1?'s':''}.`;
+  }
+  persist();
+  $('quizResult').innerHTML=`<b>${msg}</b><br>${esc(q.f.fact)}`; $('quizResult').hidden=false;
+  $('quizDone').textContent=kind==='rescue'&&ok?'Keep painting':'Continue'; $('quizDone').hidden=false;
+});
+$('quizDone').onclick=()=>{
+  const c=quizCtx; quizCtx=null; $('quizOverlay').hidden=true; if(!c) return;
+  if(c.kind==='rescue'){ if(c.ok){updateHud(); renderMix(); toast(`+${QZ.rescuePaint} paint`);} else outOfPaint(); }
+  else renderMenu();
+};
+$('quizOfferBtn').onclick=()=>{if(rescueQuizAvailable()) openQuiz('rescue');};
+$('dailyQuizBtn').onclick=()=>{if(dailyAvailable()) openQuiz('daily');};
 let tt;function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),1800);}
 
 goHome();

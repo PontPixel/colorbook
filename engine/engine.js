@@ -401,11 +401,13 @@ function forceUndo(k){
   $('coachTip').innerHTML=`Oops! ${current().name} has no <b>${PMAP[k].name}</b> in it.<br>Tap <b>Undo</b> to take that drop back. This one is free.`;
   $('coachTip').hidden=false; $('coachDim').hidden=false;
   $('undoBtn').classList.add('coach'); document.querySelector('.swatches').classList.add('lift');
+  document.body.classList.add('coaching');
   renderActions();
 }
 function hideCoach(){
   $('coachTip').hidden=true; $('coachDim').hidden=true;
   $('undoBtn').classList.remove('coach'); document.querySelector('.swatches').classList.remove('lift');
+  document.body.classList.remove('coaching');
 }
 function nudge(){const t=$('coachTip');t.classList.remove('nudge');void t.offsetWidth;t.classList.add('nudge');}
 $('coachDim').onclick=nudge;

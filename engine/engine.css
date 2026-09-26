@@ -223,6 +223,8 @@ body:has(#game:not([hidden])){padding-bottom:12px}
   .home{max-width:1000px}
   .gallery .ggrid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
   .mixer{position:sticky;top:16px}
+  /* sticky makes its own stacking context, which would trap the coach tip and Undo under the dim layer */
+  body.coaching .mixer{position:static}
   /* result card sits over the mixer, so the restored picture stays in view */
   .overlay.low{align-items:center;justify-content:flex-end;padding-right:max(16px,calc((100vw - 1240px) / 2 + 36px))}
 }

@@ -532,7 +532,8 @@ function apply(){
   const gb=g.getBoundingClientRect();
   burst(gb.left+gb.width/2,gb.top+gb.height/2,[hex(r.target),hex(r.target),'#ffffff'],18,{speed:5,size:4,decay:.028,gravity:.12});
   const c=s*COINS_PER_STAR*TIERS[L.tier].mult; addCoins(c);
-  toast(`${r.name} restored  ${'★'.repeat(s)}${'☆'.repeat(3-s)}  +${c} coins`);
+  // Like ColorFind: show drops used against the minimum (the recipe size) for this part.
+  toast(`${r.name} ${'★'.repeat(s)}${'☆'.repeat(3-s)} · ${used<=r.min?`perfect, ${used} drop${used>1?'s':''}`:`${used} drops, min ${r.min}`} · +${c} coins`);
   state.drops=[]; state.picking=false; state.hintMsg=null; updateHud(); renderHint();
   const next=L.regions.find(x=>!state.done[x.id]);
   if(!next){state.finished=true;finishPicture();}
@@ -620,7 +621,9 @@ function win(){
   persist(); renderMenu(); updateHud();
   $('endTitle').textContent=L.title+' restored';
   $('endStars').innerHTML=[0,1,2].map(i=>`<span class="${i<s?'':'off'}" style="animation-delay:${250+i*280}ms">★</span>`).join('');
-  $('endText').innerHTML=`${total} / ${max}★  ·  +<b id="earnNum">0</b> <span class="coin"></span> earned  ·  ${state.paint} drops left`+
+  const usedAll=L.regions.reduce((a,r)=>a+(state.used[r.id]||0),0), minAll=L.regions.reduce((a,r)=>a+r.min,0);
+  $('endText').innerHTML=`${total} / ${max}★  ·  +<b id="earnNum">0</b> <span class="coin"></span> earned`+
+    `<br>Drops used <b>${usedAll}</b> · minimum <b>${minAll}</b>${usedAll<=minAll?' · perfect!':''}`+
     (ch?(beaten?`<br><b>You beat ${esc(ch.from)}'s ${ch.score}★!</b>`:`<br>${esc(ch.from)} still leads: ${ch.score}★ vs your ${total}★. Replay to beat it.`):'')+
     (L.credit?`<br>${L.credit}.`:'')+(QZ&&factFor(L.id)?`<br><i>Did you know?</i> ${esc(factFor(L.id).fact)}`:'')+(last?'<br>That was the last picture.':'');
   countUp($('earnNum'),state.earned);

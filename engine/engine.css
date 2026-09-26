@@ -124,6 +124,7 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .card .stars{font-size:28px;letter-spacing:2px;color:var(--gold)}
 .card .row{display:flex;gap:8px}.card .row .btn{flex:1}
 .toast{position:fixed;z-index:7;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font:600 14px "Inter",system-ui,sans-serif;transition:.3s;pointer-events:none;white-space:nowrap}
+.toast{white-space:normal;text-align:center;max-width:calc(100vw - 32px);width:max-content;border-radius:18px}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 /* Forced-undo coach */
 .coachDim{position:fixed;inset:0;background:rgba(20,24,40,.55);z-index:4}

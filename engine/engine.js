@@ -8,7 +8,10 @@ document.body.insertAdjacentHTML('afterbegin',`
 <main class="home" id="home">
   <div class="topbar">
     <div class="pill" id="homeStars">★ 0</div>
-    <div class="pill coins"><span class="coin"></span><span class="coinCount">0</span></div>
+    <div class="topr">
+      <button class="iconbtn themebtn" id="themeBtn" aria-label="Theme"></button>
+      <div class="pill coins"><span class="coin"></span><span class="coinCount">0</span></div>
+    </div>
   </div>
   <section class="homeMain" id="homeMain">
     <img class="logo" src="${G.logo}" alt="${GAME_NAME}" width="137" height="210">
@@ -153,6 +156,9 @@ const ICONS={
   home:'<path d="M3 11 12 4l9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/>',
   gallery:'<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="m3.5 18 5.5-5 4 3.5 3-2.5 4.5 4"/>',
   back:'<path d="M15 5 8 12l7 7"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>',
+  moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/>',
+  auto:'<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor"/>',
   quiz:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17h.01"/>'};
 const icon=k=>`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
 const BOOSTERS={
@@ -800,6 +806,16 @@ $('quizDone').onclick=()=>{
 };
 $('quizOfferBtn').onclick=()=>{if(rescueQuizAvailable()) openQuiz('rescue');};
 $('dailyQuizBtn').onclick=()=>{if(dailyAvailable()) openQuiz('daily');};
+// ---------- Theme: Auto (follow the device) → Light → Dark, shared by all games on this site ----------
+const THEME_KEY='pontpixel-theme', THEME_NAME={auto:'Auto',light:'Light',dark:'Dark'};
+let theme='auto'; try{theme=localStorage.getItem(THEME_KEY)||'auto';}catch(e){}
+function applyTheme(){
+  if(theme==='auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme=theme;
+  $('themeBtn').innerHTML=icon(theme==='light'?'sun':theme==='dark'?'moon':'auto');
+  $('themeBtn').setAttribute('aria-label',`Theme: ${THEME_NAME[theme]}`); $('themeBtn').title=`Theme: ${THEME_NAME[theme]}`;
+}
+$('themeBtn').onclick=()=>{theme={auto:'light',light:'dark',dark:'auto'}[theme]; try{localStorage.setItem(THEME_KEY,theme);}catch(e){} applyTheme(); toast(`Theme: ${THEME_NAME[theme]}`);};
+applyTheme();
 let tt;function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),1800);}
 
 goHome();

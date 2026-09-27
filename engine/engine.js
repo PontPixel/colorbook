@@ -255,7 +255,7 @@ function showTab(t){
   if(HALL&&t==='home') requestAnimationFrame(()=>centerOn(hallCenter,false));
 }
 function goHome(tab){
-  state=null; parts=[]; hideCoach();
+  hideHand(); state=null; parts=[]; hideCoach();
   ['endOverlay','introOverlay','quitOverlay','quizOverlay','settingsOverlay'].forEach(id=>$(id).hidden=true);
   $('game').hidden=true; $('home').hidden=false;
   renderMenu(); showTab(tab||'home'); $('homeMain').scrollTop=0;
@@ -285,7 +285,7 @@ function start(i,o={}){
   const ks=L.paints||PAINTS.map(p=>p.k);
   $('paints').style.setProperty('--n',ks.length);
   $('paints').innerHTML=ks.map(k=>PMAP[k]).map(p=>`<button class="paint" data-k="${p.k}" aria-label="${t('Add {paint}',{paint:t(p.name)})}"><span class="blob" style="background:${hex(p.rgb)}"></span>${t(p.name)}</button>`).join('');
-  hideCoach(); parts=[];
+  hideHand(); hideCoach(); parts=[];
   document.querySelector('.frame').classList.remove('celebrate'); $('stamp').hidden=true;
   buildScene(); updateHud(); renderCoins();
   $('endOverlay').hidden=true;
@@ -302,7 +302,8 @@ function showIntro(){
   const chal=save.challenge&&save.challenge.fresh?save.challenge:null;
   if(chal) chal.fresh=false;
   save.seen[L.id]=true; persist(); renderActions();
-  if(!tip&&!fresh.length&&!chal&&!tierNote&&!state.daily) return;
+  state.freshBoosters=fresh;
+  if(!tip&&!fresh.length&&!chal&&!tierNote&&!state.daily){ startHands(); return; }
   $('introTitle').textContent=state.daily&&!tip?t('Daily picture'):chal?t('{from} challenged you!',{from:chal.from}):tip?t(tip.title):tierNote?t('{tier} picture',{tier:TIERS[L.tier].label}):t('New booster');
   $('introText').innerHTML=tip?t(tip.text):'';
   $('introText').hidden=!tip;
@@ -321,7 +322,7 @@ function showIntro(){
   $('introBoosters').innerHTML=html;
   $('introOverlay').hidden=false;
 }
-$('introBtn').onclick=()=>{$('introOverlay').hidden=true;};
+$('introBtn').onclick=()=>{$('introOverlay').hidden=true; startHands();};
 
 function regionEl(r){
   return r.stroke
@@ -334,7 +335,7 @@ function buildScene(){
     L.regions.filter(r=>r.crack).map(r=>`<path class="crack" data-for="${r.id}" d="${r.crack}"/>`).join('')+
     '<g id="selLayer"></g><g id="fxLayer" pointer-events="none"></g>';
   scene.setAttribute('aria-label',t('Faded picture')+': '+T(L));
-  scene.querySelectorAll('.region').forEach(g=>g.addEventListener('click',()=>{if(!state.done[g.dataset.id]&&!state.forced&&!state.applying)select(g.dataset.id);}));
+  scene.querySelectorAll('.region').forEach(g=>g.addEventListener('click',()=>{if(!state.done[g.dataset.id]&&!state.forced&&!state.applying){handDone('tapPart');select(g.dataset.id);}}));
 }
 const current=()=>L.regions.find(x=>x.id===state.sel);
 function select(id){
@@ -439,6 +440,64 @@ function spend(b){
 }
 function refundDrop(){state.paint++; state.used[state.sel]--; updateHud();}
 
+// ---------- Hand tutorial: an animated hand shows a gesture instead of a text tip ----------
+// A level lists its demos in `coach` (default: 'drag' on a game's first picture). Each demo shows once per save.
+//  drag    : drag the first recipe paint into the bowl (loops until the player adds a drop)
+//  tapPart : tap another faded part (`coachPart` or the second part); a drop instead hides it for now
+//  booster : after its intro card, a freshly unlocked booster gets two taps
+const HAND='<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M17 30V7.5a3.5 3.5 0 0 1 7 0V20a3.3 3.3 0 0 1 6.6 0V22a3.3 3.3 0 0 1 6.6 0V24a3.3 3.3 0 0 1 6.6 0V33c0 7-5 12-12 12h-5c-4 0-7-2-9.5-5.5L9.8 30.8a3 3 0 0 1 4.6-3.8Z"/></svg>';
+const HX=22, HY=4; // fingertip inside the 52px hand box
+let handEls=[], handAnims=[];
+function hideHand(){ handAnims.forEach(a=>a.cancel()); handAnims=[]; handEls.forEach(e=>e.remove()); handEls=[]; if(state) state.hand=null; }
+function handDone(kind){ if(!state||!state.hand||state.hand.kind!==kind) return; save.tut[kind]=true; persist(); hideHand(); }
+const centerOf=el=>{const r=el.getBoundingClientRect(); return [r.left+r.width/2,r.top+r.height/2];};
+function handEl(cls,html){const e=document.createElement('div'); e.className=cls; if(html) e.innerHTML=html; document.body.appendChild(e); handEls.push(e); return e;}
+const at=(x,y,dx,dy,sc=1)=>`translate(${x-dx}px,${y-dy}px) scale(${sc})`;
+function playHand(cfg){
+  hideHand(); state.hand=cfg;
+  const hand=handEl('hand',HAND), [ax,ay]=centerOf(cfg.from), [bx,by]=cfg.to?centerOf(cfg.to):[ax,ay];
+  if(reduced){ hand.style.transform=at(ax,ay,HX,HY); return; }
+  if(cfg.kind==='drag'){
+    const drop=handEl('handDrop'); drop.style.background=cfg.color;
+    handAnims.push(hand.animate([
+      {offset:0,transform:at(ax,ay,HX,HY),opacity:0},{offset:.12,transform:at(ax,ay,HX,HY),opacity:1},
+      {offset:.22,transform:at(ax,ay,HX,HY,.86)},{offset:.66,transform:at(bx,by,HX,HY,.86),opacity:1},
+      {offset:.76,transform:at(bx,by,HX,HY),opacity:1},{offset:1,transform:at(bx,by,HX,HY),opacity:0}],
+      {duration:2200,iterations:Infinity,easing:'ease-in-out'}));
+    handAnims.push(drop.animate([
+      {offset:0,transform:at(ax,ay,15,15,.4),opacity:0},{offset:.22,transform:at(ax,ay,15,15),opacity:1},
+      {offset:.66,transform:at(bx,by,15,15),opacity:1},{offset:.74,transform:at(bx,by,15,15,.3),opacity:0},{offset:1,opacity:0}],
+      {duration:2200,iterations:Infinity,easing:'ease-in-out'}));
+  }else{ // tap
+    const ring=handEl('handRing'), n=cfg.times||Infinity;
+    const a=hand.animate([
+      {offset:0,transform:at(ax,ay,HX,HY),opacity:0},{offset:.15,transform:at(ax,ay,HX,HY),opacity:1},
+      {offset:.35,transform:at(ax,ay,HX,HY,.84)},{offset:.5,transform:at(ax,ay,HX,HY)},
+      {offset:.65,transform:at(ax,ay,HX,HY,.84)},{offset:.8,transform:at(ax,ay,HX,HY),opacity:1},{offset:1,transform:at(ax,ay,HX,HY),opacity:0}],
+      {duration:1800,iterations:n,easing:'ease-in-out'});
+    handAnims.push(a, ring.animate([
+      {offset:0,transform:at(ax,ay,22,22,.3),opacity:0},{offset:.35,transform:at(ax,ay,22,22,.4),opacity:.9},
+      {offset:.6,transform:at(ax,ay,22,22,1.5),opacity:0},{offset:1,opacity:0}],{duration:1800,iterations:n}));
+    if(n!==Infinity) a.onfinish=hideHand;
+  }
+}
+function startHands(){
+  if(!state||state.finished||state.forced) return;
+  const want=L.coach||(L.index===0?['drag']:[]), r=current();
+  if(want.includes('drag')&&!save.tut.drag){
+    const k=Object.keys(r.recipe)[0], btn=$('paints').querySelector(`.paint[data-k="${k}"]`);
+    if(btn){ playHand({kind:'drag',from:btn,to:$('mixChip'),color:hex(PMAP[k].rgb)}); renderMix([t('Drag a paint into the bowl, or just tap it.'),'']); return; }
+  }
+  if(want.includes('tapPart')&&!save.tut.tapPart){
+    const id=L.coachPart&&!state.done[L.coachPart]&&L.coachPart!==state.sel?L.coachPart:(L.regions.find(x=>!state.done[x.id]&&x.id!==state.sel)||{}).id;
+    const g=id&&scene.querySelector(`.region[data-id="${id}"]`);
+    if(g){ playHand({kind:'tapPart',from:g}); renderMix([t('Tap any faded part to paint it next.'),'']); return; }
+  }
+  const b=(state.freshBoosters||[])[0];
+  if(b) playHand({kind:'booster',from:$(b+'Btn'),times:2});
+}
+addEventListener('resize',()=>{ if(state&&state.hand&&state.hand.kind!=='booster') startHands(); });
+
 // ---------- Forced free Undo (first wrong color on the picture that introduces Undo) ----------
 function forceUndo(k){
   state.forced=true;
@@ -465,6 +524,7 @@ function addDrop(k){
   if(state.drops.length>=12){renderMix([t('The bowl is full. Take drops out or empty it.'),'bad']);buzz(40);sfx('wrong');return false;}
   state.picking=false; state.hintMsg=null;
   state.drops.push(k); state.paint--; state.used[state.sel]=(state.used[state.sel]||0)+1; buzz(8); sfx('drop',k);
+  if(state.hand) state.hand.kind==='drag'?handDone('drag'):hideHand();
   updateHud(); renderHint(); renderMix();
   if(L.intro==='undo'&&!save.tut.undo&&!current().recipe[k]) forceUndo(k);
   else afterMixChange();
@@ -645,7 +705,7 @@ function tick(){
 
 // ---------- Picture complete: celebration ----------
 function finishPicture(){
-  const st=state; $('selLayer').innerHTML=''; renderMix();
+  hideHand(); const st=state; $('selLayer').innerHTML=''; renderMix();
   setTimeout(()=>{ if(state!==st) return; celebrate(st); setTimeout(()=>{if(state===st) win();},2400); },450);
 }
 function celebrate(st){
@@ -766,6 +826,7 @@ function copyText(t){
 
 function outOfPaint(){
   if(!state||!$('endOverlay').hidden||state.finished) return;
+  hideHand();
   const r=current(), ok=save.coins>=RESCUE_PRICE;
   $('endTitle').textContent=t('Out of paint'); buzz([60,40,60]); sfx('fail');
   $('endStars').textContent='';

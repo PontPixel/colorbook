@@ -8,9 +8,11 @@ const leaf=(cx,cy,rx,ry,a)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}
 const fanAngles=(a0,a1,n)=>Array.from({length:n},(_,i)=>a0+(a1-a0)*i/(n-1));
 const fan=(cx,cy,d,rx,ry,a0,a1,n)=>fanAngles(a0,a1,n).map(a=>{const r=a*Math.PI/180;return leaf(+(cx+d*Math.cos(r)).toFixed(1),+(cy+d*Math.sin(r)).toFixed(1),rx,ry,+(a+90).toFixed(1));}).join('');
 const fanDots=(cx,cy,d,rad,a0,a1,n)=>fanAngles(a0,a1,n).map(a=>{const r=a*Math.PI/180;return `<circle cx="${(cx+d*Math.cos(r)).toFixed(1)}" cy="${(cy+d*Math.sin(r)).toFixed(1)}" r="${rad}"/>`;}).join('');
+// Pie slice of a circle (umbrella panels): angles in degrees, 180 → 360 is the upper half.
+const slice=(cx,cy,r,a1,a2)=>{const p=a=>[(cx+r*Math.cos(a*Math.PI/180)).toFixed(1),(cy+r*Math.sin(a*Math.PI/180)).toFixed(1)];const[x1,y1]=p(a1),[x2,y2]=p(a2);return `<path d="M${cx} ${cy}L${x1} ${y1}A${r} ${r} 0 0 1 ${x2} ${y2}Z"/>`;};
 const rects=(xs,ys,w,h)=>xs.flatMap(x=>ys.map(y=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1"/>`)).join('');
 const LEVELS=[
-{ id:'balloons', title:'Balloons', sub:'Each balloon needs just one paint.', budget:8, tier:'easy', paints:['C','M','Y'], intro:'empty',
+{ id:'balloons', title:'Balloons', sub:'Each balloon needs just one paint.', budget:8, tier:'easy', paints:['C','M','Y'], coach:['drag'],
   tip:{title:'Welcome, restorer',text:'Each faded part has a target color. Tap a paint to drop it in the bowl, the part paints itself as soon as the match reaches 95%. Every drop uses paint from your pot. Restored parts earn coins.'},
   bg:`<rect width="320" height="240" fill="#eaf1fa"/><g fill="#fff" stroke="${INK}" stroke-width="1.5"><path d="M18 212a14 14 0 0 1 26-8a11 11 0 0 1 20 8z"/><path d="M252 214a16 16 0 0 1 30-8a12 12 0 0 1 22 8z"/></g>`,
   regions:[
@@ -22,7 +24,35 @@ const LEVELS=[
   decor:`<g fill="none" stroke="${INK}" stroke-width="1.5" pointer-events="none"><path d="M90 142q-8 30 6 50t4 40"/><path d="M168 118q10 30-4 56t6 58"/><path d="M246 144q-6 30 6 50t-2 38"/></g>
     <g fill="#fff" opacity=".55" pointer-events="none"><ellipse cx="78" cy="82" rx="6" ry="11" transform="rotate(20 78 82)"/><ellipse cx="156" cy="58" rx="6" ry="11" transform="rotate(20 156 58)"/><ellipse cx="234" cy="84" rx="6" ry="11" transform="rotate(20 234 84)"/></g>`
 },
-{ id:'fruit', title:'Fruit bowl', sub:'Two paints make a new color.', budget:12, tier:'easy', paints:['C','M','Y'], intro:'undo',
+{ id:'penguin', title:'Penguin', sub:'Only white and black. Mix them for gray.', budget:8, tier:'easy', paints:['W','K'], intro:'undo',
+  tip:{title:'Light and dark',text:'This picture needs only <b>White</b> and <b>Black</b>. One drop of each makes <b>gray</b>. More white makes it lighter, more black makes it darker.'},
+  bg:`<rect width="320" height="240" fill="#e6eef5"/>`,
+  regions:[
+    {id:'body',name:'Penguin',recipe:{K:1},svg:'<path d="M160 36C198 36 214 80 214 130C214 182 196 208 160 208C124 208 106 182 106 130C106 80 122 36 160 36Z"/><path d="M110 104C92 124 88 150 94 170L112 160Z"/><path d="M210 104C228 124 232 150 226 170L208 160Z"/>'},
+    {id:'belly',name:'Belly',recipe:{W:1},svg:'<path d="M160 82C184 82 196 110 196 142C196 178 182 200 160 200C138 200 124 178 124 142C124 110 136 82 160 82Z"/>'},
+    {id:'ice',name:'Ice',recipe:{W:1,K:1},svg:'<path d="M0 198Q80 188 160 198T320 196V240H0Z"/>'},
+  ],
+  order:['ice','body','belly'],
+  decor:`<g pointer-events="none" stroke="${INK}" stroke-width="1.5"><circle cx="146" cy="62" r="6" fill="#fff"/><circle cx="174" cy="62" r="6" fill="#fff"/><circle cx="147" cy="63" r="2.5" fill="${INK}"/><circle cx="173" cy="63" r="2.5" fill="${INK}"/><path d="M152 74L168 74L160 86Z" fill="#fff" stroke-linejoin="round"/><path d="M136 206q10-8 20 0zM164 206q10-8 20 0z" fill="#fff"/></g>`
+},
+{ id:'umbrellas', title:'Umbrellas', sub:'White lightens a color. Black darkens it.', tier:'easy', intro:'hint',
+  tip:{title:'Lighter and darker',text:'All five paints are open now. Add <b>White</b> to a color to make it lighter, <b>Black</b> to make it darker. One drop of each is enough here.'},
+  bg:`<rect width="320" height="240" fill="#eef1f6"/><rect y="200" width="320" height="40" fill="#d9dde6"/><line x1="0" y1="200" x2="320" y2="200" stroke="${INK}" stroke-width="2"/>`,
+  regions:[
+    {id:'cyanL',name:'Light blue panels',recipe:{C:1,W:1},svg:slice(70,122,48,180,225)+slice(70,122,48,270,315)},
+    {id:'cyanD',name:'Dark blue panels',recipe:{C:1,K:1},svg:slice(70,122,48,225,270)+slice(70,122,48,315,360)},
+    {id:'magL',name:'Pink panels',recipe:{M:1,W:1},svg:slice(160,100,48,180,225)+slice(160,100,48,270,315)},
+    {id:'magD',name:'Dark magenta panels',recipe:{M:1,K:1},svg:slice(160,100,48,225,270)+slice(160,100,48,315,360)},
+    {id:'yelL',name:'Light yellow panels',recipe:{Y:1,W:1},svg:slice(250,126,48,180,225)+slice(250,126,48,270,315)},
+    {id:'yelD',name:'Olive panels',recipe:{Y:1,K:1},svg:slice(250,126,48,225,270)+slice(250,126,48,315,360)},
+  ],
+  order:['cyanL','cyanD','magL','magD','yelL','yelD'],
+  decor:`<g fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round" pointer-events="none">
+    <path d="M70 122V190q0 8-8 8"/><path d="M160 100V178q0 8-8 8"/><path d="M250 126V194q0 8-8 8"/>
+    <path d="M70 74v-6M160 52v-6M250 78v-6"/></g>
+    <g pointer-events="none" stroke="${INK}" stroke-width="1.3" stroke-linecap="round" opacity=".45"><path d="M30 30l-4 9M110 20l-4 9M205 34l-4 9M290 22l-4 9M20 150l-4 9M300 168l-4 9M120 160l-4 9M205 172l-4 9"/></g>`
+},
+{ id:'fruit', title:'Fruit bowl', sub:'Two paints make a new color.', budget:12, tier:'easy', paints:['C','M','Y'], intro:'pick',
   tip:{title:'Mixing two colors',text:'Red, green and blue are not in your paint set. Mix them: one drop of each of two paints.'},
   bg:`<rect width="320" height="240" fill="#f4eee4"/><rect y="188" width="320" height="52" fill="#dcc7aa"/><line x1="0" y1="188" x2="320" y2="188" stroke="${INK}" stroke-width="2"/>`,
   regions:[
@@ -35,24 +65,13 @@ const LEVELS=[
     <path d="M62 162H258Q252 216 160 216Q68 216 62 162Z" fill="#fff" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
     <path d="M70 180H250" stroke="#8fb3e0" stroke-width="5"/><g fill="${INK}"><circle cx="106" cy="132" r="1.5"/><circle cx="124" cy="126" r="1.5"/></g></g>`
 },
-{ id:'penguin', title:'Penguin', sub:'Only white and black. Mix them for gray.', budget:8, tier:'easy', paints:['W','K'],
-  tip:{title:'Light and dark',text:'This picture needs only <b>White</b> and <b>Black</b>. One drop of each makes <b>gray</b>. More white makes it lighter, more black makes it darker.'},
-  bg:`<rect width="320" height="240" fill="#e6eef5"/>`,
-  regions:[
-    {id:'body',name:'Penguin',recipe:{K:1},svg:'<path d="M160 36C198 36 214 80 214 130C214 182 196 208 160 208C124 208 106 182 106 130C106 80 122 36 160 36Z"/><path d="M110 104C92 124 88 150 94 170L112 160Z"/><path d="M210 104C228 124 232 150 226 170L208 160Z"/>'},
-    {id:'belly',name:'Belly',recipe:{W:1},svg:'<path d="M160 82C184 82 196 110 196 142C196 178 182 200 160 200C138 200 124 178 124 142C124 110 136 82 160 82Z"/>'},
-    {id:'ice',name:'Ice',recipe:{W:1,K:1},svg:'<path d="M0 198Q80 188 160 198T320 196V240H0Z"/>'},
-  ],
-  order:['ice','body','belly'],
-  decor:`<g pointer-events="none" stroke="${INK}" stroke-width="1.5"><circle cx="146" cy="62" r="6" fill="#fff"/><circle cx="174" cy="62" r="6" fill="#fff"/><circle cx="147" cy="63" r="2.5" fill="${INK}"/><circle cx="173" cy="63" r="2.5" fill="${INK}"/><path d="M152 74L168 74L160 86Z" fill="#fff" stroke-linejoin="round"/><path d="M136 206q10-8 20 0zM164 206q10-8 20 0z" fill="#fff"/></g>`
-},
-{ id:'beach', title:'Beach', sub:'White lightens. Black darkens.', tier:'easy', intro:'pick',
-  tip:{title:'All five paints',text:'All five paints are open now. Mix a color, then add <b>White</b> to make it lighter or <b>Black</b> to make it darker.'},
+{ id:'beach', title:'Beach', sub:'Mix a color, then lighten or darken it.', tier:'easy', intro:'empty',
+  tip:{title:'Mix, then shade',text:'Mix two paints to get the color, then add <b>White</b> to make it lighter or <b>Black</b> to make it darker.'},
   regions:[
     {id:'sun',name:'Sun',recipe:{M:1,Y:3},svg:'<circle cx="62" cy="46" r="22"/>'},
     {id:'sea',name:'Sea',recipe:{C:3,M:1},svg:'<path d="M0 118H320V168Q240 158 160 166T0 160Z"/>'},
     {id:'sky',name:'Sky',recipe:{W:2,C:1},svg:'<rect x="0" y="0" width="320" height="130"/>'},
-    {id:'sand',name:'Sand',recipe:{W:1,Y:1},svg:'<path d="M0 158Q80 150 160 160T320 156V240H0Z"/>'},
+    {id:'sand',name:'Sand',recipe:{W:3,Y:2},svg:'<path d="M0 158Q80 150 160 160T320 156V240H0Z"/>'},
     {id:'umbrella',name:'Umbrella',recipe:{W:1,M:2,Y:1},svg:'<path d="M70 150A52 36 0 0 1 174 150Q161 142 148 150Q135 142 122 150Q109 142 96 150Q83 142 70 150Z"/>'},
     {id:'rock',name:'Rock',recipe:{W:2,K:1},svg:'<path d="M232 170q6-24 28-26q20 0 28 24q-2 6-28 6t-28-4z"/>'},
   ],
@@ -62,11 +81,11 @@ const LEVELS=[
     <path d="M196 52q8-8 16 0q8-8 16 0"/><path d="M236 70q6-6 12 0q6-6 12 0"/>
     <path d="M20 138q10-6 20 0M130 130q10-6 20 0M240 136q10-6 20 0"/></g>`
 },
-{ id:'house', title:'Cottage', sub:'Tap a faded part, mix its color, paint it back.', tier:'normal', intro:'hint',
+{ id:'house', title:'Cottage', sub:'Tap a faded part, mix its color, paint it back.', tier:'normal', coach:['tapPart'], coachPart:'roof',
   tip:{title:'A bigger picture',text:'Ten parts share one paint pot, so plan your drops. You can tap any faded part to work on it. If the pot runs dry, coins can rescue the part you are on.'},
   regions:[
     {id:'sun',name:'Sun',recipe:{W:1,Y:2},svg:'<circle cx="264" cy="46" r="24"/>'},
-    {id:'flower',name:'Flowers',recipe:{W:1,M:1},svg:petals(284,196)+petals(304,206)},
+    {id:'flower',name:'Flowers',recipe:{W:2,M:3},svg:petals(284,196)+petals(304,206)},
     {id:'window',name:'Lit windows',recipe:{W:1,M:1,Y:4},svg:'<rect x="134" y="124" width="26" height="22" rx="2"/><rect x="206" y="124" width="26" height="22" rx="2"/>'},
     {id:'door',name:'Door',recipe:{C:2,M:3},svg:'<path d="M168 190V156a13 13 0 0 1 26 0V190Z"/>'},
     {id:'roof',name:'Roof',recipe:{W:1,C:1,M:3,Y:2},svg:'<path d="M106 114L180 60L254 114Z"/>'},
@@ -306,7 +325,11 @@ fr:{
 'Red, green and blue are not in your paint set. Mix them: one drop of each of two paints.':'Le rouge, le vert et le bleu ne sont pas dans vos peintures. Mélangez-les : une goutte de deux peintures différentes.',
 'Apple':'Pomme','Pear':'Poire','Plum':'Prune','Penguin':'Pingouin','Light and dark':'Clair et foncé',
 'This picture needs only <b>White</b> and <b>Black</b>. One drop of each makes <b>gray</b>. More white makes it lighter, more black makes it darker.':'Cette image ne demande que du <b>Blanc</b> et du <b>Noir</b>. Une goutte de chaque donne du <b>gris</b>. Plus de blanc éclaircit, plus de noir assombrit.',
-'Belly':'Ventre','Ice':'Glace','Beach':'Plage','All five paints':'Les cinq peintures',
+'Belly':'Ventre','Ice':'Glace','Beach':'Plage','All five paints':'Les cinq peintures','Mix, then shade':'Mélanger, puis nuancer',
+'Mix two paints to get the color, then add <b>White</b> to make it lighter or <b>Black</b> to make it darker.':'Mélangez deux peintures pour obtenir la couleur, puis ajoutez du <b>Blanc</b> pour l’éclaircir ou du <b>Noir</b> pour l’assombrir.',
+'Umbrellas':'Parapluies','Lighter and darker':'Plus clair, plus foncé',
+'All five paints are open now. Add <b>White</b> to a color to make it lighter, <b>Black</b> to make it darker. One drop of each is enough here.':'Les cinq peintures sont disponibles. Ajoutez du <b>Blanc</b> à une couleur pour l’éclaircir, du <b>Noir</b> pour l’assombrir. Une goutte de chaque suffit ici.',
+'Light blue panels':'Pans bleu clair','Dark blue panels':'Pans bleu foncé','Pink panels':'Pans roses','Dark magenta panels':'Pans magenta foncé','Light yellow panels':'Pans jaune clair','Olive panels':'Pans olive',
 'All five paints are open now. Mix a color, then add <b>White</b> to make it lighter or <b>Black</b> to make it darker.':'Les cinq peintures sont disponibles. Mélangez une couleur, puis ajoutez du <b>Blanc</b> pour l’éclaircir ou du <b>Noir</b> pour l’assombrir.',
 'Sun':'Soleil','Sea':'Mer','Sky':'Ciel','Sand':'Sable','Umbrella':'Parasol','Rock':'Rocher',
 'Cottage':'Chaumière','A bigger picture':'Une image plus grande',
@@ -334,7 +357,11 @@ ru:{
 'Red, green and blue are not in your paint set. Mix them: one drop of each of two paints.':'Красной, зелёной и синей краски нет в наборе. Смешайте их: по одной капле двух красок.',
 'Apple':'Яблоко','Pear':'Груша','Plum':'Слива','Penguin':'Пингвин','Light and dark':'Светлое и тёмное',
 'This picture needs only <b>White</b> and <b>Black</b>. One drop of each makes <b>gray</b>. More white makes it lighter, more black makes it darker.':'Здесь нужны только <b>белая</b> и <b>чёрная</b>. По капле каждой дают <b>серый</b>. Больше белой — светлее, больше чёрной — темнее.',
-'Belly':'Животик','Ice':'Лёд','Beach':'Пляж','All five paints':'Все пять красок',
+'Belly':'Животик','Ice':'Лёд','Beach':'Пляж','All five paints':'Все пять красок','Mix, then shade':'Смешать и затемнить',
+'Mix two paints to get the color, then add <b>White</b> to make it lighter or <b>Black</b> to make it darker.':'Смешайте две краски, чтобы получить цвет, потом добавьте <b>белой</b>, чтобы осветлить, или <b>чёрной</b>, чтобы затемнить.',
+'Umbrellas':'Зонтики','Lighter and darker':'Светлее и темнее',
+'All five paints are open now. Add <b>White</b> to a color to make it lighter, <b>Black</b> to make it darker. One drop of each is enough here.':'Теперь открыты все пять красок. Добавьте к цвету <b>белую</b>, чтобы он стал светлее, или <b>чёрную</b>, чтобы темнее. Здесь хватит одной капли каждой.',
+'Light blue panels':'Светло-голубые клинья','Dark blue panels':'Тёмно-синие клинья','Pink panels':'Розовые клинья','Dark magenta panels':'Тёмно-пурпурные клинья','Light yellow panels':'Светло-жёлтые клинья','Olive panels':'Оливковые клинья',
 'All five paints are open now. Mix a color, then add <b>White</b> to make it lighter or <b>Black</b> to make it darker.':'Теперь открыты все пять красок. Смешайте цвет, потом добавьте <b>белой</b>, чтобы осветлить, или <b>чёрной</b>, чтобы затемнить.',
 'Sun':'Солнце','Sea':'Море','Sky':'Небо','Sand':'Песок','Umbrella':'Зонтик','Rock':'Камень',
 'Cottage':'Домик','A bigger picture':'Картинка побольше',

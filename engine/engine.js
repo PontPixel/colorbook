@@ -87,10 +87,10 @@ document.body.insertAdjacentHTML('afterbegin',`
     <div class="coachTip" id="coachTip" hidden></div>
     <div class="actions">
       <div class="boosters">
-        <button class="btn boost" id="emptyBtn"></button>
         <button class="btn boost" id="undoBtn"></button>
-        <button class="btn boost" id="pickBtn"></button>
         <button class="btn boost" id="hintBtn"></button>
+        <button class="btn boost" id="pickBtn"></button>
+        <button class="btn boost" id="emptyBtn"></button>
       </div>
     </div>
   </section>
@@ -190,10 +190,10 @@ const ICONS={
   quiz:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17h.01"/>'};
 const icon=k=>`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
 const BOOSTERS={
-  empty:{name:t('Empty'),price:15,text:t('Pours out the whole bowl and gives all its paint back.')},
   undo:{name:t('Undo'),price:20,text:t('Takes back your last drop and refunds its paint.')},
+  hint:{name:t('Hint'),price:40,text:t('Shows the next paint to add for the part you are on. That part can earn at most 2 stars.')},
   pick:{name:t('Pick'),price:30,text:t('Tap it, then tap any drop in the bowl to remove just that color. The paint comes back.')},
-  hint:{name:t('Hint'),price:40,text:t('Shows the next paint to add for the part you are on. That part can earn at most 2 stars.')}};
+  empty:{name:t('Empty'),price:15,text:t('Pours out the whole bowl and gives all its paint back.')}};
 const FREE_BOOSTERS=3, RESCUE_PRICE=30, COINS_PER_STAR=3, FIRST_CLEAR_BONUS=20, REPLAY_BONUS=5;
 const introAt=b=>LEVELS.findIndex(l=>l.intro===b);
 const FIRST_PROPER=LEVELS.findIndex(l=>l.id===G.firstProper); // share/challenge from here on
@@ -507,6 +507,10 @@ function forceUndo(k){
   $('undoBtn').classList.add('coach'); document.querySelector('.swatches').classList.add('lift');
   document.body.classList.add('coaching');
   renderActions();
+  // The tip makes the mixer taller: on short phones Undo can end up below the screen, and the dim layer
+  // blocks scrolling, so bring the tip and Undo into view inside the board.
+  requestAnimationFrame(()=>{ const u=$('undoBtn'), b=document.querySelector('.board'), r=u.getBoundingClientRect();
+    if(r.bottom>innerHeight-8||r.top<0) b.scrollBy({top:r.bottom-innerHeight+16,behavior:reduced?'auto':'smooth'}); });
 }
 function hideCoach(){
   $('coachTip').hidden=true; $('coachDim').hidden=true;

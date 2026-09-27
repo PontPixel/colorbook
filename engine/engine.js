@@ -335,7 +335,7 @@ function buildScene(){
     L.regions.filter(r=>r.crack).map(r=>`<path class="crack" data-for="${r.id}" d="${r.crack}"/>`).join('')+
     '<g id="selLayer"></g><g id="fxLayer" pointer-events="none"></g>';
   scene.setAttribute('aria-label',t('Faded picture')+': '+T(L));
-  scene.querySelectorAll('.region').forEach(g=>g.addEventListener('click',()=>{if(!state.done[g.dataset.id]&&!state.forced&&!state.applying){handDone('tapPart');select(g.dataset.id);}}));
+  scene.querySelectorAll('.region').forEach(g=>g.addEventListener('click',()=>{if(!state.done[g.dataset.id]&&!state.forced&&!state.lesson&&!state.applying){handDone('tapPart');select(g.dataset.id);}}));
 }
 const current=()=>L.regions.find(x=>x.id===state.sel);
 function select(id){
@@ -441,8 +441,9 @@ function spend(b){
 function refundDrop(){state.paint++; state.used[state.sel]--; updateHud();}
 
 // ---------- Hand tutorial: an animated hand shows a gesture instead of a text tip ----------
-// A level lists its demos in `coach` (default: 'drag' on a game's first picture). Each demo shows once per save.
-//  drag    : drag the first recipe paint into the bowl (loops until the player adds a drop)
+// A level lists its demos in `coach` (default on a game's first picture: 'tapPaint', then 'drag'). Each shows once per save.
+//  tapPaint: forced first step: the screen dims, only the part's paint works, the hand taps it
+//  drag    : forced next step (the next part): only dragging that paint into the bowl works, the hand shows it
 //  tapPart : tap another faded part (`coachPart` or the second part); a drop instead hides it for now
 //  booster : after its intro card, a freshly unlocked booster gets two taps
 const HAND='<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M17 30V7.5a3.5 3.5 0 0 1 7 0V20a3.3 3.3 0 0 1 6.6 0V22a3.3 3.3 0 0 1 6.6 0V24a3.3 3.3 0 0 1 6.6 0V33c0 7-5 12-12 12h-5c-4 0-7-2-9.5-5.5L9.8 30.8a3 3 0 0 1 4.6-3.8Z"/></svg>';
@@ -457,7 +458,7 @@ function playHand(cfg){
   hideHand(); state.hand=cfg;
   const hand=handEl('hand',HAND), [ax,ay]=centerOf(cfg.from), [bx,by]=cfg.to?centerOf(cfg.to):[ax,ay];
   if(reduced){ hand.style.transform=at(ax,ay,HX,HY); return; }
-  if(cfg.kind==='drag'){
+  if(cfg.drag){
     const drop=handEl('handDrop'); drop.style.background=cfg.color;
     handAnims.push(hand.animate([
       {offset:0,transform:at(ax,ay,HX,HY),opacity:0},{offset:.12,transform:at(ax,ay,HX,HY),opacity:1},
@@ -481,22 +482,32 @@ function playHand(cfg){
     if(n!==Infinity) a.onfinish=hideHand;
   }
 }
+function startLesson(kind){
+  const r=current(), k=Object.keys(r.recipe)[0], btn=$('paints').querySelector(`.paint[data-k="${k}"]`);
+  if(!btn||state.drops.length) return false;
+  state.lesson={kind,k};
+  $('coachTip').innerHTML=kind==='tapPaint'?t('Tap <b>{paint}</b> to put a drop in the bowl.',{paint:PN(k)}):t('Now drag <b>{paint}</b> into the bowl.',{paint:PN(k)});
+  $('coachTip').hidden=false; $('coachDim').hidden=false;
+  btn.classList.add('coach'); document.querySelector('.swatches').classList.add('lift'); document.body.classList.add('coaching');
+  playHand(kind==='tapPaint'?{kind:'lessonTap',from:btn}:{kind:'lessonDrag',drag:1,from:btn,to:$('mixChip'),color:hex(PMAP[k].rgb)});
+  revealInBoard($('coachTip'));
+  return true;
+}
+function lessonDone(){ const l=state.lesson; state.lesson=null; save.tut[l.kind]=true; persist(); hideHand(); hideCoach(); }
 function startHands(){
-  if(!state||state.finished||state.forced) return;
-  const want=L.coach||(L.index===0?['drag']:[]), r=current();
-  if(want.includes('drag')&&!save.tut.drag){
-    const k=Object.keys(r.recipe)[0], btn=$('paints').querySelector(`.paint[data-k="${k}"]`);
-    if(btn){ playHand({kind:'drag',from:btn,to:$('mixChip'),color:hex(PMAP[k].rgb)}); renderMix([t('Drag a paint into the bowl, or just tap it.'),'']); return; }
-  }
+  if(!state||state.finished||state.forced||state.lesson) return;
+  const want=L.coach||(L.index===0?['tapPaint','drag']:[]);
+  if(want.includes('tapPaint')&&!save.tut.tapPaint){ if(startLesson('tapPaint')) return; }
+  else if(want.includes('drag')&&!save.tut.drag){ if(startLesson('drag')) return; }
   if(want.includes('tapPart')&&!save.tut.tapPart){
     const id=L.coachPart&&!state.done[L.coachPart]&&L.coachPart!==state.sel?L.coachPart:(L.regions.find(x=>!state.done[x.id]&&x.id!==state.sel)||{}).id;
     const g=id&&scene.querySelector(`.region[data-id="${id}"]`);
     if(g){ playHand({kind:'tapPart',from:g}); renderMix([t('Tap any faded part to paint it next.'),'']); return; }
   }
   const b=(state.freshBoosters||[])[0];
-  if(b) playHand({kind:'booster',from:$(b+'Btn'),times:2});
+  if(b){ state.freshBoosters=[]; playHand({kind:'booster',from:$(b+'Btn'),times:2}); }
 }
-addEventListener('resize',()=>{ if(state&&state.hand&&state.hand.kind!=='booster') startHands(); });
+addEventListener('resize',()=>{ if(state&&state.hand&&state.hand.kind!=='booster') playHand(state.hand); });
 
 // ---------- Forced free Undo (first wrong color on the picture that introduces Undo) ----------
 function forceUndo(k){
@@ -507,28 +518,35 @@ function forceUndo(k){
   $('undoBtn').classList.add('coach'); document.querySelector('.swatches').classList.add('lift');
   document.body.classList.add('coaching');
   renderActions();
-  // The tip makes the mixer taller: on short phones Undo can end up below the screen, and the dim layer
-  // blocks scrolling, so bring the tip and Undo into view inside the board.
-  requestAnimationFrame(()=>{ const u=$('undoBtn'), b=document.querySelector('.board'), r=u.getBoundingClientRect();
-    if(r.bottom>innerHeight-8||r.top<0) b.scrollBy({top:r.bottom-innerHeight+16,behavior:reduced?'auto':'smooth'}); });
+  revealInBoard($('undoBtn'));
 }
 function hideCoach(){
   $('coachTip').hidden=true; $('coachDim').hidden=true;
-  $('undoBtn').classList.remove('coach'); document.querySelector('.swatches').classList.remove('lift');
+  document.querySelectorAll('.coach').forEach(e=>e.classList.remove('coach')); document.querySelector('.swatches').classList.remove('lift');
   document.body.classList.remove('coaching');
+}
+// Bring a coached control into view inside the board: on short phones the tip can push it below the screen,
+// and the dim layer blocks scrolling.
+function revealInBoard(el){
+  requestAnimationFrame(()=>{ const r=el.getBoundingClientRect(), b=document.querySelector('.board');
+    if(r.bottom>innerHeight-8||r.top<0) b.scrollBy({top:r.bottom-innerHeight+16,behavior:reduced?'auto':'smooth'}); });
 }
 function nudge(){const t=$('coachTip');t.classList.remove('nudge');void t.offsetWidth;t.classList.add('nudge');}
 $('coachDim').onclick=nudge;
 
 // ---------- Input ----------
-function addDrop(k){
+function addDrop(k,via){
   if(!state||state.finished||state.applying) return false;
   if(state.forced){nudge();return false;}
+  if(state.lesson){ // forced first steps: only the shown paint, and in the drag lesson only by dragging
+    if(k!==state.lesson.k||(state.lesson.kind==='drag'&&via!=='drag')){nudge();buzz(30);return false;}
+    lessonDone();
+  }
   if(state.paint<=0){outOfPaint();return false;}
   if(state.drops.length>=12){renderMix([t('The bowl is full. Take drops out or empty it.'),'bad']);buzz(40);sfx('wrong');return false;}
   state.picking=false; state.hintMsg=null;
   state.drops.push(k); state.paint--; state.used[state.sel]=(state.used[state.sel]||0)+1; buzz(8); sfx('drop',k);
-  if(state.hand) state.hand.kind==='drag'?handDone('drag'):hideHand();
+  if(state.hand) hideHand();
   updateHud(); renderHint(); renderMix();
   if(L.intro==='undo'&&!save.tut.undo&&!current().recipe[k]) forceUndo(k);
   else afterMixChange();
@@ -548,7 +566,7 @@ let dragged=false; // set when a press turned into a drag, so the click that fol
 $('paints').addEventListener('click',e=>{
   const b=e.target.closest('.paint'); if(!b) return;
   if(dragged){dragged=false;return;}
-  addDrop(b.dataset.k);
+  addDrop(b.dataset.k,'tap');
 });
 // Drag and drop: press a paint, drag it onto the mix circle, let go to add a drop. A short press stays a tap.
 (function(){
@@ -574,7 +592,7 @@ $('paints').addEventListener('click',e=>{
     const g=d.ghost, k=d.k; d=null; $('mixChip').classList.remove('dropping');
     if(!g) return;
     g.remove();
-    if(e.type==='pointerup'&&overMix(e.clientX,e.clientY)&&addDrop(k)){
+    if(e.type==='pointerup'&&overMix(e.clientX,e.clientY)&&addDrop(k,'drag')){
       const r=$('mixChip').getBoundingClientRect();
       burst(r.left+r.width/2,r.top+r.height/2,[hex(PMAP[k].rgb),hex(PMAP[k].rgb),'#ffffff'],12,{speed:4,size:3.5,decay:.035,gravity:.1});
     }
@@ -663,10 +681,10 @@ function apply(){
   toast(`${N(r)} ${'★'.repeat(s)}${'☆'.repeat(3-s)} · ${used<=r.min?t('perfect: {drops}',{drops:tn(used,'drop')}):t('{drops}, min {min}',{drops:tn(used,'drop'),min:r.min})} · +${tn(c,'coin')}`);
   buzz(25);
   state.drops=[]; state.picking=false; state.hintMsg=null; updateHud(); renderHint();
-  const next=L.regions.find(x=>!state.done[x.id]);
+  const next=L.regions.find(x=>!state.done[x.id]), st=state;
   if(!next){state.finished=true;finishPicture();}
   else if(state.paint<=0){select(next.id);setTimeout(outOfPaint,700);}
-  else setTimeout(()=>select(next.id),350);
+  else setTimeout(()=>{ if(state!==st) return; select(next.id); startHands(); },350);
 }
 
 // ---------- Particles (paint drops, confetti, stars) ----------

@@ -12,7 +12,7 @@ const fanDots=(cx,cy,d,rad,a0,a1,n)=>fanAngles(a0,a1,n).map(a=>{const r=a*Math.P
 const slice=(cx,cy,r,a1,a2)=>{const p=a=>[(cx+r*Math.cos(a*Math.PI/180)).toFixed(1),(cy+r*Math.sin(a*Math.PI/180)).toFixed(1)];const[x1,y1]=p(a1),[x2,y2]=p(a2);return `<path d="M${cx} ${cy}L${x1} ${y1}A${r} ${r} 0 0 1 ${x2} ${y2}Z"/>`;};
 const rects=(xs,ys,w,h)=>xs.flatMap(x=>ys.map(y=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1"/>`)).join('');
 const LEVELS=[
-{ id:'balloons', title:'Balloons', sub:'Each balloon needs just one paint.', budget:8, tier:'easy', paints:['C','M','Y'], coach:['drag'],
+{ id:'balloons', title:'Balloons', sub:'Each balloon needs just one paint.', budget:8, tier:'easy', paints:['C','M','Y'], coach:['tapPaint','drag'],
   tip:{title:'Welcome, restorer',text:'Each faded part has a target color. Tap a paint to drop it in the bowl, the part paints itself as soon as the match reaches 95%. Every drop uses paint from your pot. Restored parts earn coins.'},
   bg:`<rect width="320" height="240" fill="#eaf1fa"/><g fill="#fff" stroke="${INK}" stroke-width="1.5"><path d="M18 212a14 14 0 0 1 26-8a11 11 0 0 1 20 8z"/><path d="M252 214a16 16 0 0 1 30-8a12 12 0 0 1 22 8z"/></g>`,
   regions:[

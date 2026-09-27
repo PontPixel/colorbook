@@ -153,6 +153,7 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .coachTip{position:relative;z-index:5;background:var(--panel);border-radius:16px;padding:12px 14px;font-weight:600;font-size:14px;text-align:center;box-shadow:var(--shadow)}
 .coachTip.nudge{animation:shake .4s}
 .lift{position:relative;z-index:5;background:var(--panel);border-radius:16px;padding:8px}
+.paints .paint.coach{position:relative;z-index:5;background:var(--panel);border-radius:14px}
 .actions .btn.coach{z-index:5}.actions .btn.coach .ico{animation:ring 1.1s ease-out infinite}
 @keyframes ring{0%{box-shadow:0 0 0 1px var(--line),0 0 0 0 rgba(31,35,48,.55)}100%{box-shadow:0 0 0 1px var(--line),0 0 0 16px rgba(31,35,48,0)}}
 /* Challenge */

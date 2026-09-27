@@ -134,3 +134,8 @@ ru:{
 'Daily picture done! +{coins} · streak: {days}.':'Картинка дня готова! +{coins} · серия: {days}.',
 'Daily picture done · streak: {days}':'Картинка дня пройдена · серия: {days}'
 }});
+// Hand tutorial lessons
+I18N.add({
+fr:{'Tap <b>{paint}</b> to put a drop in the bowl.':'Touchez <b>{paint}</b> pour verser une goutte dans le bol.','Now drag <b>{paint}</b> into the bowl.':'Maintenant, faites glisser <b>{paint}</b> dans le bol.','Tap any faded part to paint it next.':'Touchez une partie décolorée pour la peindre ensuite.'},
+ru:{'Tap <b>{paint}</b> to put a drop in the bowl.':'Нажмите <b>{paint}</b>, чтобы капнуть в миску.','Now drag <b>{paint}</b> into the bowl.':'Теперь перетащите <b>{paint}</b> в миску.','Tap any faded part to paint it next.':'Нажмите на любую выцветшую часть, чтобы раскрасить её следующей.'}
+});

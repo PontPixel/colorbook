@@ -313,7 +313,82 @@ const LEVELS=[
   decor:`<g pointer-events="none"><circle cx="150" cy="66" r="2" fill="${INK}"/>
     <g fill="none" stroke="${INK}" stroke-width="1.3" stroke-linecap="round"><path d="M150 58l-4-12M154 58l0-13M158 59l4-12"/><path d="M152 198l-2 14M166 198l2 14"/></g>
     <g fill="${INK}"><circle cx="146" cy="45" r="2"/><circle cx="154" cy="44" r="2"/><circle cx="162" cy="46" r="2"/></g></g>`
-}
+},
+{ id:'balloonride', title:'Hot-air balloons', sub:'', tier:'normal',
+  regions:[
+    {id:'gore',name:'Balloon center',recipe:{C:2,M:1},svg:'<path d="M150 28C140 44 138 72 140 96C142 122 148 146 149 160H151C152 146 158 122 160 96C162 72 160 44 150 28Z"/>'},
+    {id:'stripes',name:'Yellow stripes',recipe:{Y:1},svg:'<path d="M150 28C124 40 118 70 122 96C126 124 140 146 144 160H156C160 146 174 124 178 96C182 70 176 40 150 28Z"/>'},
+    {id:'envelope',name:'Big balloon',recipe:{M:1,Y:1},svg:'<path d="M138 160C118 136 92 118 92 86A58 58 0 0 1 208 86C208 118 182 136 162 160Z"/>'},
+    {id:'small',name:'Small balloon',recipe:{W:1,M:2,Y:4},svg:'<path d="M257 94C250 86 242 80 242 68A20 20 0 0 1 282 68C282 80 274 86 267 94Z"/>'},
+    {id:'far',name:'Far balloon',recipe:{W:1,C:2,M:3},svg:'<path d="M48 141C43 136 38 131 38 124A14 14 0 0 1 66 124C66 131 61 136 56 141Z"/>'},
+    {id:'basket',name:'Basket',recipe:{W:1,M:1,Y:2,K:3},svg:'<path d="M138 178H162L159 198H141Z"/>'},
+    {id:'clouds',name:'Clouds',recipe:{W:1},svg:'<path d="M36 62a12 12 0 0 1 10-18a16 16 0 0 1 30-4a12 12 0 0 1 16 22Z"/><path d="M226 144a10 10 0 0 1 8-14a13 13 0 0 1 24-4a10 10 0 0 1 14 18Z"/>'},
+    {id:'hills',name:'Hills',recipe:{W:1,C:2,Y:3},svg:'<path d="M0 200Q60 176 130 194T260 188T320 192V240H0Z"/>'},
+    {id:'sky',name:'Sky',recipe:{W:3,C:1},svg:'<rect width="320" height="240"/>'},
+  ],
+  order:['sky','clouds','hills','far','small','envelope','stripes','gore','basket'],
+  decor:`<g fill="none" stroke="${INK}" stroke-width="1.6" stroke-linecap="round" pointer-events="none"><path d="M141 160L141 178M159 160L159 178M139 160H161"/><path d="M258 94L259 100M266 94L265 100"/><path d="M49 141L50 145M55 141L54 145"/><path d="M142 186H158"/></g><g fill="${INK}" pointer-events="none"><rect x="258" y="100" width="8" height="6" rx="1"/><rect x="49" y="145" width="6" height="4" rx="1"/></g>`
+},
+{ id:'teaparty', title:'Tea party', sub:'', tier:'normal', paints:['W','C','M'],
+  tip:{title:'Three paints only',text:'No yellow and no black today. Cyan and magenta make every blue and purple here, and white softens them.'},
+  regions:[
+    {id:'flowers',name:'Flowers',recipe:{M:1},svg:petals(292,112)+petals(306,122)},
+    {id:'cups',name:'Cups',recipe:{W:3,C:3,M:1},svg:'<path d="M58 124H96L92 150Q77 158 62 150Z"/><path d="M96 130Q108 130 106 140Q104 148 94 146L95 142Q101 142 101 139Q101 134 96 134Z"/><path d="M224 124H262L258 150Q243 158 228 150Z"/><path d="M262 130Q274 130 272 140Q270 148 260 146L261 142Q267 142 267 139Q267 134 262 134Z"/>'},
+    {id:'teapot',name:'Teapot',recipe:{W:1,C:3,M:4},svg:'<path d="M196 120Q214 118 222 100L229 104Q224 130 200 140Z"/><path d="M124 110Q100 110 102 130Q104 150 126 146L126 137Q111 139 111 130Q111 119 124 120Z"/><ellipse cx="160" cy="128" rx="40" ry="32"/>'},
+    {id:'lid',name:'Lid',recipe:{W:1,C:3,M:3},svg:'<path d="M138 100Q160 84 182 100Z"/><circle cx="160" cy="88" r="5"/>'},
+    {id:'vase',name:'Vase',recipe:{C:1},svg:'<path d="M288 160Q282 142 290 130H302Q310 142 304 160Z"/>'},
+    {id:'saucers',name:'Saucers',recipe:{W:5,C:1,M:2},svg:'<ellipse cx="77" cy="155" rx="30" ry="7"/><ellipse cx="243" cy="155" rx="30" ry="7"/>'},
+    {id:'window',name:'Window',recipe:{W:3,C:1},svg:'<rect x="30" y="22" width="84" height="72" rx="6"/>'},
+    {id:'cloth',name:'Tablecloth',recipe:{W:2,M:1},svg:'<path d="M0 150H320V240H0Z"/>'},
+    {id:'wall',name:'Wall',recipe:{W:1},svg:'<rect width="320" height="152"/>'},
+  ],
+  order:['wall','window','cloth','saucers','cups','teapot','lid','vase','flowers'],
+  decor:`<g fill="none" stroke="${INK}" stroke-width="1.6" stroke-linecap="round" pointer-events="none"><path d="M72 22V94M30 58H114"/><path d="M292 130L292 116M300 130L302 122"/><path d="M0 176Q20 184 40 176T80 176T120 176T160 176T200 176T240 176T280 176T320 176"/></g>`
+},
+{ id:'reef', title:'Coral reef', sub:'', tier:'hard',
+  regions:[
+    {id:'fish',name:'Fish',recipe:{W:1,M:2,Y:5},svg:'<path d="M100 80Q116 64 136 80Q116 96 100 80Z"/><path d="M101 80L88 70V90Z"/><path d="M240 58Q224 42 204 58Q224 74 240 58Z"/><path d="M239 58L252 48V68Z"/>'},
+    {id:'fan',name:'Fan coral',recipe:{M:1,Y:2},svg:'<path d="M210 198L172 150A48 48 0 0 1 248 150Z"/>'},
+    {id:'branch',name:'Branch coral',recipe:{W:3,M:3,Y:1},stroke:6,svg:'<path d="M58 184V142M58 162L42 138M58 150L74 124M42 138V120M74 124L82 108"/>'},
+    {id:'anemone',name:'Anemone',recipe:{W:1,M:2},svg:petals(262,178)+petals(280,184)},
+    {id:'brain',name:'Brain coral',recipe:{W:4,M:3,Y:2},svg:'<path d="M96 206Q98 170 134 168Q170 170 172 206Z"/>'},
+    {id:'weed',name:'Seaweed',recipe:{C:3,Y:4,K:2},stroke:5,svg:'<path d="M26 206Q18 186 28 170T26 132"/><path d="M302 204Q310 184 300 168T304 132"/><path d="M186 206Q180 192 188 180"/>'},
+    {id:'rocks',name:'Rocks',recipe:{W:3,C:1,M:1,K:2},svg:'<path d="M20 212Q24 182 52 184Q78 186 82 212Z"/><path d="M236 208Q244 184 268 186Q292 190 294 208Z"/>'},
+    {id:'sand',name:'Sand',recipe:{W:3,Y:1,K:1},svg:'<path d="M0 204Q80 192 160 202T320 198V240H0Z"/>'},
+    {id:'water',name:'Water',recipe:{C:3,K:1},svg:'<rect width="320" height="240"/>'},
+  ],
+  order:['water','sand','weed','rocks','brain','fan','branch','anemone','fish'],
+  decor:`<g fill="none" stroke="${INK}" stroke-width="1.3" stroke-linecap="round" pointer-events="none"><path d="M108 196Q116 186 126 194T146 188T162 196"/><path d="M114 184Q124 178 134 184T154 182"/><path d="M210 198L188 158M210 198L210 150M210 198L232 158"/></g><g fill="${INK}" pointer-events="none"><circle cx="128" cy="78" r="2"/><circle cx="212" cy="56" r="2"/></g><g fill="none" stroke="#fff" stroke-width="1.5" opacity=".8" pointer-events="none"><circle cx="146" cy="60" r="4"/><circle cx="152" cy="44" r="3"/><circle cx="196" cy="40" r="3.5"/><circle cx="190" cy="24" r="2.5"/></g>`
+},
+{ id:'veggies', title:'Vegetable garden', sub:'', tier:'normal',
+  regions:[
+    {id:'sun',name:'Sun',recipe:{W:1,Y:1},svg:'<circle cx="276" cy="42" r="22"/>'},
+    {id:'tomatoes',name:'Tomatoes',recipe:{M:2,Y:2,K:1},svg:'<circle cx="252" cy="130" r="9"/><circle cx="286" cy="118" r="9"/><circle cx="270" cy="152" r="9"/><circle cx="296" cy="146" r="8"/>'},
+    {id:'carrots',name:'Carrots',recipe:{W:1,M:3,Y:5},svg:'<path d="M34 170H50L42 206Z"/><path d="M72 170H88L80 210Z"/><path d="M110 170H126L118 204Z"/>'},
+    {id:'tops',name:'Carrot tops',recipe:{C:3,Y:4},svg:leaf(37,160,3.5,11,-25)+leaf(47,160,3.5,11,25)+leaf(42,157,3.5,12,0)+leaf(75,160,3.5,11,-25)+leaf(85,160,3.5,11,25)+leaf(80,157,3.5,12,0)+leaf(113,160,3.5,11,-25)+leaf(123,160,3.5,11,25)+leaf(118,157,3.5,12,0)},
+    {id:'cabbage',name:'Cabbages',recipe:{W:1,C:1,Y:2},svg:'<circle cx="168" cy="176" r="18"/><circle cx="214" cy="180" r="16"/>'},
+    {id:'tleaves',name:'Tomato leaves',recipe:{C:3,M:1,Y:3},svg:'<ellipse cx="262" cy="118" rx="16" ry="9" transform="rotate(-20 262 118)"/><ellipse cx="282" cy="138" rx="16" ry="9" transform="rotate(20 282 138)"/><ellipse cx="258" cy="148" rx="14" ry="8" transform="rotate(-10 258 148)"/><ellipse cx="292" cy="104" rx="12" ry="7" transform="rotate(-30 292 104)"/>'},
+    {id:'fence',name:'Fence',recipe:{W:1},svg:rects([6,28,50,72,94,116,138,160,182,204,226,248,270,292],[112],14,58)+'<rect x="0" y="130" width="320" height="8"/>'},
+    {id:'soil',name:'Soil',recipe:{C:1,M:1,Y:1},svg:'<path d="M0 168H320V240H0Z"/>'},
+    {id:'sky',name:'Sky',recipe:{W:3,C:1},svg:'<rect width="320" height="170"/>'},
+  ],
+  order:['sky','sun','fence','soil','carrots','tops','cabbage','tleaves','tomatoes'],
+  decor:`<g fill="none" stroke="${INK}" stroke-width="1.6" stroke-linecap="round" pointer-events="none"><path d="M274 176V92"/><path d="M0 196Q80 190 160 196T320 196M0 220Q80 214 160 220T320 220" stroke-width="1.2" opacity=".5"/><path d="M168 190V166M168 178L159 170M168 178L177 170M214 192V170M214 181L206 174M214 181L222 174" stroke-width="1.2"/></g>`
+},
+{ id:'nightcity', title:'City at night', sub:'', tier:'hard',
+  regions:[
+    {id:'moon',name:'Moon',recipe:{W:4,Y:1},svg:'<circle cx="262" cy="42" r="18"/>'},
+    {id:'windows',name:'Lit windows',recipe:{W:2,M:1,Y:5},svg:rects([28,44],[154,170],8,8)+rects([96,110,124],[144,160,176],8,8)+rects([188,206],[158,174],8,8)+rects([258,272,286],[148,164,180],8,8)+rects([154],[84,100,116,132,148,164],8,8)},
+    {id:'reflect',name:'Reflections',recipe:{W:2,M:1,Y:4,K:2},stroke:3,svg:'<path d="M30 208h14M102 214h18M192 210h14M262 216h18M150 226h16M60 228h10"/>'},
+    {id:'tower',name:'Tower',recipe:{C:2,M:1,Y:1,K:1},svg:'<path d="M146 196V72H170V196Z"/><path d="M150 72L158 38L166 72Z"/>'},
+    {id:'near',name:'Near buildings',recipe:{C:1,K:2},svg:'<path d="M20 196V146H60V196Z"/><path d="M88 196V136H136V196Z"/><path d="M180 196V150H222V196Z"/><path d="M250 196V140H300V196Z"/>'},
+    {id:'far',name:'Far buildings',recipe:{C:2,M:2,Y:1},svg:'<path d="M0 196V120H26V100H48V130H70V90H96V118H118V196Z"/><path d="M200 196V110H224V84H246V122H270V100H296V130H320V196Z"/>'},
+    {id:'river',name:'River',recipe:{C:2,M:1,K:2},svg:'<path d="M0 196H320V240H0Z"/>'},
+    {id:'sky',name:'Night sky',recipe:{C:1,M:1,K:3},svg:'<rect width="320" height="200"/>'},
+  ],
+  order:['sky','moon','far','near','tower','windows','river','reflect'],
+  decor:`<g fill="none" stroke="${INK}" stroke-width="1.6" stroke-linecap="round" pointer-events="none"><path d="M158 38V24"/></g><g fill="#fff" pointer-events="none"><circle cx="30" cy="30" r="1.5"/><circle cx="80" cy="54" r="1.2"/><circle cx="118" cy="22" r="1.5"/><circle cx="200" cy="36" r="1.2"/><circle cx="226" cy="64" r="1.5"/><circle cx="300" cy="80" r="1.2"/><circle cx="56" cy="80" r="1.2"/></g>`
+},
 ];
 // Content translations (keys = the English text above)
 const STRINGS={
@@ -347,7 +422,8 @@ fr:{
 'Rocket':'Fusée','Nose cone':'Coiffe','Window':'Hublot','Fins':'Ailerons','Flame':'Flamme','Planet ring':'Anneau','Planet':'Planète','Space':'Espace',
 'Ice cream':'Cornet de glace','Cherry':'Cerise','Vanilla':'Vanille','Mint':'Menthe','Strawberry':'Fraise','Cone':'Cornet','Counter':'Comptoir',
 'Rainy street':'Rue sous la pluie','Coat':'Manteau','Left house':'Maison de gauche','Right house':'Maison de droite','Puddle':'Flaque','Street':'Rue','Rainy sky':'Ciel pluvieux',
-'Peacock':'Paon','Feather eyes':'Ocelles','Eye centers':'Cœurs des ocelles','Outer feathers':'Plumes extérieures','Middle feathers':'Plumes du milieu','Inner feathers':'Plumes intérieures','Garden':'Jardin'
+'Peacock':'Paon','Feather eyes':'Ocelles','Eye centers':'Cœurs des ocelles','Outer feathers':'Plumes extérieures','Middle feathers':'Plumes du milieu','Inner feathers':'Plumes intérieures','Garden':'Jardin',
+'Hot-air balloons':'Montgolfières','Balloon center':'Centre du ballon','Yellow stripes':'Bandes jaunes','Big balloon':'Grand ballon','Small balloon':'Petit ballon','Far balloon':'Ballon lointain','Basket':'Nacelle','Clouds':'Nuages','Tea party':'Heure du thé','Three paints only':'Trois peintures seulement','No yellow and no black today. Cyan and magenta make every blue and purple here, and white softens them.':'Ni jaune ni noir aujourd’hui. Le cyan et le magenta font tous les bleus et violets de l’image, et le blanc les adoucit.','Cups':'Tasses','Lid':'Couvercle','Vase':'Vase','Saucers':'Soucoupes','Coral reef':'Récif de corail','Fish':'Poissons','Fan coral':'Corail éventail','Branch coral':'Corail branchu','Anemone':'Anémone','Brain coral':'Corail cerveau','Seaweed':'Algues','Vegetable garden':'Potager','Tomatoes':'Tomates','Carrots':'Carottes','Carrot tops':'Fanes de carottes','Cabbages':'Choux','Tomato leaves':'Feuilles de tomate','Fence':'Clôture','Soil':'Terre','City at night':'Ville la nuit','Reflections':'Reflets','Near buildings':'Immeubles proches','Far buildings':'Immeubles lointains','River':'Rivière'
 },
 ru:{
 'Balloons':'Воздушные шары','Welcome, restorer':'Добро пожаловать, реставратор',
@@ -379,7 +455,8 @@ ru:{
 'Rocket':'Ракета','Nose cone':'Нос ракеты','Window':'Иллюминатор','Fins':'Стабилизаторы','Flame':'Пламя','Planet ring':'Кольцо планеты','Planet':'Планета','Space':'Космос',
 'Ice cream':'Мороженое','Cherry':'Вишенка','Vanilla':'Ванильное','Mint':'Мятное','Strawberry':'Клубничное','Cone':'Рожок','Counter':'Прилавок',
 'Rainy street':'Улица под дождём','Coat':'Пальто','Left house':'Левый дом','Right house':'Правый дом','Puddle':'Лужа','Street':'Улица','Rainy sky':'Дождливое небо',
-'Peacock':'Павлин','Feather eyes':'Глазки на перьях','Eye centers':'Серединки глазков','Outer feathers':'Внешние перья','Middle feathers':'Средние перья','Inner feathers':'Внутренние перья','Garden':'Сад'
+'Peacock':'Павлин','Feather eyes':'Глазки на перьях','Eye centers':'Серединки глазков','Outer feathers':'Внешние перья','Middle feathers':'Средние перья','Inner feathers':'Внутренние перья','Garden':'Сад',
+'Hot-air balloons':'Воздушные шары','Balloon center':'Середина шара','Yellow stripes':'Жёлтые полосы','Big balloon':'Большой шар','Small balloon':'Маленький шар','Far balloon':'Дальний шар','Basket':'Корзина','Clouds':'Облака','Tea party':'Чаепитие','Three paints only':'Только три краски','No yellow and no black today. Cyan and magenta make every blue and purple here, and white softens them.':'Сегодня без жёлтой и чёрной. Голубая и пурпурная дают все синие и фиолетовые оттенки, а белая делает их мягче.','Cups':'Чашки','Lid':'Крышка','Vase':'Ваза','Saucers':'Блюдца','Coral reef':'Коралловый риф','Fish':'Рыбки','Fan coral':'Коралл-веер','Branch coral':'Ветвистый коралл','Anemone':'Актиния','Brain coral':'Коралл-мозговик','Seaweed':'Водоросли','Vegetable garden':'Огород','Tomatoes':'Помидоры','Carrots':'Морковь','Carrot tops':'Ботва','Cabbages':'Капуста','Tomato leaves':'Листья помидоров','Fence':'Забор','Soil':'Земля','City at night':'Ночной город','Reflections':'Отражения','Near buildings':'Ближние дома','Far buildings':'Дальние дома','River':'Река'
 }};
 // Daily picture: coins by streak day (day 7 and later pay the last value); budget = sum of recipe sizes × ratio.
 const DAILY={ratio:1.2, coins:[15,20,25,30,40,50,60]};

@@ -539,7 +539,11 @@ function addDrop(k,via){
   if(!state||state.finished||state.applying) return false;
   if(state.forced){nudge();return false;}
   if(state.lesson){ // forced first steps: only the shown paint, and in the drag lesson only by dragging
-    if(k!==state.lesson.k||(state.lesson.kind==='drag'&&via!=='drag')){nudge();buzz(30);return false;}
+    // after two failed drags (a phone can cancel the gesture), a tap on the right paint counts too, so nobody gets stuck
+    if(k!==state.lesson.k||(state.lesson.kind==='drag'&&via!=='drag'&&(state.lesson.misses||0)<2)){
+      if(k===state.lesson.k) state.lesson.misses=(state.lesson.misses||0)+1;
+      nudge();buzz(30);return false;
+    }
     lessonDone();
   }
   if(state.paint<=0){outOfPaint();return false;}
@@ -592,6 +596,7 @@ $('paints').addEventListener('click',e=>{
     const g=d.ghost, k=d.k; d=null; $('mixChip').classList.remove('dropping');
     if(!g) return;
     g.remove();
+    if(e.type==='pointercancel'&&state&&state.lesson&&state.lesson.k===k) state.lesson.misses=(state.lesson.misses||0)+1;
     if(e.type==='pointerup'&&overMix(e.clientX,e.clientY)&&addDrop(k,'drag')){
       const r=$('mixChip').getBoundingClientRect();
       burst(r.left+r.width/2,r.top+r.height/2,[hex(PMAP[k].rgb),hex(PMAP[k].rgb),'#ffffff'],12,{speed:4,size:3.5,decay:.035,gravity:.1});
@@ -599,6 +604,8 @@ $('paints').addEventListener('click',e=>{
     setTimeout(()=>{dragged=false;},0);
   };
   addEventListener('pointerup',end); addEventListener('pointercancel',end);
+  // iPhone Safari can still hand a drag to the scrolling board (pointercancel, the drop never lands): block touch scrolling while a paint is held
+  addEventListener('touchmove',e=>{ if(d) e.preventDefault(); },{passive:false});
 })();
 $('emptyBtn').onclick=()=>{
   if(state.applying||isLocked('empty')||!state.drops.length) return;

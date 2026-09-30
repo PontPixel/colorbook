@@ -253,8 +253,15 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
   .mixer{position:sticky;top:0}
   /* sticky makes its own stacking context, which would trap the coach tip and Undo under the dim layer */
   body.coaching .mixer{position:static}
-  /* result card sits over the mixer, so the restored picture stays in view */
-  .overlay.low{align-items:center;justify-content:flex-end;padding-right:max(16px,calc((100vw - 1240px) / 2 + 36px))}
+  /* result card fills the right column (over the mixer, down to the picture bottom; box set by fitEndCard), so the restored picture stays in view */
+  .overlay.low{padding:0}
+  .overlay.low .card{position:absolute;top:var(--mx-top,50%);left:var(--mx-left,auto);right:auto;width:var(--mx-w,400px);max-width:none;min-height:var(--mx-h,0);justify-content:center;border-radius:22px;padding:32px 28px;gap:18px}
+  .overlay.low .card h2{font-size:30px;margin-top:auto}
+  .overlay.low .card .stars{font-size:44px}
+  .overlay.low .card p{font-size:17px;line-height:1.5}
+  .overlay.low .card .row{margin-top:auto}
+  .overlay.low .card .row .btn{padding-top:15px;padding-bottom:15px;font-size:17px}
+  .overlay.low .card .row .btn.iconbtn{width:56px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 

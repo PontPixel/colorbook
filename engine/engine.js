@@ -803,7 +803,17 @@ function win(){
   $('retryBtn').textContent=t('Replay');
   $('nextBtn').hidden=last;
   $('endOverlay').hidden=false;
+  fitEndCard();
 }
+// Desktop: the result card fills the right column (mixer top to picture bottom), so the restored picture stays in view with no gaps.
+function fitEndCard(){
+  const o=$('endOverlay'), m=document.querySelector('#game .mixer'), f=document.querySelector('#game .frame');
+  if(o.hidden||!o.classList.contains('low')||!m) return;
+  const r=m.getBoundingClientRect(), bottom=Math.max(r.bottom,f?f.getBoundingClientRect().bottom:0);
+  o.style.setProperty('--mx-top',r.top+'px'); o.style.setProperty('--mx-left',r.left+'px');
+  o.style.setProperty('--mx-w',r.width+'px'); o.style.setProperty('--mx-h',(bottom-r.top)+'px');
+}
+addEventListener('resize',fitEndCard);
 
 // ---------- Sharing ----------
 const EMOJI={'🟥':[.87,.18,.18],'🟧':[.96,.55,.13],'🟨':[.99,.83,.2],'🟩':[.33,.69,.3],'🟦':[.2,.5,.87],'🟪':[.6,.35,.75],'🟫':[.55,.35,.2],'⬛':[.15,.15,.15],'⬜':[.95,.95,.95]};

@@ -306,6 +306,9 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .switch[aria-checked="true"] i{transform:translateX(22px)}
 .switch:disabled{opacity:.4;cursor:default}
 .setnote{font-size:13px;margin:-6px 0 0!important}
+.setlinks{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 18px;margin:0!important;font-size:13px}
+.setlinks a{color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.setlinks a:hover{color:var(--ink)}
 /* ---------- Empty: the bowl tips, drains and the drops fall away ---------- */
 .chip{position:relative}
 .chip::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 35%,var(--chip-a),var(--chip-b));opacity:0;pointer-events:none}

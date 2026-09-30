@@ -155,6 +155,7 @@ document.body.insertAdjacentHTML('afterbegin',`
     <div class="setrow"><span>${t('Sound')}</span><button class="switch" id="setSound" role="switch" aria-checked="true" aria-label="${t('Sound')}"><i></i></button></div>
     <div class="setrow"><span>${t('Vibration')}</span><button class="switch" id="setVib" role="switch" aria-checked="true" aria-label="${t('Vibration')}"><i></i></button></div>
     <p class="setnote" id="vibNote" hidden>${t("This browser can't vibrate (iPhone Safari doesn't support it).")}</p>
+    <p class="setlinks"><a id="setPrivacy" target="_blank" rel="noopener">${t('Privacy policy')}</a><a id="setTerms" target="_blank" rel="noopener">${t('Terms of use')}</a></p>
     <button class="btn primary" id="settingsDone">${t('Done')}</button>
   </div>
 </div>
@@ -1046,6 +1047,17 @@ $('setTheme').onclick=e=>{const b=e.target.closest('button'); if(!b) return; the
 $('setLang').onclick=e=>{const b=e.target.closest('button'); if(!b||b.dataset.v===I18N.pref) return; I18N.setPref(b.dataset.v); location.reload();};
 $('setSound').onclick=()=>{ if(!window.SFX) return; SFX.enabled=!SFX.enabled; renderSettings(); sfx('drop','Y'); };
 $('setVib').onclick=()=>{vibOn=!vibOn; try{localStorage.setItem(VIB_KEY,vibOn?'on':'off');}catch(e){} renderSettings(); buzz(30);};
+// Privacy policy and terms on pontpixel.com, in French when the game is. Portals want outgoing links through their SDK
+// (Poki: PokiSDK.openExternalLink; CrazyGames allows plain privacy/terms links), so every link goes through openExternal().
+function openExternal(url){
+  if(window.PokiSDK&&typeof PokiSDK.openExternalLink==='function'){PokiSDK.openExternalLink(url); return;}
+  window.open(url,'_blank','noopener');
+}
+const LEGAL=I18N.lang==='fr'?{privacy:'fr/confidentialite/',terms:'fr/conditions/'}:{privacy:'privacy/',terms:'terms/'};
+[['setPrivacy',LEGAL.privacy],['setTerms',LEGAL.terms]].forEach(([id,path])=>{
+  const a=$(id); a.href='https://pontpixel.com/'+path;
+  a.onclick=e=>{e.preventDefault(); openExternal(a.href);};
+});
 applyTheme();
 let tt;function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),1800);}
 

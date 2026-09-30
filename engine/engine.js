@@ -533,7 +533,13 @@ function revealInBoard(el){
     if(r.bottom>innerHeight-8||r.top<0) b.scrollBy({top:r.bottom-innerHeight+16,behavior:reduced?'auto':'smooth'}); });
 }
 function nudge(){const t=$('coachTip');t.classList.remove('nudge');void t.offsetWidth;t.classList.add('nudge');}
-$('coachDim').onclick=nudge;
+// A tap on the dim layer over a coached control counts as a tap on it: if a browser still stacks the dim above
+// the lifted control (iPhone Safari did), the lesson stays playable.
+$('coachDim').onclick=e=>{
+  const c=[...document.querySelectorAll('.coach')].find(el=>{const r=el.getBoundingClientRect();
+    return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;});
+  if(c) c.click(); else nudge();
+};
 
 // ---------- Input ----------
 function addDrop(k,via){

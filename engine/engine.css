@@ -28,7 +28,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 body{margin:0;position:fixed;inset:0;background:var(--wall);color:var(--ink);font:500 15px/1.4 "Inter",system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
 .wrap{--w:520px;height:100%;display:flex;flex-direction:column;gap:14px;padding-top:16px}
 .wrap>.gamebar,.home>.topbar{flex:none;width:min(calc(100% - 32px),var(--w));margin:0 auto}
-.board,.homeMain,.gallery{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-inline:max(16px,calc((100% - var(--w)) / 2))}
+.board,.homeMain,.gallery{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-inline:max(16px,calc((100% - var(--w)) / 2))}
 .board{padding-bottom:12px}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .brandname{font:800 16px/1 "Inter",system-ui,sans-serif;letter-spacing:-.2px}
@@ -148,7 +148,9 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .toast{position:fixed;z-index:7;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:var(--on-ink);padding:10px 16px;border-radius:99px;font:600 14px "Inter",system-ui,sans-serif;transition:.3s;pointer-events:none;white-space:nowrap}
 .toast{white-space:normal;text-align:center;max-width:calc(100vw - 32px);width:max-content;border-radius:18px}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-/* Forced-undo coach */
+/* Forced-undo coach. The lifted controls (z-index 5) must share the dim's stacking context: no ancestor may create one.
+   Never add -webkit-overflow-scrolling:touch to .board: iPhone Safari then makes the board its own stacking context,
+   the dim covers the coached paint and the first picture can't be played. */
 .coachDim{position:fixed;inset:0;background:rgba(20,24,40,.55);z-index:4}
 .coachTip{position:relative;z-index:5;background:var(--panel);border-radius:16px;padding:12px 14px;font-weight:600;font-size:14px;text-align:center;box-shadow:var(--shadow)}
 .coachTip.nudge{animation:shake .4s}

@@ -326,7 +326,7 @@ const BOOSTERS={
 // They are introduced on the pictures that used to introduce Hint, Pick and Empty.
 if(V2){
   delete BOOSTERS.hint; delete BOOSTERS.pick; delete BOOSTERS.empty;
-  BOOSTERS.undo.text=t('Takes back your last drop. Or tap the minus on any paint to take out one drop of just that paint. The paint comes back.');
+  BOOSTERS.undo.text=t('Takes back your last drop. The paint comes back to the pot.');
   Object.assign(BOOSTERS,{
     magic:{name:t('Magic'),price:40,text:t('Puts the next right drop in the bowl, or takes a wrong one out. That part can earn at most 2 stars.')},
     palette:{name:t('Palette'),price:25,text:t('Dims the paints this part does not use, until the part is painted. The part can still earn 3 stars.')},
@@ -726,7 +726,8 @@ function startHands(){
     const g=id&&scene.querySelector(`.region[data-id="${id}"]`);
     if(g){ playHand({kind:'tapPart',from:g}); renderMix([t('Tap any faded part to paint it next.'),'']); return; }
   }
-  const b=(state.freshBoosters||[])[0];
+  // the hand only shows a fresh booster that can be used right now (never a greyed-out one)
+  const b=(state.freshBoosters||[]).find(x=>$(x+'Btn')&&!$(x+'Btn').disabled);
   if(b){ state.freshBoosters=[]; playHand({kind:'booster',from:$(b+'Btn'),times:2}); }
 }
 addEventListener('resize',()=>{ if(state&&state.hand&&state.hand.kind!=='booster') playHand(state.hand); });
@@ -1411,12 +1412,10 @@ if(V2){
     const ks=L.paints||PAINTS.map(x=>x.k);
     // drops in the bowl: a count and a minus on each paint, and a ring around the bowl split by paint
     wrapPaints();
-    const canMinus=save.inv.undo!=null&&!state.lesson;
-    $('paints').querySelectorAll('.pwrap').forEach(w=>{ const k=w.querySelector('.paint').dataset.k, n=c[k]||0, pc=w.querySelector('.pcount'), pm=w.querySelector('.pminus');
-      if(n){ if(pc.textContent!==String(n)) restart(pc,'bump'); pc.textContent=String(n); } pc.hidden=!n; pm.hidden=!(n&&canMinus); });
-    const tot=state.drops.length, segs=ks.filter(k=>c[k]); let acc=0;
-    $('mixChip').style.setProperty('--ring',tot?'conic-gradient('+segs.map(k=>{const a=acc/tot*360, b=(acc+=c[k])/tot*360, col=k==='K'?'#5a5f6e':hex(PMAP[k].rgb), gap=segs.length>1?1.5:0;
-      return `transparent ${a}deg ${a+gap}deg,${col} ${a+gap}deg ${b}deg`;}).join(',')+')':'none');
+    $('paints').querySelectorAll('.pwrap').forEach(w=>{ const k=w.querySelector('.paint').dataset.k, n=c[k]||0, pc=w.querySelector('.pcount');
+      if(n){ if(pc.textContent!==String(n)) restart(pc,'bump'); pc.textContent=String(n); } pc.hidden=!n; });
+    // the bowl's ring repeats the mix color, like the target's ring repeats its own frame
+    $('mixChip').style.setProperty('--ring',m?hex(m):'none');
     $('drops').innerHTML=ks.filter(k=>c[k]).map(k=>`<button class="dchip" data-k="${k}" aria-label="${t('{n} {paint}. Tap to take one out.',{n:c[k],paint:PN(k)})}"><i style="background:${hex(PMAP[k].rgb)}"></i>×${c[k]}</button>`).join('')
       ||`<em>${t('Your drops show up here')}</em>`;
     const blind=state.twist==='blind'&&p!=null&&p<95;
@@ -1472,13 +1471,8 @@ if(V2){
   function wrapPaints(){
     $('paints').querySelectorAll('.paint').forEach(b=>{ if(b.parentElement.classList.contains('pwrap')) return;
       const w=document.createElement('div'); w.className='pwrap'; b.before(w); w.appendChild(b); const k=b.dataset.k;
-      w.insertAdjacentHTML('beforeend',`<span class="pcount" hidden></span><button class="pminus" data-k="${k}" hidden aria-label="${t('Take out one drop of {paint}',{paint:PN(k)})}"><i>−</i></button>`); });
+      w.insertAdjacentHTML('beforeend',`<span class="pcount" hidden></span>`); });
   }
-  $('paints').addEventListener('click',e=>{
-    const m=e.target.closest('.pminus'); if(!m||!state||state.applying||state.forced||state.lesson) return;
-    const k=m.dataset.k; if(!state.drops.includes(k)||isLocked('undo')||!spend('undo')) return;
-    removeAt(state.drops.lastIndexOf(k),[t('{paint} taken out. Paint refunded.',{paint:PN(k)}),'']);
-  });
   // The removed paint turns into dust that leaves the bowl and blows away to the right, with a whoosh.
   // The grains start packed in the bowl's ring and rim in that paint's color.
   function snap(k){
@@ -1632,8 +1626,7 @@ if(V2){
   $('retryBtn').onclick=()=>{ if(save.partial&&L){ delete save.partial[L.id]; persist(); } start(L.index,{daily:state&&state.daily}); };
   // Start-of-picture cards come one at a time: the picture's own news first, then each new booster with a demo.
   const DEMO={
-    undo:'<div class="dm dm-undo2"><span class="ubtn">'+icon('undo')+'</span>'+[['#00a8eb','c'],['#e31285','m'],['#ffe60d','y']].map(([c,k])=>`<span class="up up-${k}" style="background:${c}"><b>1</b>${k==='m'?'<em>−</em>':''}</span>`).join('')+
-      `<span class="ucap ucap-a">${t('Undo: last drop')}</span><span class="ucap ucap-b">${t('Minus: that paint')}</span></div>`,
+    undo:'<div class="dm dm-undo"><span class="dmbowl"></span><i class="dmdrop"></i></div>',
     magic:'<div class="dm dm-magic"><span class="dmbowl"></span><i class="dmdrop"></i><span class="dmwand">'+icon('magic')+'</span></div>',
     palette:'<div class="dm dm-palette">'+['#fafaf7','#00a8eb','#e31285','#ffe60d','#212126'].map((c,i)=>`<i style="background:${c}" class="${i===2||i===3?'keep':'fade'}"></i>`).join('')+'</div>',
     brush:'<div class="dm dm-brush"><svg viewBox="0 0 120 80" aria-hidden="true"><path class="dmshape" d="M20 60Q20 20 60 20T100 60Z"/><path class="dmfill" d="M20 60Q20 20 60 20T100 60Z"/><path class="dmline" d="M20 60Q20 20 60 20T100 60Z"/></svg><span class="dmbrush">'+icon('brush')+'</span></div>'};
@@ -1694,6 +1687,10 @@ if(V2){
   // Lessons lift controls above the dim layer; a running entrance animation would trap them under it.
   const _startLesson=startLesson; startLesson=function(k){ $('game').classList.remove('entering'); return _startLesson(k); };
   const _forceUndo=forceUndo; forceUndo=function(k){ $('game').classList.remove('entering'); _forceUndo(k); };
+  // The "tap another part" hand gets words too: a label over the picture, gone with the hand.
+  $('stamp').insertAdjacentHTML('afterend',`<div class="picHint" id="picHint" hidden>${t('Tap any faded part to paint it next')}</div>`);
+  const _playHand=playHand; playHand=function(cfg){ _playHand(cfg); $('picHint').hidden=cfg.kind!=='tapPart'; };
+  const _hideHand=hideHand; hideHand=function(){ _hideHand(); const h=$('picHint'); if(h) h.hidden=true; };
   const _goHome=goHome; goHome=function(tab){ _goHome(tab); enter($('home')); clearTimeout(v2.ht); v2.ht=setTimeout(homeCoach,1250); };
   // Home tutorials: the first time each card shows up (after a first picture is restored), one card per visit is
   // lifted above a dim layer with a short note on what it is and why it matters.

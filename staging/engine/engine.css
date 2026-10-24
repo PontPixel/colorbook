@@ -707,3 +707,6 @@ body.v2 .card .bfree{font-size:13px}
 .pcount.bump{animation:v2pop .25s cubic-bezier(.2,1.6,.4,1)}
 .wrap.v2 .pwrap{min-width:0}
 .wrap.v2 .pwrap>.paint{width:100%}
+/* "Tap another part" label over the picture while the hand shows it */
+.picHint{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:2;background:var(--ink);color:var(--on-ink);border-radius:99px;padding:7px 14px;font:700 13px "Inter",system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.25);pointer-events:none;animation:cardin .35s cubic-bezier(.2,1.4,.5,1)}
+.wrap.v2 #mixChip::before{inset:-7px}

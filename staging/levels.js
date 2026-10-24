@@ -24,7 +24,7 @@ const LEVELS=[
   decor:`<g fill="none" stroke="${INK}" stroke-width="1.5" pointer-events="none"><path d="M90 142q-8 30 6 50t4 40"/><path d="M168 118q10 30-4 56t6 58"/><path d="M246 144q-6 30 6 50t-2 38"/></g>
     <g fill="#fff" opacity=".55" pointer-events="none"><ellipse cx="78" cy="82" rx="6" ry="11" transform="rotate(20 78 82)"/><ellipse cx="156" cy="58" rx="6" ry="11" transform="rotate(20 156 58)"/><ellipse cx="234" cy="84" rx="6" ry="11" transform="rotate(20 234 84)"/></g>`
 },
-{ id:'penguin', title:'Penguin', sub:'Only white and black. Mix them for gray.', budget:8, tier:'easy', paints:['W','K'],
+{ id:'penguin', title:'Penguin', sub:'Only white and black. Mix them for gray.', budget:8, tier:'easy', paints:['W','K'], coach:['tapPart'], coachPart:'ice',
   tip:{title:'Light and dark',text:'This picture needs only <b>White</b> and <b>Black</b>. One drop of each makes <b>gray</b>. More white makes it lighter, more black makes it darker.'},
   bg:`<rect width="320" height="240" fill="#e6eef5"/>`,
   regions:[
@@ -52,7 +52,7 @@ const LEVELS=[
     <path d="M70 74v-6M160 52v-6M250 78v-6"/></g>
     <g pointer-events="none" stroke="${INK}" stroke-width="1.3" stroke-linecap="round" opacity=".45"><path d="M30 30l-4 9M110 20l-4 9M205 34l-4 9M290 22l-4 9M20 150l-4 9M300 168l-4 9M120 160l-4 9M205 172l-4 9"/></g>`
 },
-{ id:'fruit', intro:'hint', title:'Fruit bowl', sub:'Two paints make a new color.', budget:12, tier:'easy', paints:['C','M','Y'], coach:['tapPart'], coachPart:'plum',
+{ id:'fruit', intro:'hint', title:'Fruit bowl', sub:'Two paints make a new color.', budget:12, tier:'easy', paints:['C','M','Y'],
   tip:{title:'Mixing two colors',text:'Red, green and blue are not in your paint set. Mix them: one drop of each of two paints.'},
   bg:`<rect width="320" height="240" fill="#f4eee4"/><rect y="188" width="320" height="52" fill="#dcc7aa"/><line x1="0" y1="188" x2="320" y2="188" stroke="${INK}" stroke-width="2"/>`,
   regions:[

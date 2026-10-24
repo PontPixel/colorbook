@@ -240,3 +240,7 @@ ru:{'Takes back your last drop. Or tap the minus on any paint to take out one dr
 '<b>Daily picture.</b> Each day a picture you restored comes back with a twist: less paint, no boosters or a hidden match %. Play on days in a row to grow your streak and the reward.':'<b>Картинка дня.</b> Каждый день одна из восстановленных картинок возвращается с условием: меньше краски, без бустеров или без процента совпадения. Играйте несколько дней подряд — серия и награда растут.',
 '<b>Mixing tips.</b> A new one every day. Tap the arrow to read more.':'<b>Советы по смешиванию.</b> Каждый день новый. Нажмите на стрелку, чтобы прочитать ещё.'}
 });
+I18N.add({
+fr:{'Takes back your last drop. The paint comes back to the pot.':'Reprend votre dernière goutte. La peinture retourne dans le pot.','Tap any faded part to paint it next':'Touchez une partie décolorée pour la peindre'},
+ru:{'Takes back your last drop. The paint comes back to the pot.':'Забирает последнюю каплю. Краска возвращается в банку.','Tap any faded part to paint it next':'Нажмите на любую выцветшую часть, чтобы раскрасить её'}
+});

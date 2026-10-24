@@ -10,7 +10,7 @@ const V2=!!G.v2; // redesigned home and play screen (ColorBook): parts strip, on
 const CHAPTERS=G.chapters||null; // optional chapters of the main path, each with a reward (ColorBook)
 const CHESTS=G.chests||null; // optional star chests: {every, coins, boosters} (ColorBook)
 // Bonus pictures (`bonus:true`, palette variants of a `base` picture) come after the main path in LEVELS and are bought with coins.
-const MAIN=LEVELS.filter(l=>!l.bonus&&!l.dream).length; // dream pictures (daily challenge, ColorBook) come last and stay out of the main path
+const MAIN=LEVELS.filter(l=>!l.bonus&&!l.dream&&!l.season).length; // dream pictures (daily challenge, ColorBook) come last and stay out of the main path
 // Staging builds live under /staging/: they keep their own save and get the cheat menu (also on localhost or with ?cheats).
 const STAGING=/\/staging\//.test(location.pathname);
 const CHEATS=STAGING||/[?&]cheats\b/.test(location.search)||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
@@ -196,6 +196,8 @@ document.body.insertAdjacentHTML('afterbegin',(V2?v2Scenes():`
       <button class="btn" data-c="solve">Solve this part</button><button class="btn" data-c="finish">Finish picture ★★★</button>
       <button class="btn" data-c="unlock">Unlock all pictures</button><button class="btn" data-c="restoreAll">Restore all ★★★</button>
       <button class="btn" data-c="newDay">Daily: new day</button><button class="btn" data-c="tutorials">Replay tutorials</button>
+      <button class="btn" data-c="s-thanksgiving">Season: Thanksgiving</button><button class="btn" data-c="s-christmas">Season: Christmas</button>
+      <button class="btn" data-c="s-off">Season: none</button><button class="btn" data-c="s-auto">Season: by date</button>
     </div>
     <div class="cjump"><select id="cheatLevel" aria-label="Picture"></select><button class="btn primary" data-c="jump">Play</button></div>
     <div class="csnd"><div class="csndhead"><b>Sounds</b><div class="seg" id="sfxSet"><button data-v="v1">Old</button><button data-v="v2">New</button></div></div>
@@ -224,6 +226,7 @@ function v2Scenes(){ return `
     <div class="chbar" id="homeCh" hidden></div>
     <div class="progcards" id="progCards" hidden><div class="pcard" id="chapterCard"></div><div class="pcard" id="chestCard"></div></div>
     <button class="btn quizbtn v2daily" id="dailyPicBtn" hidden></button>
+    <button class="btn quizbtn v2daily seasoncard" id="seasonBtn" hidden></button>
     <button class="btn quizbtn bonusbtn" id="bonusBtn" hidden></button>
     <button class="btn quizbtn" id="dailyQuizBtn" hidden></button>
     <div class="tipcard" id="tipCard" hidden></div>
@@ -233,9 +236,11 @@ function v2Scenes(){ return `
     <h2>${t('Gallery')}</h2>
     <div class="ggrid" id="ggrid"></div>
   </section>
+  <section class="gallery holidays" id="holidays" hidden></section>
   <nav class="tabbar" aria-label="${t('Menu')}">
     <button class="tab" data-tab="home" aria-current="true"></button>
     <button class="tab" data-tab="gallery" aria-current="false"></button>
+    ${LEVELS.some(l=>l.season)?'<button class="tab" data-tab="holidays" aria-current="false"></button>':''}
   </nav>
 </main>
 
@@ -316,6 +321,7 @@ const ICONS={
   brush:'<path d="M14.5 4.5 19.5 9.5 11 18l-5-5Z"/><path d="M6 13c-2 .5-2.5 2-2.5 3.5S3 19.5 2.5 20.5c2.5.3 5.5-.4 6.6-1.6S10 15.5 8.6 15.3"/><path d="m16 3 5 5"/>',
   pot:'<path d="M5 9h14l-1.4 9.5a2 2 0 0 1-2 1.5H8.4a2 2 0 0 1-2-1.5Z"/><path d="M4 9h16M9 9V6.5a3 3 0 0 1 6 0V9"/>',
   check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  gift:'<rect x="3.5" y="9" width="17" height="11.5" rx="1.5"/><path d="M2.5 9h19v-3.5h-19ZM12 5.5v15M12 5.5C10 2 6 2.5 6.5 5c.3 1 3 .5 5.5.5M12 5.5c2-3.5 6-3 5.5-.5-.3 1-3 .5-5.5.5"/>',
   wrench:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3.5 17.3a1.8 1.8 0 0 0 2.5 2.5l5.8-5.8a4 4 0 0 0 5.2-5.4l-2.6 2.6-2.3-.4-.4-2.3Z"/>'};
 const icon=k=>`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
 const BOOSTERS={
@@ -350,8 +356,26 @@ if(V2){ Object.entries(INTRO_ALIAS).forEach(([nb,ob])=>{ if(save.inv[nb]==null&&
   [['palette','refill'],['brush','free']].forEach(([nb,ob])=>{ if(save.inv[nb]==null&&save.inv[ob]!=null) save.inv[nb]=save.inv[ob]; }); }
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
 const unlocked=i=>{const l=LEVELS[i];
+  if(l.season) return seasonOpen(l);
   if(l.bonus) return save.best[l.id]!=null||!!save.unlockAll||!!save.bought[l.id];
   return i===0||!!save.unlockAll||save.best[LEVELS[i-1].id]!=null||save.best[l.id]!=null;};
+// ---------- Seasons (ColorBook): pictures with l.season live in the Holidays tab ----------
+// Thanksgiving runs from Nov 1 to the day after US Thanksgiving (4th Thursday of November), Christmas from Dec 1 to
+// Jan 6, by the device date. A season's pictures open during it and stay playable once played. The staging cheat
+// can force a season (save.forceSeason: 'thanksgiving' | 'christmas' | 'off').
+function thanksgivingDay(y){ const d=new Date(y,10,1); return 1+(4-d.getDay()+7)%7+21; }
+function seasonOn(d){
+  if(save.forceSeason) return save.forceSeason==='off'?null:save.forceSeason;
+  d=d||new Date(); const y=d.getFullYear(), m=d.getMonth(), day=d.getDate();
+  if(m===10&&day<=thanksgivingDay(y)+1) return 'thanksgiving';
+  if(m===11||(m===0&&day<=6)) return 'christmas';
+  return null;
+}
+function seasonNext(d){ d=d||new Date(); const y=d.getFullYear(), m=d.getMonth();
+  return m<10?{s:'thanksgiving',at:new Date(y,10,1)}:m===10?{s:'christmas',at:new Date(y,11,1)}:{s:'thanksgiving',at:new Date(m===0?y:y+1,10,1)}; }
+function seasonEnd(s,d){ d=d||new Date(); const y=d.getFullYear();
+  return s==='thanksgiving'?new Date(y,10,thanksgivingDay(y)+1):new Date(d.getMonth()===0?y:y+1,0,6); }
+function seasonOpen(l){ return seasonOn()===l.season||save.best[l.id]!=null||!!(save.partial&&save.partial[l.id])||!!save.unlockAll; }
 const baseDone=l=>!l.bonus||save.best[l.base]!=null; // a bonus picture can be bought once its base picture is restored
 const bonusPrice=l=>EC.bonusPrice[l.tier]||40;
 const buyable=i=>LEVELS[i].bonus&&!unlocked(i)&&baseDone(LEVELS[i]);
@@ -423,8 +447,10 @@ function renderMenu(){
   if(HALL) renderHall();
   renderCoins();
 }
+let renderHolidays=()=>{};
 function showTab(t){
   $('homeMain').hidden=t!=='home'; $('gallery').hidden=t!=='gallery';
+  if($('holidays')){ $('holidays').hidden=t!=='holidays'; if(t==='holidays') renderHolidays(); }
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===t));
   if(HALL&&t==='home') requestAnimationFrame(()=>centerOn(hallCenter,false));
 }
@@ -893,6 +919,7 @@ $('hintBtn').onclick=()=>{
 $('retryBtn').onclick=()=>start(L.index,{daily:state&&state.daily});
 // Next: the next main picture, or after a bonus picture the next unlocked bonus one not yet restored (-1: none).
 function nextAfter(i){
+  if(LEVELS[i].season) return LEVELS.findIndex((l,k)=>k!==i&&l.season===LEVELS[i].season&&unlocked(k)&&save.best[l.id]==null);
   if(!LEVELS[i].bonus) return i+1<MAIN?i+1:-1;
   return LEVELS.findIndex((l,k)=>k>i&&l.bonus&&unlocked(k)&&save.best[l.id]==null);
 }
@@ -1672,7 +1699,8 @@ if(V2){
     brush:'<div class="dm dm-brush"><svg viewBox="0 0 120 80" aria-hidden="true"><path class="dmshape" d="M20 60Q20 20 60 20T100 60Z"/><path class="dmfill" d="M20 60Q20 20 60 20T100 60Z"/><path class="dmline" d="M20 60Q20 20 60 20T100 60Z"/></svg><span class="dmbrush">'+icon('brush')+'</span></div>'};
   showIntro=function(){
     // no boosters on a dream: none are handed out, introduced or pointed at there
-    const fresh=L.dream?[]:Object.keys(BOOSTERS).filter(b=>save.inv[b]==null&&introAt(b)>=0&&introAt(b)<=L.index);
+    // holiday pictures sit after the main path, so they would hand out every booster at once: they don't
+    const fresh=L.dream||L.season?[]:Object.keys(BOOSTERS).filter(b=>save.inv[b]==null&&introAt(b)>=0&&introAt(b)<=L.index);
     fresh.forEach(b=>save.inv[b]=FREE_BOOSTERS);
     const tip=!save.seen[L.id]&&L.tip;
     const tierKey='tier-'+L.tier, tierNote=TIERS[L.tier].label&&!save.seen[tierKey];
@@ -1723,7 +1751,8 @@ if(V2){
     let sp=''; for(let i=0;i<9;i++){const x=20+Math.random()*280,y=16+Math.random()*200,sc=(.6+Math.random()*.7).toFixed(2);
       sp+=`<g transform="translate(${x|0} ${y|0}) scale(${sc})"><path class="spark" style="animation-delay:${(300+Math.random()*1200)|0}ms" d="M0-9L2.2-2.2L9 0L2.2 2.2L0 9L-2.2 2.2L-9 0L-2.2-2.2Z"/></g>`;}
     $('fxLayer').innerHTML=`<defs><linearGradient id="shineG" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect class="shine" x="-150" y="-80" width="100" height="400" fill="url(#shineG)"/>`+sp;
-    setTimeout(()=>{ if(state===st) confettiRain([...new Set(L.regions.map(r=>hex(r.target)))].concat(['#ffffff'])); },450);
+    const fest=L.season==='christmas'?['#ffffff','#ffffff','#d1423a','#2e7a4c','#f4cf3a']:L.season==='thanksgiving'?['#e57d22','#c23b2c','#efc12a','#8c5a38','#f3b23d']:null;
+    setTimeout(()=>{ if(state===st) confettiRain(fest||[...new Set(L.regions.map(r=>hex(r.target)))].concat(['#ffffff'])); },450);
     setTimeout(()=>{ if(state!==st) return; $('stamp').hidden=false; sfx('stamp'); },1300);
     v2.quiet=true; // from here until the next picture, no more bursts (the result card stays calm)
   };
@@ -1741,6 +1770,7 @@ if(V2){
   // lifted above a dim layer with a short note on what it is and why it matters.
   document.body.insertAdjacentHTML('beforeend','<div class="htip" id="homeTip" role="dialog" hidden></div>');
   const HOMETIPS=[
+    {key:'hSeason',el:'seasonBtn',when:()=>!!seasonOn(),text:()=>t('<b>{season} pictures.</b> Holiday pictures to restore, here only until {date}. Tap the card, or the Holidays tab below.',{season:seasonName(seasonOn()),date:seasonDate(seasonEnd(seasonOn()))})},
     {key:'hChapter',el:'chapterCard',when:()=>chapterReady(),text:()=>t('<b>Chapter complete!</b> Pictures come in chapters of five, and each finished chapter pays coins and one booster of each kind. Tap the card to collect.')},
     {key:'hChest',el:'chestCard',when:()=>chestReady(),text:()=>t('<b>Your star chest is full!</b> Every star you earn goes in here, and a full chest opens with coins and boosters. Tap it to open.')},
     {key:'hDaily',el:'dailyPicBtn',text:()=>t('<b>Daily challenge.</b> Every day a new page from Grandma\'s dream journal: a strange picture you won\'t find in the book, with 3 hearts and no boosters. Play on days in a row to grow your streak and the reward.')},
@@ -1789,6 +1819,7 @@ if(V2){
   const chestReady=()=>!!CHESTS&&Math.floor(totalStars()/CHESTS.every)>save.chests;
   const _claim=claimRewards; claimRewards=function(){ return v2.inWin?[]:_claim(); };
   const _winR=win; win=function(){ v2.inWin=true; try{ _winR(); } finally{ v2.inWin=false; }
+    if(L.season) $('endText').insertAdjacentHTML('afterbegin',`<b class="fest">${L.season==='christmas'?t('Merry Christmas!'):t('Happy Thanksgiving!')}</b><br>`);
     v2.collect=chapterReady()||chestReady();
     if(v2.collect){ const nb=$('nextBtn'); nb.hidden=false; nb.textContent=t('Collect your reward'); } };
   $('nextBtn').onclick=()=>{ if(v2.collect){ v2.collect=false; goHome(); return; } const n=nextAfter(L.index); if(n<0) goHome(); else start(n); };
@@ -1846,9 +1877,40 @@ if(V2){
     const nb=LEVELS.filter((l,k)=>buyable(k)).length, bb=$('bonusBtn'); bb.hidden=!nb;
     if(nb) bb.innerHTML=icon('gallery')+`<span class="dlab"><b>${t('Bonus pages')}</b><small>${t('{n} ready to unlock with coins',{n:nb})}</small></span>`;
   }
+  // ---------- Holidays tab and Home card ----------
+  const seasonName=s=>s==='christmas'?t('Christmas'):t('Thanksgiving');
+  const seasonDate=d=>{ try{ return d.toLocaleDateString(I18N.lang,{month:'long',day:'numeric'}); }catch(e){ return d.toDateString(); } };
+  const seasonPics=s=>LEVELS.map((l,i)=>i).filter(i=>LEVELS[i].season===s);
+  const holTab=document.querySelector('.tab[data-tab="holidays"]'); if(holTab) holTab.innerHTML=icon('gift')+t('Holidays');
+  function holCard(k){
+    const l=LEVELS[k], b=save.best[l.id], ok=unlocked(k), pt=save.partial&&save.partial[l.id];
+    return `<button class="gcard" data-i="${k}" ${ok?'':'disabled'} aria-label="${esc(T(l))}${ok?'':', '+t('locked')}">${thumbSVG(l,b!=null,pt&&pt.stars)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}`+
+      `<b>${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${b!=null?starRow(b):pt?t('{done} of {all} parts',{done:Object.keys(pt.stars).length,all:l.regions.length}):''}</small></button>`;
+  }
+  renderHolidays=function(){
+    const on=seasonOn(), el=$('holidays'); if(!el) return;
+    const played=s=>seasonPics(s).some(i=>save.best[LEVELS[i].id]!=null||(save.partial&&save.partial[LEVELS[i].id]));
+    const groups=['thanksgiving','christmas'].filter(s=>s===on||played(s)).sort((a,b)=>(b===on)-(a===on));
+    let h=`<h2>${t('Holidays')}</h2>`;
+    if(on) h+=`<p class="hsub">${t('{season} pictures, here until {date}.',{season:seasonName(on),date:seasonDate(seasonEnd(on))})}</p>`;
+    else{ const n=seasonNext(); h+=`<div class="hteaser">${icon('gift')}<b>${t('{season} pictures arrive on {date}.',{season:seasonName(n.s),date:seasonDate(n.at)})}</b><small>${t('Holiday pictures open only in their season. The ones you played stay here.')}</small></div>`; }
+    h+=groups.map(s=>{ const ids=seasonPics(s), got=ids.filter(i=>save.best[LEVELS[i].id]!=null).length;
+      return `<h3 class="gch"><span>${s===on?t('Now'):t('Last season')}</span>${esc(seasonName(s))}<small>${got} / ${ids.length}</small></h3><div class="ggrid">${ids.map(holCard).join('')}</div>`; }).join('');
+    el.innerHTML=h;
+  };
+  $('holidays').addEventListener('click',e=>{ const c=e.target.closest('.gcard'); if(c&&!c.disabled) start(+c.dataset.i); });
+  function renderSeasonCard(){
+    const b=$('seasonBtn'), on=seasonOn(); b.hidden=!on; if(!on) return;
+    const ids=seasonPics(on), got=ids.filter(i=>save.best[LEVELS[i].id]!=null).length, next=ids.find(i=>save.best[LEVELS[i].id]==null), lv=LEVELS[next!=null?next:ids[0]];
+    b.classList.toggle('xmas',on==='christmas'); b.classList.toggle('tg',on==='thanksgiving');
+    b.innerHTML=`<span class="dthumb">${thumbSVG(lv,next==null)}</span><span class="dbody"><span class="dtop"><b>${t('{season} pictures',{season:seasonName(on)})}</b>`+
+      `<small>${t('until {date}',{date:seasonDate(seasonEnd(on))})}</small></span><span class="dname">${got===ids.length?t('All restored. Happy holidays!'):t('{done} of {all} restored',{done:got,all:ids.length})}</span>`+
+      `<span class="dbars">${ids.map(i=>`<i class="${save.best[LEVELS[i].id]!=null?'on':''}"></i>`).join('')}</span></span>`;
+  }
+  $('seasonBtn').onclick=()=>showTab('holidays');
   const _renderMenu=renderMenu;
   renderMenu=function(){
-    _renderMenu();
+    _renderMenu(); renderSeasonCard(); if(!$('holidays').hidden) renderHolidays();
     const i=nextIndex(), lv=LEVELS[i], doneN=LEVELS.filter(l=>save.best[l.id]!=null).length;
     const pt=save.partial&&save.partial[lv.id];
     if(pt){ const n=Object.keys(pt.stars).length;
@@ -1908,6 +1970,8 @@ if(CHEATS){
     if(c==='newDay'){ if(save.daily) save.daily.last=dayKey(new Date(Date.now()-864e5)); refresh(); toast('Daily picture is open again, streak kept'); return; }
     if(c==='tutorials'){ save.tut={}; save.seen={}; persist(); toast('Tutorials and tip cards will show again'); return; }
     if(c==='jump'){ close(); start(+sel.value); return; }
+    if(c.startsWith('s-')){ const v=c.slice(2); if(v==='auto') delete save.forceSeason; else save.forceSeason=v; persist();
+      if(!state) renderMenu(); toast(v==='auto'?'Season follows the date':'Season: '+v); return; }
     // Wipes this build's save (coins, stars, boosters, tutorials, progress) and opens picture 1, as a first-time player.
     if(c==='newgame'){
       if(!armed){ armed=true; b.textContent='Tap again: erase this save and start over'; return; }

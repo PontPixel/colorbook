@@ -767,3 +767,18 @@ body.v2{--grainEdge:rgba(35,40,58,.35)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.v2{--grainEdge:rgba(255,255,255,.55)}}
 :root[data-theme="dark"] body.v2{--grainEdge:rgba(255,255,255,.55)}
 .dustLayer span{box-shadow:0 0 0 .6px var(--grainEdge)}
+/* ---------- Holidays tab (seasonal pictures) ---------- */
+.holidays .hsub{margin:-2px 0 4px;font-size:14px;color:var(--muted)}
+.hteaser{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;background:var(--panel);border-radius:20px;box-shadow:var(--shadow);padding:22px 18px;margin:6px 0 10px}
+.hteaser .ico{width:34px;height:34px;color:var(--ink)}
+.hteaser b{font-size:16px}.hteaser small{font-size:13px;color:var(--muted)}
+.holidays .ggrid{margin-bottom:8px}
+#seasonBtn.xmas{box-shadow:inset 0 0 0 2px #2e7a4c,var(--shadow)}
+#seasonBtn.tg{box-shadow:inset 0 0 0 2px #e57d22,var(--shadow)}
+#seasonBtn.xmas .dbars i.on{background:#d1423a}
+#seasonBtn.tg .dbars i.on{background:#e57d22}
+.card .fest{font-size:16px;color:var(--ink)}
+.tabbar .tab{padding:6px 18px}
+.holidays .gch{display:flex;align-items:baseline;gap:8px;margin:16px 2px 8px;font-size:17px}
+.holidays .gch span{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.holidays .gch small{margin-left:auto;font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}

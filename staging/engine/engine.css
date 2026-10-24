@@ -518,3 +518,7 @@ body.v2{--wall:#f3f1ec;--line:#e2ded5;--soft:#ebe7df;--track:#e4e0d7;--muted:#62
 .cgrid .btn{padding:10px 8px;font-size:13px}
 .cjump{display:flex;gap:8px}
 .cjump select{flex:1;min-width:0;font:600 14px "Inter",system-ui,sans-serif;border:1px solid var(--line);border-radius:99px;padding:9px 12px;background:var(--panel);color:var(--ink)}
+.csnd{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.csndhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.csndhead .seg{flex:none}.csndhead .seg button{padding:6px 14px}
+.cgrid.c3{grid-template-columns:repeat(3,minmax(0,1fr))}.cgrid.c3 .btn{padding:9px 4px;font-size:12px}

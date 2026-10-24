@@ -182,6 +182,8 @@ document.body.insertAdjacentHTML('afterbegin',(V2?v2Scenes():`
       <button class="btn" data-c="newDay">Daily: new day</button><button class="btn" data-c="tutorials">Replay tutorials</button>
     </div>
     <div class="cjump"><select id="cheatLevel" aria-label="Picture"></select><button class="btn primary" data-c="jump">Play</button></div>
+    <div class="csnd"><div class="csndhead"><b>Sounds</b><div class="seg" id="sfxSet"><button data-v="v1">Old</button><button data-v="v2">New</button></div></div>
+      <div class="cgrid c3" id="sfxGrid"></div></div>
     <button class="btn" data-c="reset" id="cheatReset">Erase staging save</button>
     <button class="btn primary" data-c="close">Close</button>
   </div>
@@ -1293,6 +1295,7 @@ if(V2){
   }
   // A removed paint blows away as dust (and its chip dissolves when it was the last drop of that paint).
   function snap(k,last){
+    if(last) sfx('snap');
     if(reduced) return;
     const ch=$('drops').querySelector(`.dchip[data-k="${k}"]`); if(!ch) return;
     const cr=ch.getBoundingClientRect(), sw=ch.querySelector('i').getBoundingClientRect(), col=hex(PMAP[k].rgb);
@@ -1304,6 +1307,7 @@ if(V2){
     setTimeout(()=>layer.remove(),1000);
   }
   function starFall(el){
+    if(el) sfx('starLost');
     if(reduced||!el) return;
     const r=el.getBoundingClientRect(), s=document.createElement('div');
     s.className='starFall'; s.innerHTML=STAR; s.style.left=r.left+'px'; s.style.top=r.top+'px';
@@ -1357,7 +1361,7 @@ if(V2){
     if(h.done){toast(t('Your mix is already right.'));return;}
     if(!h.remove&&state.paint<=0&&!(state.freeLeft>0)){toast(t('The pot is empty.'));return;}
     if(!spend('magic')) return;
-    state.hinted[state.sel]=true;
+    state.hinted[state.sel]=true; sfx('magic');
     if(h.remove){ bubble(h.k,t('Took out {paint}',{paint:PN(h.k)})); removeAt(state.drops.lastIndexOf(h.k)); }
     else{ bubble(h.k,'+1 '+PN(h.k)); addDrop(h.k,'magic'); }
   };
@@ -1419,6 +1423,18 @@ if(CHEATS){
   const open=()=>{ const g=!!state&&!state.finished; ['paint','solve','finish'].forEach(c=>$('cheatOverlay').querySelector(`[data-c="${c}"]`).disabled=!g);
     if(L) sel.value=L.index; armed=false; $('cheatReset').textContent='Erase staging save'; $('cheatOverlay').hidden=false; };
   $('cheatBtn').onclick=open;
+  // Sound test: play every effect in the old or the new set to compare them on a phone.
+  const SND=[['drop','W','Drop White'],['drop','C','Drop Cyan'],['drop','M','Drop Magenta'],['drop','Y','Drop Yellow'],['drop','K','Drop Black'],
+    ['undo',null,'Undo'],['wrong',null,'Wrong paint'],['pour',null,'Pour out'],['restore',.1,'Part restored'],['restore',.9,'Last part'],
+    ['coin',null,'Coin'],['star','all','Stars'],['fanfare',null,'Fanfare'],['stamp',null,'Stamp'],['fail',null,'Out of paint'],
+    ['daily',null,'Daily'],['magic',null,'Magic'],['snap',null,'Snap'],['starLost',null,'Star lost']];
+  $('sfxGrid').innerHTML=SND.map((x,i)=>`<button class="btn" data-s="${i}">${x[2]}</button>`).join('');
+  const sfxSeg=()=>document.querySelectorAll('#sfxSet button').forEach(b=>b.setAttribute('aria-pressed',window.SFX&&SFX.set===b.dataset.v));
+  sfxSeg();
+  $('sfxSet').onclick=e=>{const b=e.target.closest('button'); if(!b||!window.SFX) return; SFX.set=b.dataset.v; sfxSeg();};
+  $('sfxGrid').onclick=e=>{const b=e.target.closest('[data-s]'); if(!b) return; const [n,a]=SND[+b.dataset.s];
+    if(!window.SFX||!SFX.enabled){toast('Sound is off in Settings'); return;}
+    if(a==='all') [0,1,2].forEach(i=>setTimeout(()=>sfx(n,i),i*280)); else sfx(n,a); };
   $('cheatOverlay').addEventListener('click',e=>{
     const b=e.target.closest('[data-c]'); if(!b){ if(e.target===$('cheatOverlay')) $('cheatOverlay').hidden=true; return; }
     const c=b.dataset.c, close=()=>{$('cheatOverlay').hidden=true;};

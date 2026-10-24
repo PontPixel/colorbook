@@ -199,3 +199,20 @@ ru:{'Not now':'Не сейчас','unlock for {coins}':'открыть за {coi
 'Chapter {n}: {name}, {done} of {all} pictures':'Глава {n}: {name}, картинок {done} из {all}','Star chest':'Звёздный сундук',
 '+{coins} and {n} boosters':'+{coins} и бустеров: {n}','Bonus pages':'Бонусные страницы','{n} ready to unlock with coins':'Можно открыть за монеты: {n}','Tap to collect':'Нажмите, чтобы забрать','Tap to open':'Нажмите, чтобы открыть','Rewards':'Награды','Nice!':'Отлично!'}
 });
+// Playtest round 2: Palette and Brush boosters, factual mix advice, paint warning, saved progress
+I18N.add({
+fr:{'Palette':'Palette','Dims the paints this part does not use, until the part is painted. The part can still earn 3 stars.':'Estompe les peintures que cette partie n’utilise pas, jusqu’à ce qu’elle soit peinte. La partie peut toujours rapporter 3 étoiles.',
+'Brush':'Pinceau','Paints the part you are on for you, with the exact recipe. It uses that paint from the pot, and the part earns at most 2 stars.':'Peint pour vous la partie en cours avec la recette exacte. Il prend cette peinture dans le pot, et la partie rapporte au plus 2 étoiles.',
+'{part} uses {n} of the paints.':'{part} utilise {n} des peintures.','Brush needs {drops} of paint.':'Le pinceau a besoin de {drops} de peinture.','Brushed!':'Peint !',
+'Too strong':'Trop vif','Too dull':'Trop terne','Aim for a more {hue} tone':'Visez un ton plus {hue}',
+'pink':'rose','red':'rouge','orange':'orangé','yellow':'jaune','green':'vert','teal':'bleu-vert','blue':'bleu','violet':'violet',
+'That took it further away':'Ça s’éloigne de la cible','Rest needs {n}':'Il en faut {n} pour le reste','{done} of {all} parts':'{done} parties sur {all}',
+'Welcome back: {n} of {all} parts already painted.':'Bon retour : {n} parties sur {all} sont déjà peintes.'},
+ru:{'Palette':'Палитра','Dims the paints this part does not use, until the part is painted. The part can still earn 3 stars.':'Приглушает краски, которых нет в этой части, пока она не раскрашена. Часть всё ещё может принести 3 звезды.',
+'Brush':'Кисть','Paints the part you are on for you, with the exact recipe. It uses that paint from the pot, and the part earns at most 2 stars.':'Раскрашивает текущую часть по точному рецепту. Краска берётся из банки, а часть принесёт не больше 2 звёзд.',
+'{part} uses {n} of the paints.':'{part}: нужно красок — {n}.','Brush needs {drops} of paint.':'Кисти нужно {drops} краски.','Brushed!':'Готово!',
+'Too strong':'Слишком ярко','Too dull':'Слишком блёкло','Aim for a more {hue} tone':'Нужен более {hue} оттенок',
+'pink':'розовый','red':'красный','orange':'оранжевый','yellow':'жёлтый','green':'зелёный','teal':'бирюзовый','blue':'синий','violet':'фиолетовый',
+'That took it further away':'Стало дальше от цели','Rest needs {n}':'Для остального нужно {n}','{done} of {all} parts':'Частей: {done} из {all}',
+'Welcome back: {n} of {all} parts already painted.':'С возвращением: уже раскрашено частей — {n} из {all}.'}
+});

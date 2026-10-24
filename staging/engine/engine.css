@@ -489,10 +489,10 @@ body.v2{--wall:#f3f1ec;--line:#e2ded5;--soft:#ebe7df;--track:#e4e0d7;--muted:#62
 .mbubble i{display:block;width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 2px var(--on-ink)}
 @keyframes v2bubble{0%{opacity:0;transform:translateY(40px) scale(.5)}14%{opacity:1;transform:translateY(0) scale(1.06)}22%{transform:translateY(-2px) scale(1)}72%{opacity:1;filter:none;transform:translateY(-8px)}100%{opacity:0;filter:blur(6px);transform:translateY(-30px) scale(1.08)}}
 .dustLayer{position:fixed;z-index:7;width:22px;height:22px;pointer-events:none}
-.dustLayer span{position:absolute;width:3px;height:3px;border-radius:1px;opacity:0;animation:v2dust .7s cubic-bezier(.2,.6,.3,1) both}
-@keyframes v2dust{0%{opacity:1;transform:none}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
-.ghostChip{position:fixed;z-index:6;pointer-events:none;animation:v2snap .6s ease-in both}
-@keyframes v2snap{to{opacity:0;filter:blur(3px);transform:translateX(6px) scale(.75)}}
+.dustLayer span{position:absolute;width:3px;height:3px;border-radius:1px;opacity:0;animation:v2dust 1.5s cubic-bezier(.15,.55,.25,1) both}
+@keyframes v2dust{0%{opacity:1;transform:none}60%{opacity:.7}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.25)}}
+.ghostChip{position:fixed;z-index:6;pointer-events:none;animation:v2snap 1.2s ease-in both}
+@keyframes v2snap{0%{clip-path:inset(0 0 0 0)}100%{opacity:0;filter:blur(2px);transform:translateX(10px);clip-path:inset(0 0 0 100%)}}
 .starFall{position:fixed;z-index:7;pointer-events:none;width:22px;height:22px;animation:v2starfall .85s cubic-bezier(.3,0,.6,1) both}
 .starFall svg{fill:var(--v2gold);stroke:var(--v2gold-edge)}
 @keyframes v2starfall{18%{transform:scale(1.45) rotate(-12deg)}100%{transform:translate(10px,34px) rotate(160deg) scale(.4);opacity:0}}
@@ -583,3 +583,73 @@ body.v2{--wall:#f3f1ec;--line:#e2ded5;--soft:#ebe7df;--track:#e4e0d7;--muted:#62
   .wrap.v2 .btn.boost .ico,.wrap.v2 .btn.locked .ico{width:19px;height:19px}
 }
 @media (max-height:759px) and ((max-width:899px) or (orientation:portrait)){.wrap.v2 .sw small{display:none}}
+
+/* ---------- Playtest round 2 ---------- */
+body.v2{--v2bad:#c62828;--v2bad-bg:#fde2df}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.v2{--v2bad:#ff7a6e;--v2bad-bg:#4a1c19}}
+:root[data-theme="dark"] body.v2{--v2bad:#ff7a6e;--v2bad-bg:#4a1c19}
+/* full frame: a drawn border all round the picture, corners included */
+.wrap.v2 .frame::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 2px var(--paper-ink);pointer-events:none;z-index:1}
+.wrap.v2 .stamp{z-index:2}
+/* cracks read as clutter on the redesigned screen */
+.wrap.v2 .crack{display:none}
+/* paint pot: its own panel, with what the rest of the picture needs and a warning when it runs short */
+.wrap.v2 .paintrow{background:var(--panel);border-radius:16px;box-shadow:var(--shadow);padding:8px 14px 8px 10px;gap:12px;transition:background .3s}
+.paintrow .plab{display:flex;align-items:center;gap:8px;flex:none}
+.paintrow .potico{display:grid;place-items:center}.paintrow .plab .ico{width:22px;height:22px;color:var(--ink)}
+.paintrow .plab>span{display:flex;flex-direction:column;line-height:1.15}
+.paintrow .plab b{font:800 12px "Inter",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--ink)}
+.paintrow .plab small{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+.wrap.v2 .paintrow>span:first-child{color:var(--ink)}
+.wrap.v2 #paintLeft{font-size:18px;min-width:72px}
+.paintrow.tight{background:var(--v2warn-bg)}
+.paintrow.tight #paintLeft,.paintrow.tight .plab .ico,.paintrow.tight .plab small{color:var(--v2warn-ink)}
+.wrap.v2 .paintrow.tight .bar i{background:var(--v2warn)!important}
+.paintrow.short{background:var(--v2bad-bg)}
+.paintrow.short #paintLeft,.paintrow.short .plab .ico,.paintrow.short .plab small,.paintrow.short .plab b{color:var(--v2bad)}
+.wrap.v2 .paintrow.short .bar i{background:var(--v2bad)!important}
+.paintrow.pulse{animation:v2pulse .7s ease 2}
+@keyframes v2pulse{50%{transform:scale(1.03)}}
+/* Palette booster: paints the part doesn't use step back */
+.wrap.v2 .paint.dim{opacity:.22;filter:grayscale(.7)}
+.wrap.v2 .paint{transition:opacity .35s,filter .35s}
+.region.brushed{animation:v2brushed .7s ease}
+@keyframes v2brushed{40%{filter:brightness(1.35)}}
+/* result card: gold stars, as on the play screen */
+body.v2 .card .stars span{color:var(--v2gold);text-shadow:0 2px 0 var(--v2gold-edge)}
+body.v2 .card .stars span.off{color:var(--line);text-shadow:none}
+/* start-of-picture cards, one at a time */
+body.v2 .overlay .card.swap{animation:cardin .4s cubic-bezier(.2,1.4,.5,1)}
+body.v2 .card .btext{color:var(--ink);font-size:15px}
+body.v2 .card .bfree{font-size:13px}
+/* booster demos: a short loop showing what the booster does */
+.bdemo{height:96px;border-radius:16px;background:var(--wall);display:grid;place-items:center;overflow:hidden}
+.dm{position:relative;width:140px;height:80px}
+.dmbowl{position:absolute;left:50%;bottom:6px;width:58px;height:58px;margin-left:-29px;border-radius:50%;background:#ee86be;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.dmdrop{position:absolute;left:50%;width:16px;height:16px;margin-left:-8px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#212126;box-shadow:0 0 0 2px var(--wall)}
+.dm-undo .dmbowl{animation:dmUndoBowl 2.6s infinite}
+.dm-undo .dmdrop{top:30px;animation:dmUndo 2.6s infinite}
+@keyframes dmUndo{0%,20%{top:30px;opacity:1}55%{top:-10px;opacity:1}70%,100%{top:-24px;opacity:0}}
+@keyframes dmUndoBowl{0%,30%{background:#8b4a6a}55%,100%{background:#ee86be}}
+.dm-magic .dmbowl{animation:dmMagicBowl 2.6s infinite}
+.dm-magic .dmdrop{background:#ffe60d;top:-20px;animation:dmMagic 2.6s infinite}
+.dm-magic .dmwand{position:absolute;right:6px;top:0;width:30px;height:30px;color:var(--ink);animation:dmWand 2.6s infinite}
+.dm-magic .dmwand .ico{width:30px;height:30px}
+@keyframes dmMagic{0%,25%{top:-20px;opacity:0}35%{opacity:1}60%{top:34px;opacity:1}68%,100%{top:40px;opacity:0}}
+@keyframes dmMagicBowl{0%,60%{background:#e31285}70%,100%{background:#ed2e24}}
+@keyframes dmWand{0%,15%{transform:rotate(0)}25%{transform:rotate(-25deg)}35%,100%{transform:rotate(0)}}
+.dm-palette{display:flex;align-items:center;justify-content:center;gap:10px}
+.dm-palette i{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.dm-palette i.fade{animation:dmFade 2.6s infinite}
+.dm-palette i.keep{animation:dmKeep 2.6s infinite}
+@keyframes dmFade{0%,25%{opacity:1;filter:none}45%,85%{opacity:.18;filter:grayscale(.7)}100%{opacity:1}}
+@keyframes dmKeep{0%,25%{transform:none}45%,85%{transform:scale(1.25)}100%{transform:none}}
+.dm-brush svg{width:120px;height:80px;display:block;margin:0 auto}
+.dmshape{fill:#fbfbfc}.dmline{fill:none;stroke:var(--paper-ink);stroke-width:2.5;stroke-linejoin:round}
+.dmfill{fill:#ed567d;animation:dmFill 2.6s infinite}
+@keyframes dmFill{0%,15%{clip-path:inset(0 100% 0 0)}65%,90%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 100% 0 0)}}
+.dmbrush{position:absolute;top:8px;left:12px;width:30px;height:30px;color:var(--ink);animation:dmBrush 2.6s infinite}
+.dmbrush .ico{width:30px;height:30px}
+@keyframes dmBrush{0%,15%{transform:translateX(0)}65%{transform:translateX(86px)}90%{transform:translateX(86px);opacity:1}100%{transform:translateX(0);opacity:0}}
+.wrap.v2 .paintrow .plab>span{align-items:flex-start}
+.wrap.v2 .paintrow .plab small{text-transform:none;letter-spacing:0}

@@ -267,15 +267,15 @@ function v2Scenes(){ return `
         <div id="meter" hidden><div class="bar"><i id="barFill"></i></div></div>
         <div class="hint" id="hint" hidden></div>
       </section>
-      <div class="paintrow" title="${t('Paint left for this picture')}"><span>${t('Paint')}</span><div class="bar"><i id="paintFill"></i></div><b id="paintLeft"></b></div>
+      <div class="paintrow" id="paintRow" title="${t('Paint left for this picture')}"><span class="plab"><span class="potico"></span><span><b>${t('Paint')}</b><small id="paintNeed"></small></span></span><div class="bar"><i id="paintFill"></i></div><b id="paintLeft"></b></div>
       <div class="paints" id="paints"></div>
       <div class="coachTip" id="coachTip" hidden></div>
       <div class="actions">
         <div class="boosters">
           <button class="btn boost" id="undoBtn"></button>
+          <button class="btn boost" id="paletteBtn"></button>
           <button class="btn boost" id="magicBtn"></button>
-          <button class="btn boost" id="refillBtn"></button>
-          <button class="btn boost" id="freeBtn"></button>
+          <button class="btn boost" id="brushBtn"></button>
         </div>
       </div>
       <div hidden><button id="hintBtn"></button><button id="pickBtn"></button><button id="emptyBtn"></button></div>
@@ -310,8 +310,9 @@ const ICONS={
   daily:'<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9.5 15 2 2 3.5-4"/>',
   quiz:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17h.01"/>',
   magic:'<path d="M4 20 14 10"/><path d="M16 3v3M16 12v3M11.5 7.5H10M22 7.5h-1.5M19.2 4.3l-1 1M13.8 4.3l1 1"/>',
-  refill:'<path d="M12 3.5c3 4 6 7 6 10.5a6 6 0 0 1-12 0c0-3.5 3-6.5 6-10.5Z"/><path d="M12 11v6M9 14h6"/>',
-  free:'<path d="M10 4.5c2.6 3.4 5 6 5 9a5 5 0 0 1-10 0c0-3 2.4-5.6 5-9Z"/><path d="M18.5 3v4M16.5 5h4M19 11v2.4M17.8 12.2h2.4"/>',
+  palette:'<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.4 0 2-1 2-2 0-1.3-1.2-1.6-1.2-2.8 0-1 .8-1.7 1.8-1.7h2.2a3.7 3.7 0 0 0 3.7-3.7C20.5 6.7 16.700 3.5 12 3.5Z"/><circle cx="7.5" cy="11.5" r="1.2"/><circle cx="10" cy="7.5" r="1.2"/><circle cx="14.5" cy="7.5" r="1.2"/>',
+  brush:'<path d="M14.5 4.5 19.5 9.5 11 18l-5-5Z"/><path d="M6 13c-2 .5-2.5 2-2.5 3.5S3 19.5 2.5 20.5c2.5.3 5.5-.4 6.6-1.6S10 15.5 8.6 15.3"/><path d="m16 3 5 5"/>',
+  pot:'<path d="M5 9h14l-1.4 9.5a2 2 0 0 1-2 1.5H8.4a2 2 0 0 1-2-1.5Z"/><path d="M4 9h16M9 9V6.5a3 3 0 0 1 6 0V9"/>',
   check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
   wrench:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3.5 17.3a1.8 1.8 0 0 0 2.5 2.5l5.8-5.8a4 4 0 0 0 5.2-5.4l-2.6 2.6-2.3-.4-.4-2.3Z"/>'};
 const icon=k=>`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
@@ -328,10 +329,10 @@ if(V2){
   BOOSTERS.undo.text=t('Takes back your last drop. You can also tap a paint in the bowl to take out just that one. The paint comes back.');
   Object.assign(BOOSTERS,{
     magic:{name:t('Magic'),price:40,text:t('Puts the next right drop in the bowl, or takes a wrong one out. That part can earn at most 2 stars.')},
-    refill:{name:t('+5 paint'),price:25,text:t('Adds 5 drops to the paint pot.')},
-    free:{name:t('Free ×3'),price:30,text:t("Your next 3 drops don't use paint from the pot. They still count for stars.")}});
+    palette:{name:t('Palette'),price:25,text:t('Dims the paints this part does not use, until the part is painted. The part can still earn 3 stars.')},
+    brush:{name:t('Brush'),price:60,text:t('Paints the part you are on for you, with the exact recipe. It uses that paint from the pot, and the part earns at most 2 stars.')}});
 }
-const INTRO_ALIAS=V2?{magic:'hint',refill:'pick',free:'empty'}:{};
+const INTRO_ALIAS=V2?{magic:'hint',palette:'pick',brush:'empty'}:{};
 // Economy: a game can override any of these with G.economy (ColorBook pays 1 coin per star so boosters keep their value).
 const EC=Object.assign({coinsPerStar:3,firstClear:20,replay:5,rescue:30,chapterCoins:60,bonusPrice:{easy:30,normal:40,hard:60,nightmare:80}},G.economy||{});
 const FREE_BOOSTERS=3, RESCUE_PRICE=EC.rescue, COINS_PER_STAR=EC.coinsPerStar, FIRST_CLEAR_BONUS=EC.firstClear, REPLAY_BONUS=EC.replay;
@@ -343,7 +344,8 @@ const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 let save={best:{},coins:0,inv:{},seen:{},tut:{},challenge:null,name:'',bought:{},chapters:{},chests:0};
 try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(s&&s.best)save=Object.assign(save,s);}catch(e){}
 // Players who had the old boosters keep their counts under the new ones.
-if(V2) Object.entries(INTRO_ALIAS).forEach(([nb,ob])=>{ if(save.inv[nb]==null&&save.inv[ob]!=null) save.inv[nb]=save.inv[ob]; });
+if(V2){ Object.entries(INTRO_ALIAS).forEach(([nb,ob])=>{ if(save.inv[nb]==null&&save.inv[ob]!=null) save.inv[nb]=save.inv[ob]; });
+  [['palette','refill'],['brush','free']].forEach(([nb,ob])=>{ if(save.inv[nb]==null&&save.inv[ob]!=null) save.inv[nb]=save.inv[ob]; }); }
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
 const unlocked=i=>{const l=LEVELS[i];
   if(l.bonus) return save.best[l.id]!=null||!!save.unlockAll||!!save.bought[l.id];
@@ -384,11 +386,13 @@ let L, state;
 
 // ---------- Menu scene: home (next picture + Play) and gallery (replay any picture) ----------
 const starRow=b=>[0,1,2].map(i=>`<span class="${i<b?'':'off'}">★</span>`).join('');
-function thumbSVG(lv,colored){
+function thumbSVG(lv,colored,part){
   const byId=Object.fromEntries(lv.regions.map(r=>[r.id,r]));
+  // part: ids of the parts already painted in a picture left half-way (shown colored on Home and in the gallery)
+  const on=r=>colored||!!(part&&part[r.id]);
   const reg=r=>r.stroke
-    ?`<g fill="none" stroke="${colored?hex(r.target):BLANK_STROKE}" stroke-width="${r.stroke}" stroke-linecap="round">${r.svg}</g>`
-    :`<g fill="${colored?hex(r.target):BLANK}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round">${r.svg}</g>`;
+    ?`<g fill="none" stroke="${on(r)?hex(r.target):BLANK_STROKE}" stroke-width="${r.stroke}" stroke-linecap="round">${r.svg}</g>`
+    :`<g fill="${on(r)?hex(r.target):BLANK}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round">${r.svg}</g>`;
   return `<svg viewBox="0 0 320 240" aria-hidden="true">${lv.bg||''}${lv.order.map(id=>reg(byId[id])).join('')}${lv.decor}</svg>`;
 }
 // Next picture to play: first unfinished one, or the challenged one if it is unlocked.
@@ -408,7 +412,7 @@ function renderMenu(){
   if(ch){const cl=LEVELS.find(l=>l.id===ch.level);$('homeCh').textContent='🏆 '+t('{from} challenged you on {title}. Beat {score}★.',{from:ch.from,title:T(cl),score:ch.score});}
   const card=k=>{const l=LEVELS[k], bb=save.best[l.id], ok=unlocked(k), buy=buyable(k);
     const lab=ok?'':buy?', '+t('unlock for {coins}',{coins:tn(bonusPrice(l),'coin')}):l.bonus?', '+t('restore {title} first',{title:t(l.title)}):', '+t('locked');
-    return `<button class="gcard${l.bonus?' bonus':''}${buy?' buy':''}" data-i="${k}" ${ok||buy?'':'disabled'} aria-label="${esc(T(l))}${lab}">${thumbSVG(l,bb!=null)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}<b>${l.bonus?'':(k+1)+'. '}${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${bb!=null?starRow(bb):buy?`${bonusPrice(l)} <span class="coin"></span>`:l.bonus?esc(t('Bonus')):''}</small></button>`;};
+    return `<button class="gcard${l.bonus?' bonus':''}${buy?' buy':''}" data-i="${k}" ${ok||buy?'':'disabled'} aria-label="${esc(T(l))}${lab}">${thumbSVG(l,bb!=null,save.partial&&save.partial[l.id]&&save.partial[l.id].stars)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}<b>${l.bonus?'':(k+1)+'. '}${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${bb!=null?starRow(bb):buy?`${bonusPrice(l)} <span class="coin"></span>`:l.bonus?esc(t('Bonus')):''}</small></button>`;};
   if(CHAPTERS) $('ggrid').innerHTML=CHAPTERS.map((c,ci)=>{const [a,z]=chapterRange(ci), ids=LEVELS.slice(a,z).map(l=>l.id);
       const got=ids.filter(id=>save.best[id]!=null).length, bonus=LEVELS.map((l,k)=>k).filter(k=>LEVELS[k].bonus&&ids.includes(LEVELS[k].base));
       return `<h3 class="gch"><span>${t('Chapter {n}',{n:ci+1})}</span>${esc(t(c.name))}<small>${got} / ${z-a}</small></h3>`+[...Array(z-a).keys()].map(x=>card(a+x)).join('')+bonus.map(card).join('');}).join('');
@@ -616,8 +620,9 @@ function renderActions(){
   if(save.inv.undo!=null) $('undoBtn').disabled=!has;
   if(V2){
     if(save.inv.magic!=null) $('magicBtn').disabled=state.finished;
-    const f=$('freeBtn'), on=state.freeLeft>0; f.classList.toggle('on',on);
-    if(on&&save.inv.free!=null) f.querySelector('span').textContent=t('{n} free',{n:state.freeLeft});
+    const pl=$('paletteBtn'), on=!!(state.palette&&state.palette[state.sel]); pl.classList.toggle('on',on);
+    if(save.inv.palette!=null) pl.disabled=on||state.finished;
+    if(save.inv.brush!=null) $('brushBtn').disabled=state.finished||!!state.applying;
     return;
   }
   if(save.inv.empty!=null) $('emptyBtn').disabled=!has;
@@ -943,7 +948,9 @@ function tick(){
   fx.clearRect(0,0,innerWidth,innerHeight);
   parts=parts.filter(p=>p.life>0&&p.y<innerHeight+60);
   for(const p of parts){
-    p.vx*=.985; p.vy=p.vy*.985+p.g; p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; p.life-=p.decay;
+    p.vx*=.985; p.vy=p.vy*.985+p.g;
+    if(p.sway){ p.ph+=.045; p.vx+=Math.sin(p.ph)*.045; if(p.vy>p.vmax) p.vy=p.vmax; p.flip+=p.vf; } // paper: flutters and drifts
+    p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; p.life-=p.decay;
     fx.save(); fx.globalAlpha=Math.max(0,Math.min(1,p.life*2)); fx.translate(p.x,p.y);
     fx.fillStyle=p.c; fx.strokeStyle=INK; fx.lineWidth=1.5; const r=p.r;
     fx.beginPath();
@@ -956,6 +963,8 @@ function tick(){
       fx.closePath(); fx.fill(); fx.stroke();
     }else if(p.shape==='rect'){
       fx.rotate(p.rot); fx.scale(1,Math.cos(p.rot*3)); fx.fillRect(-r,-r*.45,r*2,r*.9);
+    }else if(p.shape==='ribbon'){ // a paper strip turning over: its back side is a little darker
+      const c=Math.cos(p.flip); fx.rotate(p.rot); fx.scale(1,c); if(c<0) fx.globalAlpha*=.78; fx.fillRect(-r,-r*.34,r*2,r*.68);
     }else{fx.arc(0,0,r,0,Math.PI*2); fx.fill(); fx.stroke();}
     fx.restore();
   }
@@ -1368,10 +1377,30 @@ if(V2){
     $('targetChip').style.setProperty('--tc',hex(current().target));
     updateHud();
   };
+  // Advice states only what is true of the mix against the target, so it never steers you off a valid path:
+  // the biggest of the lightness, strength (chroma) and hue differences, with the hue named from the target.
+  const HUE=[[25,'pink'],[50,'red'],[78,'orange'],[112,'yellow'],[170,'green'],[235,'teal'],[290,'blue'],[330,'violet'],[361,'pink']];
   function v2advice(m,tg,p){
     if(p>=85) return t('So close');
-    const dl=lab(m)[0]-lab(tg)[0];
-    return dl>8?t('Too light'):dl<-8?t('Too dark'):t('The color is off');
+    const A=lab(m), B=lab(tg), dL=A[0]-B[0], cA=Math.hypot(A[1],A[2]), cB=Math.hypot(B[1],B[2]), dC=cA-cB;
+    let dH=0;
+    if(cA>8&&cB>8){ const d=Math.atan2(Math.sin(Math.atan2(B[2],B[1])-Math.atan2(A[2],A[1])),Math.cos(Math.atan2(B[2],B[1])-Math.atan2(A[2],A[1]))); dH=2*Math.sqrt(cA*cB)*Math.abs(Math.sin(d/2)); }
+    if(dH>=Math.abs(dL)&&dH>=Math.abs(dC)){ const h=(Math.atan2(B[2],B[1])*180/Math.PI+360)%360; return t('Aim for a more {hue} tone',{hue:t(HUE.find(x=>h<x[0])[1])}); }
+    if(Math.abs(dL)>=Math.abs(dC)) return dL>0?t('Too light'):t('Too dark');
+    return dC>0?t('Too strong'):t('Too dull');
+  }
+  // Magic's next step: of every single add or take-out, the one that leads to the smallest finished bowl
+  // (fewest drops, so the best stars). A paint the recipe doesn't use always comes out first.
+  function bestStep(){
+    const r=current(), c=counts(), R=r.recipe;
+    const bad=Object.keys(c).find(k=>!R[k]); if(bad) return {k:bad,remove:true};
+    const m=mix(c); if(m&&matchPct(m,r.target)>=95) return {done:true};
+    const final=cc=>{let k=1; for(const q in cc) k=Math.max(k,Math.ceil(cc[q]/R[q])); return k;};
+    const kNow=final(c); let add=null,gap=0;
+    for(const q in R){const d=kNow*R[q]-(c[q]||0); if(d>gap){gap=d;add=q;}}
+    let best={k:add,size:kNow*r.min};
+    for(const q in c){ const c2=Object.assign({},c); if(!--c2[q]) delete c2[q]; const sz=final(c2)*r.min; if(sz<best.size) best={k:q,remove:true,size:sz}; }
+    return best.k?best:{done:true};
   }
   renderMix=function(override){
     const r=current(); if(!state||!r) return;
@@ -1405,7 +1434,16 @@ if(V2){
   updateHud=function(){
     _updateHud(); if(!state) return;
     $('progress').textContent=t('{done} of {all} parts restored',{done:Object.keys(state.done).length,all:L.regions.length});
-    $('paintLeft').textContent=tn(state.paint,'drop')+(state.freeLeft>0?' +'+t('{n} free',{n:state.freeLeft}):'');
+    $('paintLeft').textContent=tn(state.paint,'drop');
+    // How much the unpainted parts need at par (minus the paid drops already in the bowl), and a warning when short.
+    const r=current(), undone=L.regions.filter(x=>!state.done[x.id]);
+    let need=undone.reduce((a,x)=>a+x.min,0); if(r&&!state.done[r.id]) need-=Math.min(r.min,state.fr.filter(x=>!x).length);
+    need=Math.max(0,need);
+    const short=undone.length&&state.paint<need, tight=undone.length&&!short&&state.paint<need+Math.max(2,Math.ceil(need*.15)), lv=short?2:tight?1:0;
+    const row=$('paintRow'); row.classList.toggle('short',!!short); row.classList.toggle('tight',!!tight);
+    if(lv>(v2.paintLv||0)) restart(row,'pulse'); v2.paintLv=lv;
+    $('paintNeed').textContent=undone.length?t('Rest needs {n}',{n:need}):'';
+    dimPaints();
   };
   // Bubble that flies out of the bowl when Magic acts, lingers, then dissolves.
   function bubble(k,text){
@@ -1423,11 +1461,12 @@ if(V2){
     const ch=$('drops').querySelector(`.dchip[data-k="${k}"]`); if(!ch) return;
     const cr=ch.getBoundingClientRect(), sw=ch.querySelector('i').getBoundingClientRect(), col=hex(PMAP[k].rgb);
     const layer=document.createElement('div'); layer.className='dustLayer'; layer.style.left=sw.left+'px'; layer.style.top=sw.top+'px';
-    let h=''; for(let i=0;i<18;i++){const x=Math.random()*20|0,y=Math.random()*20|0;
-      h+=`<span style="left:${x}px;top:${y}px;background:${col};--dx:${10+Math.random()*26|0}px;--dy:${-24+Math.random()*22|0}px;animation-delay:${(x/20*.22).toFixed(2)}s"></span>`;}
+    // grains leave left to right and drift far up-right, so the trail reads as the paint blowing away
+    let h=''; for(let i=0;i<40;i++){const x=Math.random()*22|0,y=Math.random()*22|0,sz=(1.5+Math.random()*2.5).toFixed(1);
+      h+=`<span style="left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;background:${col};--dx:${30+Math.random()*80|0}px;--dy:${-80+Math.random()*60|0}px;animation-delay:${(x/22*.5+Math.random()*.1).toFixed(2)}s"></span>`;}
     layer.innerHTML=h; document.body.appendChild(layer);
-    if(last){const g=ch.cloneNode(true); g.className='dchip ghostChip'; g.style.left=cr.left+'px'; g.style.top=cr.top+'px'; g.style.width=cr.width+'px'; document.body.appendChild(g); setTimeout(()=>g.remove(),700);}
-    setTimeout(()=>layer.remove(),1000);
+    if(last){const g=ch.cloneNode(true); g.className='dchip ghostChip'; g.style.left=cr.left+'px'; g.style.top=cr.top+'px'; g.style.width=cr.width+'px'; document.body.appendChild(g); setTimeout(()=>g.remove(),1300);}
+    setTimeout(()=>layer.remove(),2300);
   }
   function starFall(el){
     if(el) sfx('starLost');
@@ -1449,7 +1488,7 @@ if(V2){
     const ok=_addDrop(k,via);
     if(ok&&via!=='magic'&&before!=null&&state&&!state.applying&&!state.forced){
       const after=matchPct(mix(counts()),r.target);
-      if(after<before){ renderMix([t('Further off. Try Undo.'),'bad']); restart($('pctNum'),'worse');
+      if(after<=before-3){ renderMix([t('That took it further away'),'bad']); restart($('pctNum'),'worse');
         clearTimeout(v2.wt); v2.wt=setTimeout(()=>$('pctNum').classList.remove('worse'),1400); }
     }
     return ok;
@@ -1480,7 +1519,7 @@ if(V2){
   });
   $('magicBtn').onclick=()=>{
     if(!state||state.applying||state.finished||state.forced||isLocked('magic')) return;
-    const h=nextHint();
+    const h=bestStep();
     if(h.done){toast(t('Your mix is already right.'));return;}
     if(!h.remove&&state.paint<=0&&!(state.freeLeft>0)){toast(t('The pot is empty.'));return;}
     if(!spend('magic')) return;
@@ -1488,21 +1527,129 @@ if(V2){
     if(h.remove){ bubble(h.k,t('Took out {paint}',{paint:PN(h.k)})); removeAt(state.drops.lastIndexOf(h.k)); }
     else{ bubble(h.k,'+1 '+PN(h.k)); addDrop(h.k,'magic'); }
   };
-  $('refillBtn').onclick=()=>{
-    if(!state||state.finished||isLocked('refill')||!spend('refill')) return;
-    state.paint+=5; sfx('coin'); updateHud(); renderActions(); toast(t('+5 drops in the pot'));
+  document.querySelector('#paintRow .potico').innerHTML=icon('pot');
+  // Palette: for the rest of this part, paints its recipe doesn't use are dimmed (they stay tappable).
+  function dimPaints(){
+    const r=current(), on=!!(state&&r&&state.palette&&state.palette[r.id]);
+    $('paints').querySelectorAll('.paint').forEach(b=>b.classList.toggle('dim',on&&!r.recipe[b.dataset.k]));
+  }
+  $('paletteBtn').onclick=()=>{
+    if(!state||state.finished||state.applying||state.forced||isLocked('palette')) return;
+    state.palette=state.palette||{}; if(state.palette[state.sel]) return;
+    if(!spend('palette')) return;
+    state.palette[state.sel]=true; sfx('magic'); dimPaints(); renderActions();
+    const n=Object.keys(current().recipe).length; toast(t('{part} uses {n} of the paints.',{part:N(current()),n}));
   };
-  $('freeBtn').onclick=()=>{
-    if(!state||state.finished||isLocked('free')) return;
-    if(state.freeLeft>0){toast(t('{n} free drops left.',{n:state.freeLeft}));return;}
-    if(!spend('free')) return;
-    state.freeLeft=3; sfx('coin'); updateHud(); renderActions(); toast(t('Your next 3 drops are free.'));
+  // Brush: pours the exact recipe into the bowl (paid from the pot) and the part paints itself; 2 stars at most.
+  $('brushBtn').onclick=()=>{
+    if(!state||state.finished||state.applying||state.forced||state.lesson||isLocked('brush')) return;
+    const r=current(), paid=state.fr.filter(x=>!x).length;
+    if(state.paint+paid<r.min){toast(t('Brush needs {drops} of paint.',{drops:tn(r.min,'drop')}));buzz(40);sfx('wrong');return;}
+    if(!spend('brush')) return;
+    state.paint+=paid-r.min; state.drops=[]; state.fr=[];
+    Object.entries(r.recipe).forEach(([k,n])=>{for(let j=0;j<n;j++){state.drops.push(k);state.fr.push(false);}});
+    state.used[r.id]=r.min; state.hinted[r.id]=true; sfx('magic');
+    const g=scene.querySelector(`.region[data-id="${r.id}"]`); if(g) restart(g,'brushed');
+    updateHud(); renderMix([t('Brushed!'),'good']); afterMixChange();
   };
   // Entrance: the picture grows into place, then the controls rise in one after another.
   const enter=el=>{ if(reduced) return; el.classList.remove('entering'); void el.offsetWidth; el.classList.add('entering');
     clearTimeout(el._et); el._et=setTimeout(()=>el.classList.remove('entering'),1100); };
+  // A picture left half-way keeps its painted parts (not for the daily picture, which has its own budget).
+  function savePartial(){
+    if(!state||state.daily) return; save.partial=save.partial||{};
+    const ids=Object.keys(state.done);
+    if(state.finished||!ids.length) delete save.partial[L.id];
+    else{ const pick=o=>Object.fromEntries(ids.filter(id=>o[id]!=null).map(id=>[id,o[id]]));
+      save.partial[L.id]={stars:pick(state.stars),used:pick(state.used),hinted:pick(state.hinted),rescued:pick(state.rescued),paint:state.paint,at:Date.now()}; }
+    persist();
+  }
+  const _apply=apply; apply=function(){ _apply(); savePartial(); };
+  // Home leads with the picture you left half-way (the latest one), unless a friend's challenge is waiting.
+  const _nextIndex=nextIndex;
+  nextIndex=function(){
+    if(save.challenge) return _nextIndex();
+    const ps=Object.entries(save.partial||{}).sort((a,b)=>(b[1].at||0)-(a[1].at||0));
+    for(const [id] of ps){ const i=LEVELS.findIndex(l=>l.id===id); if(i>=0&&save.best[id]==null) return i; }
+    return _nextIndex();
+  };
+  function resume(){
+    const pt=!state.daily&&save.partial&&save.partial[L.id]; if(!pt) return;
+    Object.keys(pt.stars).forEach(id=>{ const r=L.regions.find(x=>x.id===id); if(!r) return;
+      state.done[id]=true; state.stars[id]=pt.stars[id]; state.used[id]=pt.used[id]!=null?pt.used[id]:r.min;
+      if(pt.hinted[id]) state.hinted[id]=true; if(pt.rescued[id]) state.rescued[id]=true;
+      const g=scene.querySelector(`.region[data-id="${id}"]`); if(g){ g.setAttribute(r.stroke?'stroke':'fill',hex(r.target)); g.classList.remove('sel','v2wait'); g.classList.add('done'); }
+      const cr=scene.querySelector(`.crack[data-for="${id}"]`); if(cr) cr.classList.add('gone'); });
+    state.paint=Math.max(0,pt.paint);
+    const nx=L.regions.find(x=>!state.done[x.id]); if(nx) select(nx.id);
+    updateHud(); toast(t('Welcome back: {n} of {all} parts already painted.',{n:Object.keys(state.done).length,all:L.regions.length}));
+  }
   const _start=start;
-  start=function(i,o){ _start(i,o); $('gTitle').textContent=T(L); enter($('game')); };
+  start=function(i,o){ v2.quiet=false; v2.paintLv=0; _start(i,o); resume(); $('gTitle').textContent=T(L); enter($('game')); };
+  // Progress is kept now, so leaving needs no warning (except on the daily picture, which isn't kept).
+  $('backBtn').onclick=()=>{ if(state&&state.daily&&!state.finished&&Object.keys(state.done).length) $('quitOverlay').hidden=false; else goHome(); };
+  // "Start picture over" really starts over.
+  $('retryBtn').onclick=()=>{ if(save.partial&&L){ delete save.partial[L.id]; persist(); } start(L.index,{daily:state&&state.daily}); };
+  // Start-of-picture cards come one at a time: the picture's own news first, then each new booster with a demo.
+  const DEMO={
+    undo:'<div class="dm dm-undo"><span class="dmbowl"></span><i class="dmdrop"></i></div>',
+    magic:'<div class="dm dm-magic"><span class="dmbowl"></span><i class="dmdrop"></i><span class="dmwand">'+icon('magic')+'</span></div>',
+    palette:'<div class="dm dm-palette">'+['#fafaf7','#00a8eb','#e31285','#ffe60d','#212126'].map((c,i)=>`<i style="background:${c}" class="${i===2||i===3?'keep':'fade'}"></i>`).join('')+'</div>',
+    brush:'<div class="dm dm-brush"><svg viewBox="0 0 120 80" aria-hidden="true"><path class="dmshape" d="M20 60Q20 20 60 20T100 60Z"/><path class="dmfill" d="M20 60Q20 20 60 20T100 60Z"/><path class="dmline" d="M20 60Q20 20 60 20T100 60Z"/></svg><span class="dmbrush">'+icon('brush')+'</span></div>'};
+  showIntro=function(){
+    const fresh=Object.keys(BOOSTERS).filter(b=>save.inv[b]==null&&introAt(b)>=0&&introAt(b)<=L.index);
+    fresh.forEach(b=>save.inv[b]=FREE_BOOSTERS);
+    const tip=!save.seen[L.id]&&L.tip;
+    const tierKey='tier-'+L.tier, tierNote=TIERS[L.tier].label&&!save.seen[tierKey];
+    if(tierNote) save.seen[tierKey]=true;
+    const chal=save.challenge&&save.challenge.fresh?save.challenge:null;
+    if(chal) chal.fresh=false;
+    save.seen[L.id]=true; persist(); renderActions();
+    state.freshBoosters=fresh;
+    const cards=[];
+    if(state.daily){ const s=dailyStreakNext();
+      cards.push({title:t('Daily picture'),html:`<div class="booster">${icon('daily')}<b>${t('Daily picture: {title}',{title:esc(T(L))})}</b><br>${twistText(state.twist,state.budget)} ${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</div>`}); }
+    if(chal){ const ci=LEVELS.findIndex(l=>l.id===chal.level), n=LEVELS.slice(0,ci).filter(l=>save.best[l.id]==null).length;
+      cards.push({title:t('{from} challenged you!',{from:chal.from}),html:`<div class="booster">🏆 ${t('Restore <b>{title}</b> with more than <b>{score}★</b>.',{title:esc(T(LEVELS[ci])),score:chal.score})}`+
+        (n&&!unlocked(ci)?' '+t('First, finish the warm-up pictures to unlock it ({pics}).',{pics:tn(n,'picture')}):'')+'</div>'}); }
+    if(tip) cards.push({title:t(tip.title),text:t(tip.text)});
+    if(tierNote) cards.push({title:t('{tier} picture',{tier:TIERS[L.tier].label}),text:(L.tier==='nightmare'?t('Very little spare paint and colors that look almost the same.'):t('Less spare paint and closer shades than usual.'))+' '+t('Boosters help here. Rewards are ×{m}.',{m:TIERS[L.tier].mult})});
+    fresh.forEach(b=>cards.push({title:t('New booster: {name}',{name:BOOSTERS[b].name}),
+      html:`<div class="bdemo">${DEMO[b]||icon(b)}</div><p class="btext">${BOOSTERS[b].text}</p><p class="bfree">${t('You get {n} free. After that, {price} each.',{n:FREE_BOOSTERS,price:BOOSTERS[b].price+' <span class="coin"></span>'})}</p>`}));
+    v2.cards=cards;
+    if(!cards.length){ startHands(); return; }
+    showCard();
+  };
+  function showCard(){
+    const c=v2.cards.shift();
+    $('introTitle').textContent=c.title; $('introText').innerHTML=c.text||''; $('introText').hidden=!c.text;
+    $('introBoosters').innerHTML=c.html||''; $('introBtn').textContent=v2.cards.length?t('Next'):t("Let's paint");
+    $('introOverlay').hidden=false; restart($('introOverlay').querySelector('.card'),'swap');
+  }
+  $('introBtn').onclick=()=>{ if(v2.cards&&v2.cards.length){ showCard(); return; } $('introOverlay').hidden=true; if(state) startHands(); };
+  // One calm finale: the wave of light over the picture, paper confetti drifting down in the picture's colors, the stamp.
+  // The result card then adds nothing but its stars popping in.
+  function confettiRain(cols){
+    if(reduced) return;
+    for(let i=0;i<80;i++) parts.push({x:Math.random()*innerWidth,y:-10-Math.random()*160,vx:(Math.random()-.5)*.8,vy:1.2+Math.random()*1.4,
+      r:3.5+Math.random()*3,c:cols[i%cols.length],rot:Math.random()*6.3,vr:(Math.random()-.5)*.06,shape:'ribbon',life:1,decay:.0028+Math.random()*.0018,
+      g:.025,sway:1,ph:Math.random()*6.3,flip:Math.random()*6.3,vf:.06+Math.random()*.1,vmax:1.6+Math.random()*1.2});
+    if(!fxRun){fxRun=true;requestAnimationFrame(tick);}
+  }
+  celebrate=function(st){
+    const frame=document.querySelector('.frame');
+    frame.classList.remove('celebrate'); void frame.offsetWidth; frame.classList.add('celebrate'); setTimeout(()=>{if(state===st) sfx('fanfare');},350);
+    [...scene.querySelectorAll('.region')].map(g=>{const b=g.getBoundingClientRect();return {g,x:b.left+b.width/2};})
+      .sort((a,b)=>a.x-b.x).forEach((o,i)=>{o.g.style.animationDelay=(i*70)+'ms';o.g.classList.remove('flash');void o.g.getBoundingClientRect();o.g.classList.add('flash');});
+    let sp=''; for(let i=0;i<9;i++){const x=20+Math.random()*280,y=16+Math.random()*200,sc=(.6+Math.random()*.7).toFixed(2);
+      sp+=`<g transform="translate(${x|0} ${y|0}) scale(${sc})"><path class="spark" style="animation-delay:${(300+Math.random()*1200)|0}ms" d="M0-9L2.2-2.2L9 0L2.2 2.2L0 9L-2.2 2.2L-9 0L-2.2-2.2Z"/></g>`;}
+    $('fxLayer').innerHTML=`<defs><linearGradient id="shineG" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect class="shine" x="-150" y="-80" width="100" height="400" fill="url(#shineG)"/>`+sp;
+    setTimeout(()=>{ if(state===st) confettiRain([...new Set(L.regions.map(r=>hex(r.target)))].concat(['#ffffff'])); },450);
+    setTimeout(()=>{ if(state!==st) return; $('stamp').hidden=false; sfx('stamp'); },1300);
+    v2.quiet=true; // from here until the next picture, no more bursts (the result card stays calm)
+  };
+  const _burst=burst; burst=function(x,y,c,n,o){ if(v2.quiet) return; _burst(x,y,c,n,o); };
+  const _win=win; win=function(){ v2.quiet=true; if(save.partial) delete save.partial[L.id]; _win(); };
   // Lessons lift controls above the dim layer; a running entrance animation would trap them under it.
   const _startLesson=startLesson; startLesson=function(k){ $('game').classList.remove('entering'); return _startLesson(k); };
   const _forceUndo=forceUndo; forceUndo=function(k){ $('game').classList.remove('entering'); _forceUndo(k); };
@@ -1562,9 +1709,16 @@ if(V2){
   renderMenu=function(){
     _renderMenu();
     const i=nextIndex(), lv=LEVELS[i], doneN=LEVELS.filter(l=>save.best[l.id]!=null).length;
-    $('heroMeta').textContent=tn(lv.regions.length,'part');
-    const doneMain=LEVELS.slice(0,MAIN).filter(l=>save.best[l.id]!=null).length;
-    $('heroBar').style.width=(doneMain/MAIN*100)+'%';
+    const pt=save.partial&&save.partial[lv.id];
+    if(pt){ const n=Object.keys(pt.stars).length;
+      $('nextPic').innerHTML=thumbSVG(lv,false,pt.stars);
+      $('heroMeta').textContent=t('{done} of {all} parts',{done:n,all:lv.regions.length});
+      $('heroBar').style.width=(n/lv.regions.length*100)+'%'; $('playBtn').textContent=t('Continue');
+    }else{
+      $('heroMeta').textContent=tn(lv.regions.length,'part');
+      const doneMain=LEVELS.slice(0,MAIN).filter(l=>save.best[l.id]!=null).length;
+      $('heroBar').style.width=(doneMain/MAIN*100)+'%';
+    }
     renderProgress(i);
     $('homeStars').innerHTML=STAR+LEVELS.reduce((a,l)=>a+(save.best[l.id]||0),0);
     renderTip();

@@ -198,6 +198,7 @@ document.body.insertAdjacentHTML('afterbegin',(V2?v2Scenes():`
       <button class="btn" data-c="newDay">Daily: new day</button><button class="btn" data-c="tutorials">Replay tutorials</button>
       <button class="btn" data-c="s-thanksgiving">Season: Thanksgiving</button><button class="btn" data-c="s-christmas">Season: Christmas</button>
       <button class="btn" data-c="s-off">Season: none</button><button class="btn" data-c="s-auto">Season: by date</button>
+      <button class="btn" data-c="shading" id="cheatShade">Shading: on</button><button class="btn" data-c="shadeAuto">Shading: default</button>
     </div>
     <div class="cjump"><select id="cheatLevel" aria-label="Picture"></select><button class="btn primary" data-c="jump">Play</button></div>
     <div class="csnd"><div class="csndhead"><b>Sounds</b><div class="seg" id="sfxSet"><button data-v="v1">Old</button><button data-v="v2">New</button></div></div>
@@ -355,6 +356,17 @@ try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(s&&s.best)save
 if(V2){ Object.entries(INTRO_ALIAS).forEach(([nb,ob])=>{ if(save.inv[nb]==null&&save.inv[ob]!=null) save.inv[nb]=save.inv[ob]; });
   [['palette','refill'],['brush','free']].forEach(([nb,ob])=>{ if(save.inv[nb]==null&&save.inv[ob]!=null) save.inv[nb]=save.inv[ob]; }); }
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
+// Soft shading (flag): every filled part gets a light from the top left, drawn as an overlay of its own shape
+// (.shade, right after the part) so the part itself stays one flat target color. On by GAME.shading or on staging;
+// the staging cheat sets save.shading. Faded parts get a lighter, pencil-like version (CSS picks it by fill).
+const shadingOn=()=>save.shading!=null?save.shading:!!(G.shading||STAGING);
+const applyShading=()=>document.body.classList.toggle('shading',shadingOn());
+document.body.insertAdjacentHTML('beforeend',`<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<radialGradient id="cbShade" cx=".5" cy=".5" r=".75" fx=".3" fy=".25"><stop offset="0" stop-color="#fff" stop-opacity=".4"/><stop offset=".38" stop-color="#fff" stop-opacity="0"/><stop offset=".66" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></radialGradient>
+<radialGradient id="cbShadeF" cx=".5" cy=".5" r=".75" fx=".3" fy=".25"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/><stop offset=".66" stop-color="#4a5070" stop-opacity="0"/><stop offset="1" stop-color="#4a5070" stop-opacity=".12"/></radialGradient>
+</defs></svg>`);
+applyShading();
+const shadeEl=r=>r.stroke?'':`<g class="shade" data-for="${r.id}" pointer-events="none">${r.svg}</g>`;
 const unlocked=i=>{const l=LEVELS[i];
   if(l.season) return seasonOpen(l);
   if(l.bonus) return save.best[l.id]!=null||!!save.unlockAll||!!save.bought[l.id];
@@ -418,7 +430,7 @@ function thumbSVG(lv,colored,part){
   const on=r=>colored||!!(part&&part[r.id]);
   const reg=r=>r.stroke
     ?`<g fill="none" stroke="${on(r)?hex(r.target):BLANK_STROKE}" stroke-width="${r.stroke}" stroke-linecap="round">${r.svg}</g>`
-    :`<g fill="${on(r)?hex(r.target):BLANK}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round">${r.svg}</g>`;
+    :`<g fill="${on(r)?hex(r.target):BLANK}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round">${r.svg}</g>${shadeEl(r)}`;
   return `<svg viewBox="0 0 320 240" aria-hidden="true">${lv.bg||''}${lv.order.map(id=>reg(byId[id])).join('')}${lv.decor}</svg>`;
 }
 // Next picture to play: first unfinished one, or the challenged one if it is unlocked.
@@ -566,7 +578,7 @@ $('introBtn').onclick=()=>{$('introOverlay').hidden=true; if(state) startHands()
 function regionEl(r){
   return r.stroke
     ? `<g class="region" data-id="${r.id}" fill="none" stroke="${BLANK_STROKE}" stroke-width="${r.stroke}" stroke-linecap="round">${r.svg}</g>`
-    : `<g class="region" data-id="${r.id}" fill="${BLANK}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round">${r.svg}</g>`;
+    : `<g class="region" data-id="${r.id}" fill="${BLANK}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round">${r.svg}</g>${shadeEl(r)}`;
 }
 function buildScene(){
   const byId=Object.fromEntries(L.regions.map(r=>[r.id,r]));
@@ -1384,7 +1396,7 @@ if(V2){
       const u=document.createElementNS('http://www.w3.org/2000/svg','g'); u.setAttribute('class','spotUnder'); u.setAttribute('pointer-events','none');
       u.innerHTML=`<g class="spotGlow" filter="url(#spotF)" style="stroke:${hex(r.target)};stroke-width:${r.stroke?r.stroke+8:7}px">${r.svg}</g>`+
         `<g class="selOutline${r.stroke?' thick':''}"${r.stroke?` style="stroke-width:${r.stroke+6}px"`:''}>${r.svg}</g>`;
-      g.after(u);
+      const sh=g.nextElementSibling; (sh&&sh.classList.contains('shade')?sh:g).after(u);
     }
     return `<defs><mask id="spotM" maskUnits="userSpaceOnUse" x="0" y="0" width="320" height="240"><rect width="320" height="240" fill="#fff"/>${shape(r,'#000',2)}`+
       `${front.map(o=>shape(o,'#fff',0)).join('')}<g class="occ">${L.decor||''}</g></mask>`+
@@ -1954,7 +1966,7 @@ if(CHEATS){
   let armed=false;
   const refresh=()=>{ persist(); renderCoins(true); if(state){ updateHud(); renderActions(); } else renderMenu(); };
   const open=()=>{ const g=!!state&&!state.finished; ['paint','solve','finish'].forEach(c=>$('cheatOverlay').querySelector(`[data-c="${c}"]`).disabled=!g);
-    if(L) sel.value=L.index; armed=false; $('cheatEvents').textContent=EVENTS.join('\n')||'No events yet'; $('cheatNew').textContent='New game: start over from picture 1'; $('cheatOverlay').hidden=false; };
+    if(L) sel.value=L.index; armed=false; $('cheatEvents').textContent=EVENTS.join('\n')||'No events yet'; $('cheatShade').textContent='Shading: '+(shadingOn()?'on':'off'); $('cheatNew').textContent='New game: start over from picture 1'; $('cheatOverlay').hidden=false; };
   $('cheatBtn').onclick=open;
   // Sound test: play every effect in the old or the new set to compare them on a phone.
   const SND=[['drop','W','Drop White'],['drop','C','Drop Cyan'],['drop','M','Drop Magenta'],['drop','Y','Drop Yellow'],['drop','K','Drop Black'],
@@ -1989,6 +2001,8 @@ if(CHEATS){
     if(c==='newDay'){ if(save.daily) save.daily.last=dayKey(new Date(Date.now()-864e5)); refresh(); toast('Daily picture is open again, streak kept'); return; }
     if(c==='tutorials'){ save.tut={}; save.seen={}; persist(); toast('Tutorials and tip cards will show again'); return; }
     if(c==='jump'){ close(); start(+sel.value); return; }
+    if(c==='shading'||c==='shadeAuto'){ if(c==='shadeAuto') delete save.shading; else save.shading=!shadingOn(); persist(); applyShading();
+      $('cheatShade').textContent='Shading: '+(shadingOn()?'on':'off'); toast('Soft shading '+(shadingOn()?'on':'off')); return; }
     if(c.startsWith('s-')){ const v=c.slice(2); if(v==='auto') delete save.forceSeason; else save.forceSeason=v; persist();
       if(!state) renderMenu(); toast(v==='auto'?'Season follows the date':'Season: '+v); return; }
     // Wipes this build's save (coins, stars, boosters, tutorials, progress) and opens picture 1, as a first-time player.

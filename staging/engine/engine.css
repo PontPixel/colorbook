@@ -798,3 +798,7 @@ body.v2{--grainEdge:rgba(35,40,58,.35)}
 .hcol.christmas .dbars i.on{background:#d1423a}.hcol.thanksgiving .dbars i.on{background:#e57d22}
 .holback{appearance:none;border:0;background:none;color:var(--muted);font:700 14px "Inter",system-ui,sans-serif;display:flex;align-items:center;gap:4px;padding:8px 0;cursor:pointer;min-height:44px}
 .holback .ico{width:18px;height:18px}
+/* Soft shading overlay (flag: body.shading): a part's own shape over it, lit from the top left; fainter while faded */
+.shade{display:none;fill:url(#cbShade);stroke:none}
+body.shading .shade{display:inline}
+[fill="#fbfbfc"]+.shade{fill:url(#cbShadeF)}

@@ -728,3 +728,33 @@ body.v2 .card .bfree{font-size:13px}
 .chestinfo>b svg{width:22px;height:22px;fill:var(--v2gold)}
 .chestinfo .bar{height:8px}.chestinfo .bar i{background:var(--v2gold)}
 .chestinfo p{font-size:14px;margin:0}
+/* the drops row is back (display only); the paints no longer carry counts */
+.wrap.v2 .drops{display:flex}
+.wrap.v2 .pcount{display:none!important}
+.wrap.v2 .dchip{cursor:default}
+/* ---------- Daily challenge (dream journal) ---------- */
+body.v2{--heart:#ff4d63}
+.gamebar:has(.hearts:not([hidden])) .tier{display:none!important}
+.hearts{display:flex;gap:2px;flex:none}
+.hearts span{width:22px;height:22px;display:block}
+.hearts svg{width:22px;height:22px;display:block;fill:none;stroke:var(--muted);stroke-width:1.8;opacity:.5}
+.hearts span.on svg{fill:var(--heart);stroke:var(--heart);opacity:1}
+.heartBreak{position:fixed;z-index:7;width:22px;height:22px;pointer-events:none}
+.heartBreak svg{position:absolute;inset:0;width:22px;height:22px;fill:var(--heart)}
+.heartBreak svg:first-child{clip-path:inset(0 50% 0 0);animation:hbL .85s ease-in both}
+.heartBreak svg:last-child{clip-path:inset(0 0 0 50%);animation:hbR .85s ease-in both}
+@keyframes hbL{20%{transform:scale(1.3)}100%{transform:translate(-10px,26px) rotate(-30deg);opacity:0}}
+@keyframes hbR{20%{transform:scale(1.3)}100%{transform:translate(10px,26px) rotate(30deg);opacity:0}}
+.v2daily .dh{display:inline-flex;gap:1px}.v2daily .dh svg{width:12px;height:12px;fill:var(--heart)}
+.v2daily .dname{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:-4px}
+.card .dream{background:var(--wall);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;text-align:left}
+.card .dream small{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.card .dream b{font:800 18px/1.2 "Inter",system-ui,sans-serif;color:var(--ink)}
+.card .dream p{font-size:14px;font-style:italic;color:var(--ink)}
+.card .drules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;text-align:left;font-size:14px}
+.card .drules li{display:flex;gap:10px;align-items:flex-start;color:var(--ink)}
+.card .drules svg{width:18px;height:18px;flex:none;margin-top:1px}
+.card .drules li:first-child svg{fill:var(--heart);stroke:none}
+.noboost{display:none}
+.wrap.v2.dreamday .boosters{display:none}
+.wrap.v2.dreamday .noboost{display:block;text-align:center;font-size:13px;font-weight:700;color:var(--muted);padding:14px 0}

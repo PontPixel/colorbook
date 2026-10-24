@@ -10,7 +10,7 @@ const V2=!!G.v2; // redesigned home and play screen (ColorBook): parts strip, on
 const CHAPTERS=G.chapters||null; // optional chapters of the main path, each with a reward (ColorBook)
 const CHESTS=G.chests||null; // optional star chests: {every, coins, boosters} (ColorBook)
 // Bonus pictures (`bonus:true`, palette variants of a `base` picture) come after the main path in LEVELS and are bought with coins.
-const MAIN=LEVELS.filter(l=>!l.bonus).length;
+const MAIN=LEVELS.filter(l=>!l.bonus&&!l.dream).length; // dream pictures (daily challenge, ColorBook) come last and stay out of the main path
 // Staging builds live under /staging/: they keep their own save and get the cheat menu (also on localhost or with ?cheats).
 const STAGING=/\/staging\//.test(location.pathname);
 const CHEATS=STAGING||/[?&]cheats\b/.test(location.search)||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
@@ -244,6 +244,7 @@ function v2Scenes(){ return `
     <button class="iconbtn" id="backBtn" aria-label="${t('Back to menu')}"></button>
     <div class="gtitle"><b id="gTitle"></b><small id="progress"></small></div>
     <div class="pill tier" id="tierPill" hidden></div>
+    <div class="hearts" id="hearts" hidden></div>
     <div class="pill coins" id="coins" title="${t('Coins')}"><span class="coin"></span><span class="coinCount">0</span></div>
   </div>
   <div class="board">
@@ -271,6 +272,7 @@ function v2Scenes(){ return `
       <div class="paints" id="paints"></div>
       <div class="coachTip" id="coachTip" hidden></div>
       <div class="actions">
+        <div class="noboost">${t('No boosters today: every drop counts.')}</div>
         <div class="boosters">
           <button class="btn boost" id="undoBtn"></button>
           <button class="btn boost" id="magicBtn"></button>
@@ -1147,7 +1149,9 @@ function dailyPool(){
 }
 // Each day has a twist: less paint (lean), no boosters (noboost) or no match % shown (blind).
 const TWISTS=['lean','noboost','blind'];
-const dailyTwist=()=>TWISTS[dayHash('twist'+dayKey())%TWISTS.length];
+const DREAMS=LEVELS.map((l,i)=>i).filter(i=>LEVELS[i].dream);
+// the dream-journal daily challenge never allows boosters; its budget is already tight
+const dailyTwist=()=>V2&&DREAMS.length?'noboost':TWISTS[dayHash('twist'+dayKey())%TWISTS.length];
 const twistName=w=>({lean:t('Less paint'),noboost:t('No boosters'),blind:t('No match %')})[w]||'';
 function twistText(w,budget){
   return w==='noboost'?t("Today's twist: no boosters. Plan every drop."):w==='blind'?t("Today's twist: the match % stays hidden. Trust your eyes."):t('Less paint than usual: {drops}.',{drops:tn(budget,'drop')});
@@ -1416,7 +1420,10 @@ if(V2){
       if(n){ if(pc.textContent!==String(n)) restart(pc,'bump'); pc.textContent=String(n); } pc.hidden=!n; });
     // the bowl's ring repeats the mix color, like the target's ring repeats its own frame
     $('mixChip').style.setProperty('--ring',m?hex(m):'none');
-    $('drops').innerHTML=ks.filter(k=>c[k]).map(k=>`<button class="dchip" data-k="${k}" aria-label="${t('{n} {paint}. Tap to take one out.',{n:c[k],paint:PN(k)})}"><i style="background:${hex(PMAP[k].rgb)}"></i>×${c[k]}</button>`).join('')
+    // chips in the order each paint first went in: Undo always takes the newest drop, so a chip that empties is the
+    // last one and nothing slides under its dust
+    const seen=[...new Set(state.drops)];
+    $('drops').innerHTML=seen.map(k=>`<span class="dchip" data-k="${k}" aria-label="${t('{n} {paint}',{n:c[k],paint:PN(k)})}"><i style="background:${hex(PMAP[k].rgb)}"></i>×${c[k]}</span>`).join('')
       ||`<em>${t('Your drops show up here')}</em>`;
     const blind=state.twist==='blind'&&p!=null&&p<95;
     $('pctNum').textContent=p==null?'':blind?'?':p+'%';
@@ -1473,21 +1480,25 @@ if(V2){
       const w=document.createElement('div'); w.className='pwrap'; b.before(w); w.appendChild(b); const k=b.dataset.k;
       w.insertAdjacentHTML('beforeend',`<span class="pcount" hidden></span>`); });
   }
-  // The removed paint turns into dust that leaves the bowl and blows away to the right, with a whoosh.
-  // The grains start packed in the bowl's ring and rim in that paint's color.
+  // The removed drop turns its chip into dust that blows away to the right, with a whoosh: grains packed in the
+  // chip's swatch (and its label when it was the last drop of that paint).
   function snap(k){
     sfx('snap');
     if(reduced) return;
-    const mc=$('mixChip').getBoundingClientRect(), col=hex(PMAP[k].rgb);
-    const layer=document.createElement('div'); layer.className='dustLayer'; layer.style.left=mc.left+'px'; layer.style.top=mc.top+'px';
-    const R=mc.width/2, W=mc.width+16;
-    const grain=(x,y)=>{const sz=(1.4+Math.random()*2.4).toFixed(1);
-      return `<span style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${sz}px;height:${sz}px;background:${col};--dx:${50+Math.random()*120|0}px;--dy:${-120+Math.random()*90|0}px;animation-delay:${((x+8)/W*.55+Math.random()*.12).toFixed(2)}s"></span>`;};
+    const ch=$('drops').querySelector(`.dchip[data-k="${k}"]`); if(!ch) return;
+    const cr=ch.getBoundingClientRect(), sw=ch.querySelector('i').getBoundingClientRect(), col=hex(PMAP[k].rgb), ink=getComputedStyle(ch).color;
+    const last=state.drops.filter(x=>x===k).length===1;
+    const layer=document.createElement('div'); layer.className='dustLayer'; layer.style.left=cr.left+'px'; layer.style.top=cr.top+'px';
+    const W=cr.width, rad=sw.width/2, cx=sw.left-cr.left+rad, cy=sw.top-cr.top+rad;
+    const grain=(x,y,c)=>{const sz=(1.4+Math.random()*2.2).toFixed(1);
+      return `<span style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${sz}px;height:${sz}px;background:${c};--dx:${40+Math.random()*110|0}px;--dy:${-110+Math.random()*80|0}px;animation-delay:${(x/W*.55+Math.random()*.12).toFixed(2)}s"></span>`;};
     let h='';
-    for(let i=0;i<150;i++){const a=Math.random()*Math.PI*2, d=i<90?R+2+Math.random()*6:Math.sqrt(Math.random())*R*.9; h+=grain(R+Math.cos(a)*d-1,R+Math.sin(a)*d-1);}
+    for(let i=0;i<120;i++){const a=Math.random()*Math.PI*2, d=Math.sqrt(Math.random())*rad; h+=grain(cx+Math.cos(a)*d-1,cy+Math.sin(a)*d-1,col);}
+    if(last) for(let i=0;i<45;i++) h+=grain(rad*2+6+Math.random()*Math.max(4,W-rad*2-12),cr.height/2-6+Math.random()*12,ink);
     layer.innerHTML=h; document.body.appendChild(layer);
     setTimeout(()=>layer.remove(),2600);
   }
+
   function starFall(el){
     if(el) sfx('starLost');
     if(reduced||!el) return;
@@ -1504,8 +1515,13 @@ if(V2){
   // A drop that takes the mix further from the target gets called out right away.
   const _addDrop=addDrop;
   addDrop=function(k,via){
+    if(state&&state.failed) return false;
     const r=state&&L?current():null, before=r&&state.drops.length?matchPct(mix(counts()),r.target):null;
     const ok=_addDrop(k,via);
+    if(ok&&state&&state.hearts&&r&&!state.forced){
+      const after=state.drops.length?matchPct(mix(counts()),r.target):0;
+      if(!r.recipe[k]||(before!=null&&after<before&&!state.applying)) loseHeart();
+    }
     if(ok&&via!=='magic'&&before!=null&&state&&!state.applying&&!state.forced){
       const after=matchPct(mix(counts()),r.target);
       if(after<=before-3){ renderMix([t('That took it further away'),'bad']); restart($('pctNum'),'worse');
@@ -1524,12 +1540,6 @@ if(V2){
     if(!spend('undo')) return;
     removeAt(i,[t('Drop taken back. Paint refunded.'),'']);
   };
-  // Tapping a paint chip in the bowl takes out one drop of it (uses an Undo).
-  $('drops').addEventListener('click',e=>{
-    const b=e.target.closest('.dchip'); if(!b||!state||state.applying||state.forced||state.lesson) return;
-    if(isLocked('undo')||!spend('undo')) return;
-    removeAt(state.drops.lastIndexOf(b.dataset.k),[t('{paint} taken out. Paint refunded.',{paint:PN(b.dataset.k)}),'']);
-  });
   // Tapping the bowl pours it out for free and gives back the paid drops.
   $('mixChip').addEventListener('click',()=>{
     if(!state||state.applying||state.forced||state.lesson||state.finished||!state.drops.length||dragged) return;
@@ -1619,7 +1629,34 @@ if(V2){
     updateHud(); toast(t('Welcome back: {n} of {all} parts already painted.',{n:Object.keys(state.done).length,all:L.regions.length}));
   }
   const _start=start;
-  start=function(i,o){ v2.quiet=false; v2.paintLv=0; _start(i,o); resume(); $('gTitle').textContent=T(L); enter($('game')); };
+  start=function(i,o){ v2.quiet=false; v2.paintLv=0; _start(i,o); resume(); $('gTitle').textContent=T(L); enter($('game'));
+    state.hearts=state.daily&&L.dream?3:0; renderHearts(); $('game').classList.toggle('dreamday',!!(state.daily&&L.dream)); };
+  // ---------- Daily challenge: a page from Grandma's dream journal ----------
+  // One dream per day (same for everyone), 3 hearts, no boosters, tight paint. A drop of a paint the part doesn't
+  // use, or one that takes the mix further from the target, costs a heart; at zero the dream fades (try again).
+  const HEART='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.6C1.5 7.4 3.8 4 7.2 4c2 0 3.6 1.1 4.8 2.8C13.2 5.1 14.8 4 16.8 4c3.4 0 5.7 3.4 4.5 6.9-1.8 5-9.3 9.6-9.3 9.6Z"/></svg>';
+  function renderHearts(){
+    const h=$('hearts'), on=!!(state&&state.daily&&L&&L.dream); h.hidden=!on; if(!on) return;
+    $('tierPill').hidden=true;
+    h.innerHTML=[0,1,2].map(i=>`<span class="${i<state.hearts?'on':''}">${HEART}</span>`).join('');
+    h.setAttribute('aria-label',t('{n} of 3 hearts left',{n:state.hearts}));
+  }
+  function loseHeart(){
+    if(!state||!state.hearts) return;
+    const el=$('hearts').children[state.hearts-1]; state.hearts--;
+    if(el&&!reduced){ const r=el.getBoundingClientRect(), b=document.createElement('div'); b.className='heartBreak'; b.innerHTML=HEART+HEART;
+      b.style.left=r.left+'px'; b.style.top=r.top+'px'; document.body.appendChild(b); setTimeout(()=>b.remove(),900); }
+    renderHearts(); buzz([40,60,40]); sfx('starLost');
+    if(!state.hearts) setTimeout(dreamFaded,600);
+  }
+  function dreamFaded(){
+    if(!state||state.finished) return; state.failed=true; hideHand(); hideCoach();
+    $('endTitle').textContent=t('The dream faded'); $('endStars').textContent=''; sfx('fail');
+    $('endText').innerHTML=t('You ran out of hearts. Dreams come back: try again, or wait for tomorrow\'s page.');
+    $('rescueBtn').hidden=true; $('quizOfferBtn').hidden=true; $('shareBox').hidden=true;
+    $('endOverlay').classList.remove('low'); $('retryBtn').textContent=t('Try again'); $('nextBtn').hidden=true; $('endOverlay').hidden=false;
+  }
+  dailyIndex=function(){ if(!DREAMS.length) return -1; if(LEVELS.slice(0,MAIN).filter(l=>save.best[l.id]!=null).length<3) return -1; return DREAMS[dayHash('dream'+dayKey())%DREAMS.length]; };
   // Progress is kept now, so leaving needs no warning (except on the daily picture, which isn't kept).
   $('backBtn').onclick=()=>{ if(state&&state.daily&&!state.finished&&Object.keys(state.done).length) $('quitOverlay').hidden=false; else goHome(); };
   // "Start picture over" really starts over.
@@ -1631,7 +1668,8 @@ if(V2){
     palette:'<div class="dm dm-palette">'+['#fafaf7','#00a8eb','#e31285','#ffe60d','#212126'].map((c,i)=>`<i style="background:${c}" class="${i===2||i===3?'keep':'fade'}"></i>`).join('')+'</div>',
     brush:'<div class="dm dm-brush"><svg viewBox="0 0 120 80" aria-hidden="true"><path class="dmshape" d="M20 60Q20 20 60 20T100 60Z"/><path class="dmfill" d="M20 60Q20 20 60 20T100 60Z"/><path class="dmline" d="M20 60Q20 20 60 20T100 60Z"/></svg><span class="dmbrush">'+icon('brush')+'</span></div>'};
   showIntro=function(){
-    const fresh=Object.keys(BOOSTERS).filter(b=>save.inv[b]==null&&introAt(b)>=0&&introAt(b)<=L.index);
+    // no boosters on a dream: none are handed out, introduced or pointed at there
+    const fresh=L.dream?[]:Object.keys(BOOSTERS).filter(b=>save.inv[b]==null&&introAt(b)>=0&&introAt(b)<=L.index);
     fresh.forEach(b=>save.inv[b]=FREE_BOOSTERS);
     const tip=!save.seen[L.id]&&L.tip;
     const tierKey='tier-'+L.tier, tierNote=TIERS[L.tier].label&&!save.seen[tierKey];
@@ -1641,7 +1679,11 @@ if(V2){
     save.seen[L.id]=true; persist(); renderActions();
     state.freshBoosters=fresh;
     const cards=[];
-    if(state.daily){ const s=dailyStreakNext();
+    if(state.daily&&L.dream){ const s=dailyStreakNext(), page=DREAMS.indexOf(L.index)+1;
+      cards.push({title:t('Daily challenge'),html:`<div class="dream"><small>${t('Grandma\'s dream journal · page {n}',{n:page})}</small><b>${esc(T(L))}</b><p>${esc(t(L.story))}</p></div>`+
+        `<ul class="drules"><li>${HEART}${t('3 hearts: a paint this part doesn\'t use, or a drop that takes the mix further away, costs one.')}</li><li>${icon('lock')}${t('No boosters, and only a little spare paint.')}</li>`+
+        `<li>${icon('daily')}${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</li></ul>`}); }
+    else if(state.daily){ const s=dailyStreakNext();
       cards.push({title:t('Daily picture'),html:`<div class="booster">${icon('daily')}<b>${t('Daily picture: {title}',{title:esc(T(L))})}</b><br>${twistText(state.twist,state.budget)} ${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</div>`}); }
     if(chal){ const ci=LEVELS.findIndex(l=>l.id===chal.level), n=LEVELS.slice(0,ci).filter(l=>save.best[l.id]==null).length;
       cards.push({title:t('{from} challenged you!',{from:chal.from}),html:`<div class="booster">🏆 ${t('Restore <b>{title}</b> with more than <b>{score}★</b>.',{title:esc(T(LEVELS[ci])),score:chal.score})}`+
@@ -1698,7 +1740,7 @@ if(V2){
   const HOMETIPS=[
     {key:'hChapter',el:'chapterCard',when:()=>chapterReady(),text:()=>t('<b>Chapter complete!</b> Pictures come in chapters of five, and each finished chapter pays coins and one booster of each kind. Tap the card to collect.')},
     {key:'hChest',el:'chestCard',when:()=>chestReady(),text:()=>t('<b>Your star chest is full!</b> Every star you earn goes in here, and a full chest opens with coins and boosters. Tap it to open.')},
-    {key:'hDaily',el:'dailyPicBtn',text:()=>t('<b>Daily picture.</b> Each day a picture you restored comes back with a twist: less paint, no boosters or a hidden match %. Play on days in a row to grow your streak and the reward.')},
+    {key:'hDaily',el:'dailyPicBtn',text:()=>t('<b>Daily challenge.</b> Every day a new page from Grandma\'s dream journal: a strange picture you won\'t find in the book, with 3 hearts and no boosters. Play on days in a row to grow your streak and the reward.')},
     {key:'hTip',el:'tipCard',text:()=>t('<b>Mixing tips.</b> A new one every day. Tap the arrow to read more.')}];
   function homeCoach(){
     if($('home').hidden||!$('homeMain').offsetParent||!LEVELS.some(l=>save.best[l.id]!=null)) return;
@@ -1722,10 +1764,12 @@ if(V2){
     const b=$('dailyPicBtn'), i=DAILY?dailyIndex():-1; b.hidden=i<0; if(i<0) return;
     const s=dailyStreakNext(), lv=LEVELS[i], done=dailyDone(), filled=Math.min(7,done?s:s-1);
     b.classList.toggle('done',done);
-    b.innerHTML=`<span class="dthumb">${thumbSVG(lv,true)}</span><span class="dbody"><span class="dtop"><b>${t('Daily picture')}</b>`+
-      `<small>${done?t('Done · streak: {days}',{days:tn(s,'day')}):`${esc(twistName(dailyTwist()))} · +${dailyReward(s)} <span class="coin"></span>`}</small></span>`+
+    b.innerHTML=`<span class="dthumb">${thumbSVG(lv,done)}</span><span class="dbody"><span class="dtop"><b>${t('Daily challenge')}</b>`+
+      `<small>${done?t('Done · streak: {days}',{days:tn(s,'day')}):`<span class="dh">${HEART}${HEART}${HEART}</span> +${dailyReward(s)} <span class="coin"></span>`}</small></span>`+
+      `<span class="dname">${esc(T(lv))}</span>`+
       `<span class="dbars" aria-label="${t('Streak: {days}',{days:tn(done?s:s-1,'day')})}">${[0,1,2,3,4,5,6].map(k=>`<i class="${k<filled?'on':''}"></i>`).join('')}</span></span>`;
   };
+
   const TIPS=G.tips||[];
   v2.tip=TIPS.length?dayHash(dayKey())%TIPS.length:0;
   function renderTip(){

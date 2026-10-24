@@ -258,3 +258,20 @@ ru:{'<b>Chapter complete!</b> Pictures come in chapters of five, and each finish
 '{n} more stars to open it. Every star from every picture counts; a part restored at par earns 3.':'До открытия ещё звёзд: {n}. Считаются звёзды со всех картинок; часть, восстановленная по норме, даёт 3.',
 'Inside: +{coins} and {n} boosters.':'Внутри: +{coins} и бустеров: {n}.'}
 });
+I18N.add({
+fr:{'Daily challenge':'Défi du jour','{n} of 3 hearts left':'{n} cœurs sur 3','The dream faded':'Le rêve s’est effacé','Try again':'Réessayer',
+"You ran out of hearts. Dreams come back: try again, or wait for tomorrow's page.":'Vous n’avez plus de cœurs. Les rêves reviennent : réessayez, ou attendez la page de demain.',
+"Grandma's dream journal · page {n}":'Journal des rêves de Grand-mère · page {n}',
+"3 hearts: a paint this part doesn't use, or a drop that takes the mix further away, costs one.":'3 cœurs : une peinture que cette partie n’utilise pas, ou une goutte qui éloigne le mélange, en coûte un.',
+'No boosters, and only a little spare paint.':'Pas de bonus, et très peu de peinture en réserve.',
+"<b>Daily challenge.</b> Every day a new page from Grandma's dream journal: a strange picture you won't find in the book, with 3 hearts and no boosters. Play on days in a row to grow your streak and the reward.":'<b>Défi du jour.</b> Chaque jour, une nouvelle page du journal des rêves de Grand-mère : une image étrange qu’on ne trouve pas dans le livre, avec 3 cœurs et sans bonus. Jouez plusieurs jours de suite pour allonger la série et la récompense.',
+'{n} {paint}':'{n} {paint}'},
+ru:{'Daily challenge':'Испытание дня','{n} of 3 hearts left':'Осталось сердец: {n} из 3','The dream faded':'Сон растаял','Try again':'Ещё раз',
+"You ran out of hearts. Dreams come back: try again, or wait for tomorrow's page.":'Сердца закончились. Сны возвращаются: попробуйте ещё раз или дождитесь завтрашней страницы.',
+"Grandma's dream journal · page {n}":'Бабушкин дневник снов · страница {n}',
+"3 hearts: a paint this part doesn't use, or a drop that takes the mix further away, costs one.":'3 сердца: краска, которой нет в этой части, или капля, уводящая смесь дальше от цели, стоит одно сердце.',
+'No boosters, and only a little spare paint.':'Без бустеров и почти без запаса краски.',
+"<b>Daily challenge.</b> Every day a new page from Grandma's dream journal: a strange picture you won't find in the book, with 3 hearts and no boosters. Play on days in a row to grow your streak and the reward.":'<b>Испытание дня.</b> Каждый день новая страница бабушкиного дневника снов: странная картинка, которой нет в книге, с 3 сердцами и без бустеров. Играйте несколько дней подряд — серия и награда растут.',
+'{n} {paint}':'{paint}: {n}'}
+});
+I18N.add({fr:{'No boosters today: every drop counts.':'Pas de bonus aujourd’hui : chaque goutte compte.'},ru:{'No boosters today: every drop counts.':'Сегодня без бустеров: каждая капля на счету.'}});

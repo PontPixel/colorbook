@@ -761,3 +761,9 @@ body.v2{--heart:#ff4d63}
 /* the emptied chip leaves quietly while its paint blows away as dust */
 .chipFade{position:fixed;z-index:6;pointer-events:none;animation:v2chipfade .4s ease-out both}
 @keyframes v2chipfade{to{opacity:0;transform:scale(.85)}}
+/* Dust grains get a hairline edge in the opposite tone, so black dust reads on the dark card and white dust on the
+   light one, like every other paint */
+body.v2{--grainEdge:rgba(35,40,58,.35)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.v2{--grainEdge:rgba(255,255,255,.55)}}
+:root[data-theme="dark"] body.v2{--grainEdge:rgba(255,255,255,.55)}
+.dustLayer span{box-shadow:0 0 0 .6px var(--grainEdge)}

@@ -170,3 +170,32 @@ ru:{'Takes back your last drop. You can also tap a paint in the bowl to take out
 '+5 drops in the pot':'+5 капель в банке','{n} free drops left.':'Осталось бесплатных капель: {n}.','Your next 3 drops are free.':'Следующие 3 капли бесплатны.',
 'Done · streak: {days}':'Готово · серия: {days}','Streak: {days}':'Серия: {days}','Next tip':'Следующий совет'}
 });
+// Chapters, star chests, bonus pages, daily twists
+I18N.add({
+fr:{'Not now':'Plus tard','unlock for {coins}':'à débloquer pour {coins}','restore {title} first':'restaurez d’abord {title}','Bonus':'Bonus',
+'Chapter {n}':'Chapitre {n}','Chapter {n} of {all}':'Chapitre {n} sur {all}','Chapter {n} complete: {name}! +{coins}':'Chapitre {n} terminé : {name} ! +{coins}',
+'and +1 of every booster.':'et +1 de chaque bonus.','Star chest {n} opened: +{coins}':'Coffre d’étoiles {n} ouvert : +{coins}',
+'A bonus page: {title} in new colors. {parts}.':'Une page bonus : {title} dans de nouvelles couleurs. {parts}.','Unlock it for {coins}?':'La débloquer pour {coins} ?',
+'It costs {price}. You have {have}. Restore pictures and open star chests to earn more.':'Elle coûte {price}. Vous avez {have}. Restaurez des images et ouvrez des coffres d’étoiles pour en gagner plus.',
+'Unlock':'Débloquer','OK':'OK',"No boosters in today's challenge.":'Pas de bonus dans le défi du jour.',
+'That was the last picture of the book. Bonus pages wait in the gallery.':'C’était la dernière image du cahier. Des pages bonus vous attendent dans la galerie.',
+'Less paint':'Moins de peinture','No boosters':'Sans bonus','No match %':'Sans %',
+"Today's twist: no boosters. Plan every drop.":'Défi du jour : pas de bonus. Prévoyez chaque goutte.',
+"Today's twist: the match % stays hidden. Trust your eyes.":'Défi du jour : le % de correspondance reste caché. Fiez-vous à vos yeux.',
+'Trust your eyes':'Fiez-vous à vos yeux','Finish it: +{coins} and a booster of each kind':'À la fin : +{coins} et un bonus de chaque sorte',
+'Chapter {n}: {name}, {done} of {all} pictures':'Chapitre {n} : {name}, {done} images sur {all}','Star chest':'Coffre d’étoiles',
+'+{coins} and {n} boosters':'+{coins} et {n} bonus','Bonus pages':'Pages bonus','{n} ready to unlock with coins':'{n} à débloquer avec des pièces','Tap to collect':'Touchez pour récupérer','Tap to open':'Touchez pour ouvrir','Rewards':'Récompenses','Nice!':'Super !'},
+ru:{'Not now':'Не сейчас','unlock for {coins}':'открыть за {coins}','restore {title} first':'сначала восстановите «{title}»','Bonus':'Бонус',
+'Chapter {n}':'Глава {n}','Chapter {n} of {all}':'Глава {n} из {all}','Chapter {n} complete: {name}! +{coins}':'Глава {n} пройдена: {name}! +{coins}',
+'and +1 of every booster.':'и +1 каждого бустера.','Star chest {n} opened: +{coins}':'Звёздный сундук {n} открыт: +{coins}',
+'A bonus page: {title} in new colors. {parts}.':'Бонусная страница: «{title}» в новых цветах. {parts}.','Unlock it for {coins}?':'Открыть за {coins}?',
+'It costs {price}. You have {have}. Restore pictures and open star chests to earn more.':'Стоит {price}. У вас {have}. Восстанавливайте картинки и открывайте звёздные сундуки, чтобы заработать больше.',
+'Unlock':'Открыть','OK':'OK',"No boosters in today's challenge.":'В сегодняшнем испытании бустеров нет.',
+'That was the last picture of the book. Bonus pages wait in the gallery.':'Это была последняя картинка раскраски. В галерее ждут бонусные страницы.',
+'Less paint':'Меньше краски','No boosters':'Без бустеров','No match %':'Без процентов',
+"Today's twist: no boosters. Plan every drop.":'Сегодня без бустеров. Планируйте каждую каплю.',
+"Today's twist: the match % stays hidden. Trust your eyes.":'Сегодня процент совпадения скрыт. Доверьтесь глазам.',
+'Trust your eyes':'Доверьтесь глазам','Finish it: +{coins} and a booster of each kind':'За прохождение: +{coins} и по бустеру каждого вида',
+'Chapter {n}: {name}, {done} of {all} pictures':'Глава {n}: {name}, картинок {done} из {all}','Star chest':'Звёздный сундук',
+'+{coins} and {n} boosters':'+{coins} и бустеров: {n}','Bonus pages':'Бонусные страницы','{n} ready to unlock with coins':'Можно открыть за монеты: {n}','Tap to collect':'Нажмите, чтобы забрать','Tap to open':'Нажмите, чтобы открыть','Rewards':'Награды','Nice!':'Отлично!'}
+});

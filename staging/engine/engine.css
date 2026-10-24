@@ -522,3 +522,27 @@ body.v2{--wall:#f3f1ec;--line:#e2ded5;--soft:#ebe7df;--track:#e4e0d7;--muted:#62
 .csndhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .csndhead .seg{flex:none}.csndhead .seg button{padding:6px 14px}
 .cgrid.c3{grid-template-columns:repeat(3,minmax(0,1fr))}.cgrid.c3 .btn{padding:9px 4px;font-size:12px}
+
+/* Chapters, star chests and bonus pages (ColorBook) */
+.ggrid .gch{grid-column:1/-1;display:flex;align-items:baseline;gap:8px;margin:14px 2px 0;font-size:17px}
+.ggrid .gch:first-child{margin-top:0}
+.ggrid .gch span{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ggrid .gch small{margin-left:auto;font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.gcard.bonus b{font-size:13px}
+.gcard.buy small{display:flex;align-items:center;gap:4px;color:var(--ink);font-weight:700;letter-spacing:0}
+.gcard.buy>svg{opacity:.55;filter:grayscale(1)}
+.progcards{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:none}
+.pcard{background:var(--panel);border-radius:20px;box-shadow:var(--shadow);padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.pcard[hidden]{display:none}
+.pcard small{font-size:12px;font-weight:600;color:var(--muted);line-height:1.3}
+.pcard b{font-size:15px;display:flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.pcard b svg{width:15px;height:15px;fill:currentColor}
+.pcard .pdots{display:flex;gap:5px}.pcard .pdots i{flex:1;height:6px;border-radius:3px;background:var(--track)}
+.pcard .pdots i.on{background:var(--ink)}.pcard .pdots i.cur{background:var(--muted2)}
+.pcard .bar{display:block;height:6px;border-radius:3px;background:var(--track);overflow:hidden}.pcard .bar i{display:block;height:100%;background:var(--ink);border-radius:3px}
+#bonusBtn.bonusbtn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:20px;border:0;box-shadow:var(--shadow);text-align:left;flex:none}
+#bonusBtn .ico{width:22px;height:22px}
+.buyImg{border-radius:12px;overflow:hidden;border:1px solid var(--line);line-height:0;margin-bottom:6px}.buyImg svg{display:block;width:100%;height:auto}
+.cheats .cev{text-align:left;font-size:12px}.cheats .cev pre{max-height:160px;overflow:auto;white-space:pre-wrap;font-size:11px;margin:6px 0 0}
+.pcard.ready{cursor:pointer;box-shadow:0 0 0 2px var(--ink),var(--shadow)}
+.pcard .ready{color:var(--ink);font-weight:800}

@@ -13,7 +13,7 @@ const slice=(cx,cy,r,a1,a2)=>{const p=a=>[(cx+r*Math.cos(a*Math.PI/180)).toFixed
 const rects=(xs,ys,w,h)=>xs.flatMap(x=>ys.map(y=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1"/>`)).join('');
 const LEVELS=[
 { id:'balloons', title:'Balloons', sub:'Each balloon needs just one paint.', budget:8, tier:'easy', paints:['C','M','Y'], coach:['tapPaint','drag'],
-  tip:{title:'Welcome, restorer',text:'Each faded part has a target color. Tap a paint to drop it in the bowl, the part paints itself as soon as the match reaches 95%. Every drop uses paint from your pot. Restored parts earn coins.'},
+  tip:{title:'Grandma\'s coloring book',text:'Grandma\'s old coloring book has faded. Mix the paints to bring every page back. Tap a paint to drop it in the bowl: the part fills in once the color matches.'},
   bg:`<rect width="320" height="240" fill="#eaf1fa"/><g fill="#fff" stroke="${INK}" stroke-width="1.5"><path d="M18 212a14 14 0 0 1 26-8a11 11 0 0 1 20 8z"/><path d="M252 214a16 16 0 0 1 30-8a12 12 0 0 1 22 8z"/></g>`,
   regions:[
     {id:'magenta',name:'Magenta balloon',recipe:{M:1},svg:'<ellipse cx="90" cy="98" rx="30" ry="38"/><path d="M85 142L90 134L95 142Z"/>'},
@@ -81,8 +81,26 @@ const LEVELS=[
     <path d="M196 52q8-8 16 0q8-8 16 0"/><path d="M236 70q6-6 12 0q6-6 12 0"/>
     <path d="M20 138q10-6 20 0M130 130q10-6 20 0M240 136q10-6 20 0"/></g>`
 },
-{ id:'house', title:'Cottage', sub:'Tap a faded part, mix its color, paint it back.', tier:'normal', coach:['tapPart'], coachPart:'roof',
-  tip:{title:'A bigger picture',text:'Ten parts share one paint pot, so plan your drops. You can tap any faded part to work on it. If the pot runs dry, coins can rescue the part you are on.'},
+{ id:'shelf', title:'Kitchen shelf', sub:'Everything on the shelf is cracked and faded. Mend it.', tier:'normal', coach:['tapPart'], coachPart:'mug',
+  tip:{title:'A bigger picture',text:'All the parts share one paint pot, so plan your drops. You can tap any faded part to work on it. If the pot runs dry, coins can rescue the part you are on.'},
+  regions:[
+    {id:'lemon',name:'Lemon',recipe:{Y:1},svg:'<ellipse cx="211" cy="162" rx="11" ry="8"/>',crack:'M205 157l4 4-2 3 5 2'},
+    {id:'mug',name:'Mug',recipe:{W:1,C:1,M:1},svg:'<rect x="148" y="130" width="36" height="40" rx="4"/><path d="M184 138q14 0 14 12t-14 12v-6q8 0 8-6t-8-6z"/>',crack:'M160 130l4 10-5 6 7 8-3 6'},
+    {id:'leaves',name:'Leaves',recipe:{C:1,Y:2},svg:'<ellipse cx="263" cy="104" rx="9" ry="26"/><ellipse cx="246" cy="112" rx="8" ry="21" transform="rotate(-32 246 112)"/><ellipse cx="280" cy="112" rx="8" ry="21" transform="rotate(32 280 112)"/>',crack:'M263 84l3 8-4 5 3 7'},
+    {id:'teapot',name:'Teapot',recipe:{W:1,C:1,M:2},svg:'<path d="M44 135Q24 128 20 110L28 108Q34 124 48 126Z"/><path d="M116 122q22 0 22 18t-22 18v-8q13 0 13-10t-13-10z"/><ellipse cx="80" cy="140" rx="38" ry="30"/><path d="M62 113Q80 100 98 113Z"/><circle cx="80" cy="103" r="4"/>',crack:'M72 112l6 12-6 8 8 10-4 10 6 8'},
+    {id:'pot',name:'Flower pot',recipe:{M:2,Y:3},svg:'<path d="M230 142H296L288 170H238Z"/><rect x="226" y="132" width="74" height="11" rx="2"/>',crack:'M252 143l5 9-4 6 6 8'},
+    {id:'frame',name:'Picture frame',recipe:{M:1,Y:1,K:1},svg:'<path fill-rule="evenodd" d="M118 28h84v60h-84zM128 38v40h64v-40z"/>',crack:'M118 50l6 3-2 5 4 4'},
+    {id:'plank',name:'Shelf',recipe:{W:1,C:1,M:1,Y:2},svg:'<rect x="8" y="170" width="304" height="14" rx="2"/><path d="M40 184h10l-10 24zM270 184h10v24z"/>',crack:'M120 170l5 7-4 7M230 170l-3 6 5 8'},
+    {id:'wallp',name:'Wall',recipe:{W:3,C:1},svg:'<rect x="0" y="0" width="320" height="240"/>'},
+  ],
+  order:['wallp','plank','frame','teapot','mug','lemon','pot','leaves'],
+  decor:`<g pointer-events="none"><rect x="128" y="38" width="64" height="40" fill="#f4f1ea" stroke="${INK}" stroke-width="1.5"/>
+    <path d="M132 74l14-18 10 11 8-8 24 15" fill="none" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
+    <circle cx="178" cy="48" r="4" fill="none" stroke="${INK}" stroke-width="1.5"/>
+    <path d="M160 18l-2 10M160 18l2 10" stroke="${INK}" stroke-width="1.5"/><circle cx="160" cy="16" r="2" fill="${INK}"/>
+    <line x1="263" y1="130" x2="263" y2="92" stroke="${INK}" stroke-width="1.5"/></g>`
+},
+{ id:'house', title:'Cottage', sub:'Tap a faded part, mix its color, paint it back.', tier:'normal',
   regions:[
     {id:'sun',name:'Sun',recipe:{W:1,Y:2},svg:'<circle cx="264" cy="46" r="24"/>'},
     {id:'flower',name:'Flowers',recipe:{W:2,M:3},svg:petals(284,196)+petals(304,206)},
@@ -101,24 +119,6 @@ const LEVELS=[
     <line x1="147" y1="124" x2="147" y2="146"/><line x1="134" y1="135" x2="160" y2="135"/>
     <line x1="219" y1="124" x2="219" y2="146"/><line x1="206" y1="135" x2="232" y2="135"/></g>
     <g fill="#fff" stroke="${INK}" stroke-width="1.5" pointer-events="none"><circle cx="284" cy="196" r="3"/><circle cx="304" cy="206" r="3"/><circle cx="189" cy="174" r="2" fill="${INK}"/></g>`
-},
-{ id:'shelf', title:'Kitchen shelf', sub:'Everything on the shelf is cracked and faded. Mend it.', tier:'normal',
-  regions:[
-    {id:'lemon',name:'Lemon',recipe:{Y:1},svg:'<ellipse cx="211" cy="162" rx="11" ry="8"/>',crack:'M205 157l4 4-2 3 5 2'},
-    {id:'mug',name:'Mug',recipe:{W:1,C:1,M:1},svg:'<rect x="148" y="130" width="36" height="40" rx="4"/><path d="M184 138q14 0 14 12t-14 12v-6q8 0 8-6t-8-6z"/>',crack:'M160 130l4 10-5 6 7 8-3 6'},
-    {id:'leaves',name:'Leaves',recipe:{C:1,Y:2},svg:'<ellipse cx="263" cy="104" rx="9" ry="26"/><ellipse cx="246" cy="112" rx="8" ry="21" transform="rotate(-32 246 112)"/><ellipse cx="280" cy="112" rx="8" ry="21" transform="rotate(32 280 112)"/>',crack:'M263 84l3 8-4 5 3 7'},
-    {id:'teapot',name:'Teapot',recipe:{W:1,C:1,M:2},svg:'<path d="M44 135Q24 128 20 110L28 108Q34 124 48 126Z"/><path d="M116 122q22 0 22 18t-22 18v-8q13 0 13-10t-13-10z"/><ellipse cx="80" cy="140" rx="38" ry="30"/><path d="M62 113Q80 100 98 113Z"/><circle cx="80" cy="103" r="4"/>',crack:'M72 112l6 12-6 8 8 10-4 10 6 8'},
-    {id:'pot',name:'Flower pot',recipe:{M:2,Y:3},svg:'<path d="M230 142H296L288 170H238Z"/><rect x="226" y="132" width="74" height="11" rx="2"/>',crack:'M252 143l5 9-4 6 6 8'},
-    {id:'frame',name:'Picture frame',recipe:{M:1,Y:1,K:1},svg:'<path fill-rule="evenodd" d="M118 28h84v60h-84zM128 38v40h64v-40z"/>',crack:'M118 50l6 3-2 5 4 4'},
-    {id:'plank',name:'Shelf',recipe:{W:1,C:1,M:1,Y:2},svg:'<rect x="8" y="170" width="304" height="14" rx="2"/><path d="M40 184h10l-10 24zM270 184h10v24z"/>',crack:'M120 170l5 7-4 7M230 170l-3 6 5 8'},
-    {id:'wallp',name:'Wall',recipe:{W:3,C:1},svg:'<rect x="0" y="0" width="320" height="240"/>'},
-  ],
-  order:['wallp','plank','frame','teapot','mug','lemon','pot','leaves'],
-  decor:`<g pointer-events="none"><rect x="128" y="38" width="64" height="40" fill="#f4f1ea" stroke="${INK}" stroke-width="1.5"/>
-    <path d="M132 74l14-18 10 11 8-8 24 15" fill="none" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
-    <circle cx="178" cy="48" r="4" fill="none" stroke="${INK}" stroke-width="1.5"/>
-    <path d="M160 18l-2 10M160 18l2 10" stroke="${INK}" stroke-width="1.5"/><circle cx="160" cy="16" r="2" fill="${INK}"/>
-    <line x1="263" y1="130" x2="263" y2="92" stroke="${INK}" stroke-width="1.5"/></g>`
 },
 { id:'fishbowl', title:'Fishbowl', sub:'Two fish, some weed and a lot of water.', tier:'normal',
   regions:[
@@ -139,7 +139,7 @@ const LEVELS=[
 },
 { id:'sunset', title:'Sunset sail', sub:'Warm shades, close together. Count every drop.', tier:'hard',
   regions:[
-    {id:'sun',name:'Sun',recipe:{W:1,Y:4},svg:'<circle cx="160" cy="140" r="34"/>'},
+    {id:'sun',name:'Sun',recipe:{W:1,Y:3},svg:'<circle cx="160" cy="140" r="34"/>'},
     {id:'skyTop',name:'Upper sky',recipe:{W:3,C:1,M:2},svg:'<rect x="0" y="0" width="320" height="62"/>'},
     {id:'skyMid',name:'Middle sky',recipe:{W:3,M:2,Y:1},svg:'<rect x="0" y="62" width="320" height="46"/>'},
     {id:'skyLow',name:'Lower sky',recipe:{W:3,M:1,Y:2},svg:'<rect x="0" y="108" width="320" height="32"/>'},
@@ -157,11 +157,11 @@ const LEVELS=[
 { id:'cake', title:'Birthday cake', sub:'Pastel colors need a lot of white.', tier:'normal',
   regions:[
     {id:'flames',name:'Flames',recipe:{M:1,Y:4},svg:'<path d="M128 78Q136 90 128 96Q120 90 128 78Z"/><path d="M160 72Q168 84 160 90Q152 84 160 72Z"/><path d="M192 78Q200 90 192 96Q184 90 192 78Z"/>'},
-    {id:'candles',name:'Candles',recipe:{W:3,C:2},svg:'<rect x="124" y="98" width="8" height="28" rx="1"/><rect x="156" y="92" width="8" height="34" rx="1"/><rect x="188" y="98" width="8" height="28" rx="1"/>'},
+    {id:'candles',name:'Candles',recipe:{W:2,C:1},svg:'<rect x="124" y="98" width="8" height="28" rx="1"/><rect x="156" y="92" width="8" height="34" rx="1"/><rect x="188" y="98" width="8" height="28" rx="1"/>'},
     {id:'cherries',name:'Cherries',recipe:{M:3,Y:1,K:1},svg:'<circle cx="104" cy="118" r="7"/><circle cx="216" cy="118" r="7"/>'},
     {id:'frosting',name:'Frosting',recipe:{W:3,M:2},svg:drips(88,232,124,144,9)},
     {id:'sponge',name:'Sponge',recipe:{W:4,M:1,Y:4},svg:'<rect x="94" y="124" width="132" height="68"/>'},
-    {id:'plate',name:'Plate',recipe:{W:4,K:1},svg:'<ellipse cx="160" cy="194" rx="96" ry="13"/>'},
+    {id:'plate',name:'Plate',recipe:{W:3,K:1},svg:'<ellipse cx="160" cy="194" rx="96" ry="13"/>'},
     {id:'cloth',name:'Tablecloth',recipe:{W:2,C:1,Y:1},svg:'<path d="M0 178H320V240H0Z"/>'},
     {id:'wallp',name:'Wall',recipe:{W:4,C:1,M:1},svg:'<rect x="0" y="0" width="320" height="240"/>'},
   ],
@@ -176,7 +176,7 @@ const LEVELS=[
   regions:[
     {id:'chest',name:'White chest',recipe:{W:1},svg:'<path d="M108 146Q121 158 134 146Q134 176 121 196Q108 176 108 146Z"/><path d="M194 148Q199 158 196 168Q190 164 187 160Q192 156 194 148Z"/>'},
     {id:'fox',name:'Fox',recipe:{M:3,Y:5},svg:'<path d="M148 196Q200 196 194 148Q186 180 150 178Z"/><ellipse cx="121" cy="180" rx="30" ry="24"/><path d="M96 128L102 102L116 118H126L140 102L146 128Q148 148 121 154Q94 148 96 128Z"/>'},
-    {id:'leaves',name:'Falling leaves',recipe:{W:1,M:1,Y:5},svg:leaf(200,60,7,4,30)+leaf(186,110,7,4,-20)+leaf(60,70,7,4,50)+leaf(300,150,7,4,10)+leaf(40,120,7,4,-40)},
+    {id:'leaves',name:'Falling leaves',recipe:{W:1,M:1,Y:4},svg:leaf(200,60,7,4,30)+leaf(186,110,7,4,-20)+leaf(60,70,7,4,50)+leaf(300,150,7,4,10)+leaf(40,120,7,4,-40)},
     {id:'treetop',name:'Treetop',recipe:{M:3,Y:2},svg:'<circle cx="252" cy="78" r="34"/><circle cx="226" cy="96" r="22"/><circle cx="280" cy="98" r="22"/>'},
     {id:'trunk',name:'Tree trunk',recipe:{C:1,M:2,Y:2,K:2},svg:'<path d="M246 100H260V190H246Z"/>'},
     {id:'ground',name:'Ground',recipe:{M:1,Y:3,K:2},svg:'<path d="M0 192Q160 174 320 190V240H0Z"/>'},
@@ -193,7 +193,7 @@ const LEVELS=[
     {id:'moon',name:'Moon',recipe:{W:3,Y:1},svg:'<circle cx="262" cy="44" r="18"/>'},
     {id:'beam',name:'Light beam',recipe:{W:2,Y:1},svg:'<path d="M160 68L0 22V88L160 78Z"/>'},
     {id:'stripes',name:'Red stripes',recipe:{M:2,Y:1,K:1},svg:'<path d="M155.6 110H184.4L185.6 124H154.4Z"/><path d="M152.7 142H187.3L188.5 156H151.5Z"/><path d="M154 64L170 50L186 64Z"/>'},
-    {id:'tower',name:'Tower',recipe:{W:4,C:1,K:1},svg:'<path d="M150 172L158 84H182L190 172Z"/>'},
+    {id:'tower',name:'Tower',recipe:{W:3,C:1,K:1},svg:'<path d="M150 172L158 84H182L190 172Z"/>'},
     {id:'rocks',name:'Rocks',recipe:{W:1,C:1,K:2},svg:'<path d="M108 204Q112 178 138 170H206Q232 176 238 204Z"/>'},
     {id:'sea',name:'Sea',recipe:{C:3,M:1,K:2},svg:'<path d="M0 162Q80 154 160 162T320 160V240H0Z"/>'},
     {id:'sky',name:'Night sky',recipe:{C:2,M:1,K:3},svg:'<rect x="0" y="0" width="320" height="170"/>'},
@@ -203,7 +203,7 @@ const LEVELS=[
     <g pointer-events="none" fill="none" stroke="${INK}" stroke-width="1.5"><line x1="156" y1="84" x2="184" y2="84" stroke-width="3"/><path d="M170 64V82"/></g>
     <g pointer-events="none" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" opacity=".6"><path d="M30 190q10-4 20 0M250 200q10-4 20 0M60 222q10-4 20 0"/></g>`
 },
-{ id:'parrot', title:'Jungle parrot', sub:'Greens that look almost the same. Take your time.', tier:'nightmare',
+{ id:'parrot', title:'Jungle parrot', sub:'Greens that look almost the same. Take your time.', tier:'hard',
   regions:[
     {id:'face',name:'Face',recipe:{W:1},svg:'<ellipse cx="160" cy="76" rx="8" ry="7"/>'},
     {id:'beak',name:'Beak',recipe:{W:3,K:2},svg:'<path d="M152 70Q134 72 138 94Q144 84 153 84Z"/>'},
@@ -213,7 +213,7 @@ const LEVELS=[
     {id:'tail',name:'Tail',recipe:{C:4,Y:3},svg:'<path d="M162 168L156 228H168L180 168Z"/>'},
     {id:'branch',name:'Branch',recipe:{C:1,M:1,Y:2,K:1},svg:'<path d="M20 176Q160 158 304 168V180Q160 172 20 190Z"/>'},
     {id:'leaves1',name:'Dark leaves',recipe:{C:3,Y:5,K:1},svg:leaf(40,50,46,15,30)+leaf(70,16,40,13,-10)+leaf(290,210,40,14,-30)},
-    {id:'leaves2',name:'Bright leaves',recipe:{C:3,Y:7},svg:leaf(270,40,44,14,-35)+leaf(30,210,40,13,25)+leaf(250,120,34,11,15)},
+    {id:'leaves2',name:'Bright leaves',recipe:{C:2,Y:5},svg:leaf(270,40,44,14,-35)+leaf(30,210,40,13,25)+leaf(250,120,34,11,15)},
     {id:'leaves3',name:'Green leaves',recipe:{C:3,Y:4},svg:leaf(60,110,38,12,-25)+leaf(300,80,34,11,40)+leaf(100,220,34,11,-15)},
     {id:'bg',name:'Jungle',recipe:{W:4,C:1,Y:2},svg:'<rect x="0" y="0" width="320" height="240"/>'},
   ],
@@ -229,7 +229,7 @@ const LEVELS=[
     {id:'scarf',name:'Scarf',recipe:{M:2,Y:1},svg:'<path d="M138 94Q160 104 182 94V104Q160 114 138 104Z"/><path d="M166 104L172 134H182L176 102Z"/>'},
     {id:'buttons',name:'Buttons',recipe:{C:1,M:1,Y:1,K:1},svg:'<circle cx="160" cy="118" r="3.5"/><circle cx="160" cy="132" r="3.5"/><circle cx="160" cy="146" r="3.5"/>'},
     {id:'pines',name:'Pine trees',recipe:{C:2,Y:1,K:2},svg:'<path d="M20 172L46 90L72 172Z"/><path d="M60 178L80 120L100 178Z"/><path d="M250 172L276 100L302 172Z"/>'},
-    {id:'ground',name:'Snow',recipe:{W:5,C:1},svg:'<path d="M0 176Q160 156 320 176V240H0Z"/>'},
+    {id:'ground',name:'Snow',recipe:{W:3,C:1},svg:'<path d="M0 176Q160 156 320 176V240H0Z"/>'},
     {id:'sky',name:'Winter sky',recipe:{W:3,C:2,M:1},svg:'<rect x="0" y="0" width="320" height="180"/>'},
   ],
   order:['sky','pines','ground','body','buttons','scarf','nose','hat'],
@@ -275,7 +275,7 @@ const LEVELS=[
     {id:'scoop1',name:'Strawberry',recipe:{W:2,M:1},svg:'<circle cx="160" cy="112" r="30"/>'},
     {id:'cone',name:'Cone',recipe:{M:1,Y:3,K:1},svg:'<path d="M132 116L160 214L188 116Z"/>'},
     {id:'table',name:'Counter',recipe:{W:2,C:1,M:1},svg:'<path d="M0 196H320V240H0Z"/>'},
-    {id:'wallp',name:'Wall',recipe:{W:4,M:1},svg:'<rect x="0" y="0" width="320" height="240"/>'},
+    {id:'wallp',name:'Wall',recipe:{W:3,M:1},svg:'<rect x="0" y="0" width="320" height="240"/>'},
   ],
   order:['wallp','table','cone','scoop1','scoop2','scoop3','cherry'],
   decor:`<g pointer-events="none" fill="none" stroke="${INK}" stroke-width="1.2" stroke-linecap="round"><path d="M142 146L166 190M160 146L172 168M178 146L154 190M160 146L148 168"/><path d="M162 43q2-8 8-12"/></g>
@@ -288,7 +288,7 @@ const LEVELS=[
     {id:'windows',name:'Lit windows',recipe:{W:2,Y:3},svg:rects([30,64],[76,106,136],18,18)+rects([222,258],[52,82,112,142],18,18)},
     {id:'bldgL',name:'Left house',recipe:{W:3,C:1,K:2},svg:'<rect x="16" y="60" width="96" height="120"/>'},
     {id:'bldgR',name:'Right house',recipe:{W:3,M:1,K:2},svg:'<rect x="208" y="36" width="96" height="144"/>'},
-    {id:'puddle',name:'Puddle',recipe:{W:1,C:1,K:2},svg:'<ellipse cx="236" cy="214" rx="40" ry="7"/>'},
+    {id:'puddle',name:'Puddle',recipe:{W:1,C:2,K:3},svg:'<ellipse cx="236" cy="214" rx="40" ry="7"/>'},
     {id:'street',name:'Street',recipe:{C:1,K:3},svg:'<path d="M0 178H320V240H0Z"/>'},
     {id:'sky',name:'Rainy sky',recipe:{W:3,C:1,K:1},svg:'<rect x="0" y="0" width="320" height="180"/>'},
   ],
@@ -412,7 +412,7 @@ const LEVELS=[
     {id:'tang',name:'Small fish',recipe:{C:4,M:3},svg:'<path d="M214 70Q236 50 262 70Q236 90 214 70Z"/><path d="M261 70L280 58V82Z"/>'},
     {id:'stripes',name:'Stripes',recipe:{C:1,M:1,K:3},stroke:5,svg:'<path d="M106 84Q100 110 106 136"/><path d="M130 76Q124 110 130 144"/><path d="M154 86Q150 110 154 134"/>'},
     {id:'fish',name:'Big fish',recipe:{Y:1},svg:'<path d="M80 110Q120 60 172 110Q120 160 80 110Z"/>'},
-    {id:'fins',name:'Fins',recipe:{M:1,Y:3},svg:'<path d="M171 110L200 86V134Z"/><path d="M104 90Q118 52 152 80Q128 76 104 90Z"/><path d="M104 130Q118 168 152 140Q128 144 104 130Z"/>'},
+    {id:'fins',name:'Fins',recipe:{W:1,M:2,Y:6},svg:'<path d="M171 110L200 86V134Z"/><path d="M104 90Q118 52 152 80Q128 76 104 90Z"/><path d="M104 130Q118 168 152 140Q128 144 104 130Z"/>'},
     {id:'weed',name:'Seaweed',recipe:{C:1,Y:1},stroke:5,svg:'<path d="M292 210Q284 190 294 174T290 136"/><path d="M20 208Q28 190 18 174T22 142"/><path d="M190 212Q184 196 192 184"/>'},
     {id:'sand',name:'Sand',recipe:{W:2,Y:1,K:1},svg:'<path d="M0 206Q80 196 160 204T320 200V240H0Z"/>'},
     {id:'water',name:'Water',recipe:{W:1,C:2,K:1},svg:'<rect width="320" height="240"/>'},
@@ -458,10 +458,10 @@ const LEVELS=[
     {id:'melon',name:'Watermelon',recipe:{W:1,M:3,Y:2},svg:'<path d="M192 166A24 24 0 0 0 240 166Z"/>'},
     {id:'rind',name:'Rind',recipe:{C:1,Y:1},svg:'<path d="M186 166A30 30 0 0 0 246 166Z"/>'},
     {id:'apples',name:'Apples',recipe:{C:1,Y:2},svg:'<circle cx="146" cy="160" r="8"/><circle cx="164" cy="166" r="8"/><circle cx="140" cy="174" r="8"/>'},
-    {id:'basket',name:'Basket',recipe:{W:1,M:1,Y:2,K:1},svg:'<path d="M58 152L64 118H122L128 152Z"/>'},
+    {id:'basket',name:'Basket',recipe:{W:1,C:1,M:2,Y:3},svg:'<path d="M58 152L64 118H122L128 152Z"/>'},
     {id:'checks',name:'Checks',recipe:{W:1},svg:'<path d="M40 150L70 150L64.4 168L32.5 168Z"/><path d="M100 150L130 150L128.1 168L96.3 168Z"/><path d="M160 150L190 150L191.9 168L160 168Z"/><path d="M220 150L250 150L255.6 168L223.8 168Z"/><path d="M64.4 168L96.3 168L92.5 186L58.8 186Z"/><path d="M128.1 168L160 168L160 186L126.3 186Z"/><path d="M191.9 168L223.8 168L227.5 186L193.8 186Z"/><path d="M255.6 168L287.5 168L295 186L261.3 186Z"/><path d="M25 186L58.8 186L53.1 204L17.5 204Z"/><path d="M92.5 186L126.3 186L124.4 204L88.8 204Z"/><path d="M160 186L193.8 186L195.6 204L160 204Z"/><path d="M227.5 186L261.3 186L266.9 204L231.3 204Z"/><path d="M53.1 204L88.8 204L85 222L47.5 222Z"/><path d="M124.4 204L160 204L160 222L122.5 222Z"/><path d="M195.6 204L231.3 204L235 222L197.5 222Z"/><path d="M266.9 204L302.5 204L310 222L272.5 222Z"/>'},
     {id:'blanket',name:'Blanket',recipe:{M:4,Y:3,K:1},svg:'<path d="M40 150H280L310 222H10Z"/>'},
-    {id:'grass',name:'Grass',recipe:{W:1,C:2,Y:3},svg:'<path d="M0 120Q80 112 160 120T320 116V240H0Z"/>'},
+    {id:'grass',name:'Grass',recipe:{W:2,C:3,Y:5},svg:'<path d="M0 120Q80 112 160 120T320 116V240H0Z"/>'},
     {id:'sky',name:'Sky',recipe:{W:3,C:1},svg:'<rect width="320" height="124"/>'},
   ],
   order:['sky','grass','blanket','checks','basket','apples','rind','melon','lemonade'],
@@ -641,11 +641,60 @@ const LEVELS=[
   decor:`<g fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity=".5" pointer-events="none"><path d="M60 120q10-6 20 0M230 100q10-6 20 0M120 230q10-6 20 0"/></g>`
 },
 ];
+// Bonus pictures: palette variants of the main pictures (same drawing, colors moved into a look).
+// The list is written by `node tools/remix-recipes.js variants --write`; edit LOOKS here.
+const VARIANTS=[
+  {id:'shelf-night',base:'shelf',look:'night',tier:'normal',recipes:{lemon:{C:1,M:2,Y:4},mug:{W:1,C:1,M:1,K:2},leaves:{C:2,Y:3,K:3},teapot:{W:1,C:1,M:2,K:2},pot:{C:1,M:2,Y:2},frame:{M:2,Y:1,K:3},plank:{C:2,M:2,Y:3},wallp:{W:2,C:1,K:2}}},
+  {id:'house-autumn',base:'house',look:'autumn',tier:'normal',recipes:{sun:{M:1,Y:5},flower:{W:2,M:4,Y:1},window:{M:1,Y:3},door:{C:1,M:4,K:1},roof:{W:1,M:3,Y:2,K:2},wall:{W:2,M:2,Y:4,K:1},tree:{C:1,Y:2,K:3},trunk:{C:1,M:1,Y:1},grass:{C:1,Y:3,K:1},sky:{W:5,C:1,M:2,K:1}}},
+  {id:'fishbowl-spring',base:'fishbowl',look:'spring',tier:'normal',recipes:{fish1:{W:4,M:2,Y:3},fish2:{W:4,C:1,M:3},weed:{W:3,C:1,Y:3,K:2},pebbles:{W:4,M:1,K:1},water:{W:3,C:1},table:{W:4,M:3,Y:4},wallp:{W:1}}},
+  {id:'sunset-frost',base:'sunset',look:'frost',tier:'hard',recipes:{sun:{W:4,C:1,Y:3},skyTop:{W:3,M:1,K:1},skyMid:{W:3,M:1},skyLow:{W:3,Y:1,K:1},sea:{W:1,C:1,M:1,K:1},shine:{W:3,Y:2,K:1},sail:{W:1},hull:{W:2,C:1,M:1,K:3}}},
+  {id:'cake-golden',base:'cake',look:'golden',tier:'normal',recipes:{flames:{M:1,Y:4},candles:{W:2,C:2,Y:1},cherries:{M:5,Y:2,K:1},frosting:{W:3,M:2,Y:1},sponge:{W:3,M:1,Y:4},plate:{W:3,Y:1,K:2},cloth:{W:3,C:2,Y:3,K:1},wallp:{W:4,M:1,K:2}}},
+  {id:'fox-night',base:'fox',look:'night',tier:'normal',recipes:{chest:{W:1,K:1},fox:{C:1,M:3,Y:3},leaves:{W:1,M:2,Y:4,K:3},treetop:{M:4,Y:2,K:3},trunk:{M:1,Y:1,K:4},ground:{M:2,Y:3,K:5},hills:{W:1,C:2,Y:3,K:3},sky:{W:2,C:1,Y:1,K:3}}},
+  {id:'lighthouse-autumn',base:'lighthouse',look:'autumn',tier:'hard',recipes:{lamp:{M:2,Y:6,K:1},moon:{W:4,M:1,Y:3},beam:{W:4,Y:3,K:1},stripes:{M:3,Y:2,K:1},tower:{W:3,C:2,Y:1,K:1},rocks:{W:1,C:2,M:1,K:3},sea:{W:1,C:2,M:2,K:2},sky:{C:2,M:2,Y:1}}},
+  {id:'parrot-spring',base:'parrot',look:'spring',tier:'hard',recipes:{face:{W:1},beak:{W:3,K:1},band:{W:4,M:2,Y:5},wing:{W:3,C:2,M:2},body:{W:3,M:2,Y:2},tail:{W:1,C:2,Y:1},branch:{W:4,M:1,Y:2,K:2},leaves1:{W:2,Y:2,K:1},leaves2:{W:5,M:1,Y:4},leaves3:{W:3,C:1,Y:3,K:1},bg:{W:4,Y:1}}},
+  {id:'snowman-frost',base:'snowman',look:'frost',tier:'normal',recipes:{body:{W:1},hat:{W:1,K:2},nose:{W:3,C:1,M:1,Y:3},scarf:{W:3,M:3,Y:1,K:1},buttons:{W:1,C:1,M:1,Y:1,K:1},pines:{W:2,C:2,M:1,Y:1},ground:{W:3,C:1},sky:{W:3,C:2,K:1}}},
+  {id:'desert-golden',base:'desert',look:'golden',tier:'hard',recipes:{flowers:{M:1},cactus:{C:2,Y:4,K:1},sun:{Y:1},stones:{W:2,C:1,M:2,Y:2},mesa:{M:3,Y:3,K:1},far:{W:1,M:1,Y:5,K:1},near:{W:1,M:2,Y:6,K:1},sky:{W:4,C:1,Y:1,K:1}}},
+  {id:'rocket-night',base:'rocket',look:'night',tier:'normal',recipes:{body:{W:1,K:1},nose:{M:2,K:1},window:{W:1,C:2,K:2},fins:{C:1,M:2,K:1},flame:{W:1,C:1,M:2,Y:2},moon:{W:2,C:1,K:4},ring:{W:1,M:2,Y:3,K:3},planet:{W:1,C:2,M:3,Y:1},space:{C:1,M:1,K:3}}},
+  {id:'icecream-autumn',base:'icecream',look:'autumn',tier:'normal',recipes:{cherry:{M:2,Y:1},scoop3:{W:4,Y:2,K:1},scoop2:{W:4,C:1,Y:4,K:1},scoop1:{W:4,M:2,Y:1,K:1},cone:{C:1,M:3,Y:5},table:{W:3,C:1,M:2,K:1},wallp:{W:5,M:2,K:1}}},
+  {id:'rain-spring',base:'rain',look:'spring',tier:'hard',recipes:{umbrella:{W:2,M:2,Y:1},coat:{W:4,M:2,Y:3,K:2},windows:{W:2,Y:1},bldgL:{W:3,K:1},bldgR:{W:4,M:1,K:1},puddle:{W:4,C:2,M:1,K:1},street:{W:3,C:2,M:1,K:2},sky:{W:3,C:1}}},
+  {id:'peacock-frost',base:'peacock',look:'frost',tier:'hard',recipes:{beak:{W:3,C:1,Y:2,K:1},body:{W:2,C:2,M:1},wing:{W:2,C:2,M:1,K:1},spots:{W:1,Y:1,K:1},centers:{W:2,C:1,M:1,K:1},tailOuter:{W:2,C:1,Y:1,K:1},tailMid:{W:1,C:1,K:1},tailInner:{W:2,C:1,K:1},grass:{W:3,C:2,Y:3,K:2},bg:{W:1}}},
+  {id:'balloonride-golden',base:'balloonride',look:'golden',tier:'normal',recipes:{gore:{W:1,C:2,M:2},stripes:{Y:1},envelope:{M:3,Y:4},small:{W:1,M:2,Y:4},far:{W:1,C:1,M:4,K:1},basket:{W:1,M:1,Y:2,K:3},clouds:{W:1},hills:{W:1,C:2,Y:4,K:1},sky:{W:3,C:1}}},
+  {id:'teaparty-frost',base:'teaparty',look:'frost',tier:'normal',recipes:{flowers:{W:3,C:1,M:3},cups:{W:4,C:2,M:1},teapot:{W:3,C:2,M:2},lid:{W:2,C:3,M:2},vase:{W:2,C:3,M:1},saucers:{W:4,C:1,M:1},window:{W:1},cloth:{W:4,M:1},wall:{W:3,C:1}}},
+  {id:'reef-autumn',base:'reef',look:'autumn',tier:'hard',recipes:{fish:{M:2,Y:5},fan:{M:1,Y:2},branch:{W:2,M:3,Y:2},anemone:{W:1,M:3,Y:1},brain:{W:1,M:1,Y:1},weed:{C:1,Y:3,K:2},rocks:{W:2,C:2,M:2,Y:1},sand:{W:3,C:1,M:1,Y:2},water:{W:2,C:3,M:3}}},
+  {id:'veggies-spring',base:'veggies',look:'spring',tier:'normal',recipes:{sun:{W:2,Y:1},tomatoes:{W:2,M:1,Y:1},carrots:{W:5,M:2,Y:3},tops:{W:2,C:1,Y:3,K:1},cabbage:{W:3,Y:2,K:1},tleaves:{W:3,C:1,Y:2,K:2},fence:{W:1},soil:{W:2,C:1,M:1,Y:1},sky:{W:3,C:1}}},
+  {id:'nightcity-frost',base:'nightcity',look:'frost',tier:'hard',recipes:{moon:{W:1},windows:{W:4,C:1,Y:3,K:1},reflect:{W:3,Y:2,K:2},tower:{W:1,C:2,M:1,Y:1},near:{W:2,C:1,K:3},far:{W:1,C:2,M:2,Y:1},river:{W:2,C:2,M:1,K:2},sky:{W:1,C:2,M:1,K:2}}},
+  {id:'bakery-golden',base:'bakery',look:'golden',tier:'normal',recipes:{frosting:{W:2,M:3,Y:1},cases:{W:2,C:3,Y:1},croissants:{W:1,M:2,Y:5,K:1},loaf:{M:3,Y:5,K:3},baguettes:{W:2,M:1,Y:3,K:1},pie:{W:1,M:2,Y:4,K:2},shelf:{M:1,Y:2,K:4},awning:{W:1,M:4,Y:5},window:{W:1},wall:{W:3,C:1,M:1,Y:1}}},
+  {id:'tropical-night',base:'tropical',look:'night',tier:'normal',recipes:{starfish:{W:1,M:2,Y:2,K:2},shell:{W:2,C:1,M:2,Y:1,K:2},tang:{C:3,M:2,K:1},stripes:{C:1,M:1,K:3},fish:{M:1,Y:4,K:2},fins:{M:3,Y:5,K:4},weed:{C:2,Y:2,K:3},sand:{W:1,Y:1,K:3},water:{C:3,M:1,Y:1,K:2}}},
+  {id:'blossoms-autumn',base:'blossoms',look:'autumn',tier:'hard',recipes:{pale:{W:5,M:2,Y:1,K:1},pink:{W:3,M:1,Y:1},deep:{W:3,M:3,Y:2},trunk:{C:1,M:1,Y:1},snow:{W:1},mountain:{W:3,C:1,M:1,K:1},grass:{W:2,C:1,Y:4,K:1},sky:{W:3,C:2,Y:1}}},
+  {id:'butterflies-spring',base:'butterflies',look:'spring',tier:'hard',recipes:{b1spots:{W:4,M:3,Y:5},b1:{W:5,M:3,Y:4},b2spots:{W:4,C:3,M:2},b2:{W:2,C:1,M:1},b3:{W:4,M:3,Y:1},tulips:{W:5,M:3,Y:2},daisies:{W:1},centers:{W:4,M:1,Y:3},lavender:{W:4,C:1,M:2},stems:{W:2,C:1,Y:2,K:1},meadow:{W:4,Y:2,K:1},sky:{W:3,C:1}}},
+  {id:'picnic-frost',base:'picnic',look:'frost',tier:'normal',recipes:{lemonade:{W:3,C:1,Y:3},melon:{W:4,M:3,Y:1,K:1},rind:{W:3,C:2,Y:2,K:1},apples:{W:4,C:2,Y:3},basket:{W:2,C:1,M:1,Y:2},checks:{W:1},blanket:{W:2,M:2,Y:1,K:1},grass:{W:2,C:1,Y:1},sky:{W:3,C:1}}},
+  {id:'lake-golden',base:'lake',look:'golden',tier:'hard',recipes:{snow:{W:1},pines:{C:2,M:1,Y:2,K:1},mountains:{W:3,C:2,M:2,K:1},glow:{W:4,M:1,Y:2,K:1},shore:{W:1,C:1,Y:2,K:1},pinesR:{C:4,M:3,Y:3},mountainsR:{W:2,M:1,K:3},lake:{W:1,C:1,M:1},sky:{W:3,C:1,M:1}}},
+  {id:'robot-night',base:'robot',look:'night',tier:'normal',recipes:{light:{C:2,K:1},eyes:{W:2,C:1,K:2},panel:{C:1,K:3},head:{W:1,K:1},body:{W:2,C:1,K:4},limbs:{W:1,K:3},rug:{W:1,C:2,K:3},floor:{K:1},wall:{W:1,C:2,K:1}}},
+  {id:'pumpkins-autumn',base:'pumpkins',look:'autumn',tier:'normal',recipes:{pumpkins:{M:1,Y:2},small:{W:1,M:2,Y:4,K:1},stems:{C:1,M:1,Y:2,K:2},leaves:{C:1,Y:3,K:3},hay:{W:1,M:1,Y:5,K:2},fence:{W:1,C:2,M:2,Y:2},field:{C:1,M:1,Y:1},glow:{W:2,M:2,Y:3},sky:{C:1,M:2,K:2}}},
+  {id:'aurora-spring',base:'aurora',look:'spring',tier:'hard',recipes:{window:{W:3,M:1,Y:2},cabin:{W:2,M:1,Y:1,K:2},green:{W:3,C:1,Y:2,K:1},teal:{W:3,C:2,Y:1},violet:{W:5,C:2,M:3},pines:{W:2,K:3},snow:{W:1},hills:{W:3,C:1,M:1,K:1},sky:{W:2,C:2,M:2,Y:1}}},
+  {id:'flowers-frost',base:'flowers',look:'frost',tier:'normal',recipes:{red:{W:3,M:2,Y:1,K:1},yellow:{W:2,C:1,Y:2},purple:{W:2,C:2,M:2,K:1},pink:{W:5,C:1,M:2},orange:{W:3,M:1,Y:4,K:2},bunting:{W:3,C:2,M:1,K:1},leaves:{W:4,C:2,Y:2,K:1},buckets:{W:3,K:1},stall:{W:2,Y:1,K:2},ground:{W:3,K:2},wall:{W:1}}},
+  {id:'hummingbird-golden',base:'hummingbird',look:'golden',tier:'hard',recipes:{throat:{M:3,Y:1},flower:{W:2,M:5,Y:3},head:{W:1,C:3,Y:4,K:3},wing:{W:1,C:2,M:1,Y:2},tail:{W:1,C:2,Y:3,K:4},belly:{W:1},leaves:{C:1,Y:2,K:2},stem:{C:2,M:1,Y:4,K:1},sky:{W:3,C:1}}},
+  {id:'stainedglass-night',base:'stainedglass',look:'night',tier:'hard',recipes:{center:{M:1,Y:2,K:2},petals:{M:2,Y:2,K:3},jewels:{M:2,Y:1,K:4},amber:{M:2,Y:3,K:3},blue:{C:4,M:3,Y:1},deepblue:{C:1,M:1,K:1},green:{C:1,Y:1,K:2},purple:{C:2,M:3,K:3},violet:{W:1,C:2,M:3,K:2},frame:{W:1,K:3},wall:{W:2,K:3}}},
+  {id:'seaside-autumn',base:'seaside',look:'autumn',tier:'normal',recipes:{boat:{M:2,Y:2,K:1},yellow:{M:1,Y:5},pink:{W:5,M:3,Y:1,K:1},blue:{W:1,C:1,M:1},roofs:{C:1,M:3,Y:4},hill:{W:1,C:1,Y:3,K:2},sand:{W:4,M:1,Y:3,K:1},sea:{W:1,C:3,M:2,K:1},sky:{W:3,C:2,Y:1}}},
+  {id:'chameleon-spring',base:'chameleon',look:'spring',tier:'hard',recipes:{eye:{W:4,M:2,Y:3},headc:{W:4,C:1,Y:3,K:1},front:{W:3,Y:3,K:1},back:{W:3,C:1,Y:4,K:1},tail:{W:4,M:1,Y:4,K:1},branch:{W:4,M:1,Y:1,K:1},leaves:{W:3,C:1,Y:2,K:3},bg:{W:3,Y:1,K:1}}},
+  {id:'cabin-frost',base:'cabin',look:'frost',tier:'normal',recipes:{window:{W:4,Y:2,K:1},door:{W:2,C:1,M:1,Y:1,K:1},walls:{W:2,C:1,M:1,Y:2,K:2},roof:{W:1,K:3},chimney:{W:2,K:1},pines:{W:3,C:1,Y:1,K:3},hills:{W:3,C:1,K:1},snow:{W:1},sky:{W:2,C:3,M:1,K:2}}},
+  {id:'koi-golden',base:'koi',look:'golden',tier:'hard',recipes:{spots:{C:1,M:1,Y:1,K:1},centers:{Y:1},lilies:{W:5,M:3,Y:2},red:{M:2,Y:3,K:1},orange:{M:1,Y:2},white:{W:1},pads:{W:1,C:2,Y:4,K:2},reeds:{C:2,Y:5,K:2},deep:{C:2,Y:1,K:3},water:{C:3,M:1,Y:2},stones:{W:3,M:1,Y:2,K:4}}}
+];
+const LOOKS={night:{name:'Night',tint:'#1b2350',a:.42},autumn:{name:'Autumn',tint:'#c86a1e',a:.16},spring:{name:'Spring',tint:'#ffd6ea',a:.28},
+  frost:{name:'Frost',tint:'#bfe0ff',a:.32},golden:{name:'Golden hour',tint:'#ffb347',a:.2}};
+VARIANTS.forEach(v=>{const b=LEVELS.find(l=>l.id===v.base), lk=LOOKS[v.look]; if(!b||!lk) return;
+  LEVELS.push({id:v.id,title:b.title,look:lk.name,bonus:true,base:b.id,tier:v.tier,paints:b.paints,credit:b.credit,
+    bg:(b.bg||'')+`<rect width="320" height="240" fill="${lk.tint}" opacity="${lk.a}"/>`,
+    regions:b.regions.map(r=>Object.assign({},r,{recipe:v.recipes[r.id]})),order:b.order,decor:b.decor});
+});
+// Chapters of the main path (a bonus picture sits in its base picture's chapter).
+const CHAPTERS=[{name:'First colors',count:5},{name:'At home',count:5},{name:'Into the wild',count:5},{name:'Big adventures',count:5},
+  {name:'Sweet treats',count:5},{name:'In bloom',count:5},{name:'Through the seasons',count:5},{name:'Masterpieces',count:5}];
 // Content translations (keys = the English text above)
 const STRINGS={
 fr:{
-'Balloons':'Ballons','Welcome, restorer':'Bienvenue, restaurateur',
-'Each faded part has a target color. Tap a paint to drop it in the bowl, the part paints itself as soon as the match reaches 95%. Every drop uses paint from your pot. Restored parts earn coins.':'Chaque partie décolorée a une couleur cible. Touchez une peinture pour en verser une goutte dans le bol : la partie se colore dès que la correspondance atteint 95 %. Chaque goutte coûte de la peinture. Les parties restaurées rapportent des pièces.',
+'Balloons':'Ballons','Grandma\'s coloring book':'Le cahier de Mamie',
+'Grandma\'s old coloring book has faded. Mix the paints to bring every page back. Tap a paint to drop it in the bowl: the part fills in once the color matches.':'Le vieux cahier de coloriage de Mamie a pâli. Mélangez les peintures pour redonner vie à chaque page. Touchez une peinture pour en verser une goutte dans le bol : la partie se colore dès que la couleur correspond.',
 'Magenta balloon':'Ballon magenta','Yellow balloon':'Ballon jaune','Cyan balloon':'Ballon cyan',
 'Fruit bowl':'Coupe de fruits','Mixing two colors':'Mélanger deux couleurs',
 'Red, green and blue are not in your paint set. Mix them: one drop of each of two paints.':'Le rouge, le vert et le bleu ne sont pas dans vos peintures. Mélangez-les : une goutte de deux peintures différentes.',
@@ -659,7 +708,7 @@ fr:{
 'All five paints are open now. Mix a color, then add <b>White</b> to make it lighter or <b>Black</b> to make it darker.':'Les cinq peintures sont disponibles. Mélangez une couleur, puis ajoutez du <b>Blanc</b> pour l’éclaircir ou du <b>Noir</b> pour l’assombrir.',
 'Sun':'Soleil','Sea':'Mer','Sky':'Ciel','Sand':'Sable','Umbrella':'Parasol','Rock':'Rocher',
 'Cottage':'Chaumière','A bigger picture':'Une image plus grande',
-'Ten parts share one paint pot, so plan your drops. You can tap any faded part to work on it. If the pot runs dry, coins can rescue the part you are on.':'Dix parties partagent un seul pot de peinture : prévoyez vos gouttes. Touchez n’importe quelle partie décolorée pour la travailler. Si le pot est vide, des pièces peuvent sauver la partie en cours.',
+'All the parts share one paint pot, so plan your drops. You can tap any faded part to work on it. If the pot runs dry, coins can rescue the part you are on.':'Toutes les parties partagent un seul pot de peinture : prévoyez vos gouttes. Touchez n’importe quelle partie décolorée pour la travailler. Si le pot est vide, des pièces peuvent sauver la partie en cours.',
 'Flowers':'Fleurs','Lit windows':'Fenêtres éclairées','Door':'Porte','Roof':'Toit','Walls':'Murs','Treetop':'Feuillage','Tree trunk':'Tronc','Grass':'Herbe',
 'Kitchen shelf':'Étagère de cuisine','Lemon':'Citron','Mug':'Tasse','Leaves':'Feuilles','Teapot':'Théière','Flower pot':'Pot de fleurs','Picture frame':'Cadre','Shelf':'Étagère','Wall':'Mur',
 'Fishbowl':'Bocal à poissons','Goldfish':'Poisson rouge','Little fish':'Petit poisson','Water weed':'Algue','Pebbles':'Cailloux','Water':'Eau','Table':'Table',
@@ -680,8 +729,8 @@ fr:{
 'Hummingbird':'Colibri','Throat':'Gorge','Flower':'Fleur','Head and back':'Tête et dos','Stem':'Tige','Stained-glass window':'Vitrail','Mend the glass':'Répare le verre','Every cracked pane closes up when you match its color. Eleven parts, and many shades sit close together.':'Chaque vitre fêlée se referme quand tu trouves sa couleur. Onze parties, et beaucoup de teintes très proches.','Rose center':'Cœur de la rosace','Rose petals':'Pétales de la rosace','Jewels':'Joyaux','Amber panes':'Vitres ambre','Upper glass':'Verre du haut','Deep blue panes':'Vitres bleu foncé','Green panes':'Vitres vertes','Purple panes':'Vitres violettes','Violet petals ring':'Anneau violet','Stone frame':'Encadrement de pierre','Seaside village':'Village au bord de la mer','Yellow houses':'Maisons jaunes','Pink houses':'Maisons roses','Blue houses':'Maisons bleues','Roofs':'Toits','Hill':'Colline','Chameleon':'Caméléon','Eye':'Œil','Front of body':'Avant du corps','Back of body':'Arrière du corps','Jungle mist':'Brume de la jungle','Winter cabin':'Chalet en hiver','Log walls':'Murs en rondins','Chimney':'Cheminée','Evening sky':'Ciel du soir','Koi pond':'Bassin aux carpes koï','The last pond':'Le dernier bassin','Oranges that sit side by side, and two waters a shade apart. Take your time: this is the finale.':'Des oranges côte à côte et deux eaux presque pareilles. Prends ton temps : c’est la finale.','Black spots':'Taches noires','Flower centers':'Cœurs des fleurs','Lilies':'Nénuphars','Red patches':'Taches rouges','Orange koi':'Carpes orange','White koi':'Carpe blanche','Lily pads':'Feuilles de nénuphar','Reeds':'Roseaux','Deep water':'Eau profonde'
 },
 ru:{
-'Balloons':'Воздушные шары','Welcome, restorer':'Добро пожаловать, реставратор',
-'Each faded part has a target color. Tap a paint to drop it in the bowl, the part paints itself as soon as the match reaches 95%. Every drop uses paint from your pot. Restored parts earn coins.':'У каждой выцветшей части есть нужный цвет. Нажмите на краску, чтобы капнуть её в миску: часть раскрасится, как только совпадение дойдёт до 95%. Каждая капля тратит краску. За восстановленные части дают монеты.',
+'Balloons':'Воздушные шары','Grandma\'s coloring book':'Бабушкина раскраска',
+'Grandma\'s old coloring book has faded. Mix the paints to bring every page back. Tap a paint to drop it in the bowl: the part fills in once the color matches.':'Старая раскраска бабушки выцвела. Смешивайте краски, чтобы вернуть цвет каждой странице. Нажмите на краску, чтобы капнуть её в миску: часть раскрасится, когда цвет совпадёт.',
 'Magenta balloon':'Пурпурный шар','Yellow balloon':'Жёлтый шар','Cyan balloon':'Голубой шар',
 'Fruit bowl':'Ваза с фруктами','Mixing two colors':'Смешиваем два цвета',
 'Red, green and blue are not in your paint set. Mix them: one drop of each of two paints.':'Красной, зелёной и синей краски нет в наборе. Смешайте их: по одной капле двух красок.',
@@ -695,7 +744,7 @@ ru:{
 'All five paints are open now. Mix a color, then add <b>White</b> to make it lighter or <b>Black</b> to make it darker.':'Теперь открыты все пять красок. Смешайте цвет, потом добавьте <b>белой</b>, чтобы осветлить, или <b>чёрной</b>, чтобы затемнить.',
 'Sun':'Солнце','Sea':'Море','Sky':'Небо','Sand':'Песок','Umbrella':'Зонтик','Rock':'Камень',
 'Cottage':'Домик','A bigger picture':'Картинка побольше',
-'Ten parts share one paint pot, so plan your drops. You can tap any faded part to work on it. If the pot runs dry, coins can rescue the part you are on.':'У десяти частей один запас краски, так что планируйте капли. Нажмите на любую выцветшую часть, чтобы заняться ею. Если краска кончится, монеты помогут спасти текущую часть.',
+'All the parts share one paint pot, so plan your drops. You can tap any faded part to work on it. If the pot runs dry, coins can rescue the part you are on.':'У всех частей один запас краски, так что планируйте капли. Нажмите на любую выцветшую часть, чтобы заняться ею. Если краска кончится, монеты помогут начать текущую часть заново.',
 'Flowers':'Цветы','Lit windows':'Светящиеся окна','Door':'Дверь','Roof':'Крыша','Walls':'Стены','Treetop':'Крона','Tree trunk':'Ствол','Grass':'Трава',
 'Kitchen shelf':'Кухонная полка','Lemon':'Лимон','Mug':'Кружка','Leaves':'Листья','Teapot':'Чайник','Flower pot':'Цветочный горшок','Picture frame':'Рамка','Shelf':'Полка','Wall':'Стена',
 'Fishbowl':'Аквариум','Goldfish':'Золотая рыбка','Little fish':'Маленькая рыбка','Water weed':'Водоросли','Pebbles':'Камешки','Water':'Вода','Table':'Стол',
@@ -745,7 +794,17 @@ ru:{'Mixing tip':'Совет по смешиванию','Save paint':'Эконо
 "Black doesn't just darken: yellow and black make olive, not dark yellow.":'Чёрный не только затемняет: жёлтый и чёрный дают оливковый, а не тёмно-жёлтый.',
 "Printers use the same four inks as ColorBook. That's what CMYK stands for.":'Принтеры печатают теми же четырьмя красками, что и ColorBook. Это и есть CMYK.',
 "Brown isn't in the rainbow, but equal cyan, magenta and yellow make it.":'Коричневого нет в радуге, но его дают голубой, пурпурный и жёлтый поровну.'}
+},{
+fr:{'First colors':'Premières couleurs','At home':'À la maison','Into the wild':'En pleine nature','Big adventures':'Grandes aventures','Sweet treats':'Douceurs',
+'In bloom':'En fleurs','Through the seasons':'Au fil des saisons','Masterpieces':'Chefs-d’œuvre',
+'Night':'Nuit','Autumn':'Automne','Spring':'Printemps','Frost':'Givre','Golden hour':'Heure dorée'},
+ru:{'First colors':'Первые цвета','At home':'Дома','Into the wild':'На природе','Big adventures':'Большие приключения','Sweet treats':'Сладости',
+'In bloom':'Цветение','Through the seasons':'Времена года','Masterpieces':'Шедевры',
+'Night':'Ночь','Autumn':'Осень','Spring':'Весна','Frost':'Иней','Golden hour':'Золотой час'}
 }].forEach(d=>{Object.assign(STRINGS.fr,d.fr);Object.assign(STRINGS.ru,d.ru);});
-window.GAME={name:'ColorBook', saveKey:'paintMender', firstProper:'house', daily:DAILY, v2:true, tips:TIPS,
+// Economy and progression: 1 coin per star (boosters and bonus pages keep their value), chapters with a reward, a chest every 25 stars.
+// analytics.ga4: a GA4 measurement id (G-…) turns on event tracking on the live site; empty = off.
+window.GAME={name:'ColorBook', saveKey:'paintMender', firstProper:'shelf', daily:DAILY, v2:true, tips:TIPS,
+  economy:{coinsPerStar:1}, chapters:CHAPTERS, chests:{every:25,coins:30,boosters:2}, analytics:{ga4:''},
   logo:'img/logo-hero.jpg', shareLogo:'img/logo-card.jpg', levels:LEVELS, strings:STRINGS};
 })();

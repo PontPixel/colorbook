@@ -7,12 +7,16 @@ const {t,tn}=I18N; if(G.strings) I18N.add(G.strings);
 const HALL=G.hall||null; // optional gallery-hall home screen (ColorGallery)
 const DAILY=G.daily||null; // optional daily picture with a streak (ColorBook)
 const V2=!!G.v2; // redesigned home and play screen (ColorBook): parts strip, one mixing card, Undo/Magic/+5 paint/Free boosters
+const CHAPTERS=G.chapters||null; // optional chapters of the main path, each with a reward (ColorBook)
+const CHESTS=G.chests||null; // optional star chests: {every, coins, boosters} (ColorBook)
+// Bonus pictures (`bonus:true`, palette variants of a `base` picture) come after the main path in LEVELS and are bought with coins.
+const MAIN=LEVELS.filter(l=>!l.bonus).length;
 // Staging builds live under /staging/: they keep their own save and get the cheat menu (also on localhost or with ?cheats).
 const STAGING=/\/staging\//.test(location.pathname);
 const CHEATS=STAGING||/[?&]cheats\b/.test(location.search)||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const SAVE_KEY=G.saveKey+(STAGING?'-staging':'');
 const sfx=(n,a)=>{if(window.SFX) SFX.play(n,a);};
-const T=l=>t(l.title), N=r=>t(r.name), PN=k=>t(PMAP[k].name); // localized level title, part name, paint name
+const T=l=>l.look?t('{title} · {look}',{title:t(l.title),look:t(l.look)}):t(l.title), N=r=>t(r.name), PN=k=>t(PMAP[k].name); // localized level title, part name, paint name
 if(V2) document.body.classList.add('v2');
 document.body.insertAdjacentHTML('afterbegin',(V2?v2Scenes():`
 <!-- Home (menu) scene -->
@@ -151,6 +155,17 @@ document.body.insertAdjacentHTML('afterbegin',(V2?v2Scenes():`
     </div>
   </div>
 </div>
+<div class="overlay" id="buyOverlay" hidden>
+  <div class="card">
+    <div class="buyImg" id="buyImg"></div>
+    <h2 id="buyTitle"></h2>
+    <p id="buyText"></p>
+    <div class="row">
+      <button class="btn" id="buyCancel">${t('Not now')}</button>
+      <button class="btn primary" id="buyOk"></button>
+    </div>
+  </div>
+</div>
 <div class="overlay" id="settingsOverlay" hidden>
   <div class="card settings">
     <h2>${t('Settings')}</h2>
@@ -184,6 +199,7 @@ document.body.insertAdjacentHTML('afterbegin',(V2?v2Scenes():`
     <div class="cjump"><select id="cheatLevel" aria-label="Picture"></select><button class="btn primary" data-c="jump">Play</button></div>
     <div class="csnd"><div class="csndhead"><b>Sounds</b><div class="seg" id="sfxSet"><button data-v="v1">Old</button><button data-v="v2">New</button></div></div>
       <div class="cgrid c3" id="sfxGrid"></div></div>
+    <details class="cev"><summary>Analytics events (last 40)</summary><pre id="cheatEvents"></pre></details>
     <button class="btn" data-c="reset" id="cheatReset">Erase staging save</button>
     <button class="btn primary" data-c="close">Close</button>
   </div>
@@ -206,7 +222,9 @@ function v2Scenes(){ return `
       <button class="btn play" id="playBtn">${t('Play')}</button>
     </div>
     <div class="chbar" id="homeCh" hidden></div>
+    <div class="progcards" id="progCards" hidden><div class="pcard" id="chapterCard"></div><div class="pcard" id="chestCard"></div></div>
     <button class="btn quizbtn v2daily" id="dailyPicBtn" hidden></button>
+    <button class="btn quizbtn bonusbtn" id="bonusBtn" hidden></button>
     <button class="btn quizbtn" id="dailyQuizBtn" hidden></button>
     <div class="tipcard" id="tipCard" hidden></div>
     <div hidden><img class="logo" alt=""><div class="hallWrap" id="hallWrap"></div></div>
@@ -315,18 +333,41 @@ if(V2){
     free:{name:t('Free ×3'),price:30,text:t("Your next 3 drops don't use paint from the pot. They still count for stars.")}});
 }
 const INTRO_ALIAS=V2?{magic:'hint',refill:'pick',free:'empty'}:{};
-const FREE_BOOSTERS=3, RESCUE_PRICE=30, COINS_PER_STAR=3, FIRST_CLEAR_BONUS=20, REPLAY_BONUS=5;
+// Economy: a game can override any of these with G.economy (ColorBook pays 1 coin per star so boosters keep their value).
+const EC=Object.assign({coinsPerStar:3,firstClear:20,replay:5,rescue:30,chapterCoins:60,bonusPrice:{easy:30,normal:40,hard:60,nightmare:80}},G.economy||{});
+const FREE_BOOSTERS=3, RESCUE_PRICE=EC.rescue, COINS_PER_STAR=EC.coinsPerStar, FIRST_CLEAR_BONUS=EC.firstClear, REPLAY_BONUS=EC.replay;
 const introAt=b=>LEVELS.findIndex(l=>l.intro===(INTRO_ALIAS[b]||b));
 const FIRST_PROPER=LEVELS.findIndex(l=>l.id===G.firstProper); // share/challenge from here on
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // ---------- Saved progress (per viewer, optional) ----------
-let save={best:{},coins:0,inv:{},seen:{},tut:{},challenge:null,name:''};
+let save={best:{},coins:0,inv:{},seen:{},tut:{},challenge:null,name:'',bought:{},chapters:{},chests:0};
 try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(s&&s.best)save=Object.assign(save,s);}catch(e){}
 // Players who had the old boosters keep their counts under the new ones.
 if(V2) Object.entries(INTRO_ALIAS).forEach(([nb,ob])=>{ if(save.inv[nb]==null&&save.inv[ob]!=null) save.inv[nb]=save.inv[ob]; });
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
-const unlocked=i=>i===0||!!save.unlockAll||save.best[LEVELS[i-1].id]!=null||save.best[LEVELS[i].id]!=null;
+const unlocked=i=>{const l=LEVELS[i];
+  if(l.bonus) return save.best[l.id]!=null||!!save.unlockAll||!!save.bought[l.id];
+  return i===0||!!save.unlockAll||save.best[LEVELS[i-1].id]!=null||save.best[l.id]!=null;};
+const baseDone=l=>!l.bonus||save.best[l.base]!=null; // a bonus picture can be bought once its base picture is restored
+const bonusPrice=l=>EC.bonusPrice[l.tier]||40;
+const buyable=i=>LEVELS[i].bonus&&!unlocked(i)&&baseDone(LEVELS[i]);
+
+// ---------- Analytics ----------
+// track(event, props) sends to GA4 through gtag when G.analytics.ga4 is set (not on staging or localhost),
+// else to window.dataLayer if a portal or tag manager set one up. The staging cheat menu lists the last events.
+const AN=G.analytics||{}, EVENTS=[];
+if(AN.ga4&&!CHEATS){
+  window.dataLayer=window.dataLayer||[]; window.gtag=window.gtag||function(){dataLayer.push(arguments);};
+  gtag('js',new Date()); gtag('config',AN.ga4,{allow_google_signals:false,allow_ad_personalization_signals:false});
+  const sc=document.createElement('script'); sc.async=true; sc.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(AN.ga4); document.head.appendChild(sc);
+}
+function track(ev,p){
+  const d=Object.assign({game:GAME_NAME},p||{});
+  try{ if(typeof window.gtag==='function') gtag('event',ev,d); else if(Array.isArray(window.dataLayer)) dataLayer.push(Object.assign({event:ev},d)); }catch(e){}
+  EVENTS.unshift(new Date().toTimeString().slice(0,8)+' '+ev+' '+JSON.stringify(p||{})); if(EVENTS.length>40) EVENTS.length=40;
+}
+const lvProps=()=>L?{level:L.id,index:L.index+1,tier:L.tier,bonus:!!L.bonus,daily:!!(state&&state.daily)}:{};
 
 // A challenge link looks like ?c=<level id>&s=<stars to beat>&n=<friend's name>
 (function readChallenge(){
@@ -354,20 +395,25 @@ function thumbSVG(lv,colored){
 // Next picture to play: first unfinished one, or the challenged one if it is unlocked.
 function nextIndex(){
   if(save.challenge){const ci=LEVELS.findIndex(l=>l.id===save.challenge.level); if(ci>=0&&unlocked(ci)) return ci;}
-  const i=LEVELS.findIndex(l=>save.best[l.id]==null);
-  return i<0?LEVELS.length-1:i;
+  const i=LEVELS.findIndex((l,k)=>k<MAIN&&save.best[l.id]==null);
+  return i<0?MAIN-1:i;
 }
 function renderMenu(){
-  const i=nextIndex(), lv=LEVELS[i], b=save.best[lv.id], allDone=LEVELS.every(l=>save.best[l.id]!=null);
+  const i=nextIndex(), lv=LEVELS[i], b=save.best[lv.id], allDone=LEVELS.slice(0,MAIN).every(l=>save.best[l.id]!=null);
   $('nextPic').innerHTML=thumbSVG(lv,false);
-  $('nextLabel').textContent=allDone&&!save.challenge?t('All pictures restored'):t('Picture {i} of {n}',{i:i+1,n:LEVELS.length})+(TIERS[lv.tier].label?` · ${TIERS[lv.tier].label}`:'');
+  $('nextLabel').textContent=allDone&&!save.challenge?t('All pictures restored'):t('Picture {i} of {n}',{i:i+1,n:MAIN})+(TIERS[lv.tier].label?` · ${TIERS[lv.tier].label}`:'');
   $('nextTitle').innerHTML=esc(T(lv))+(b!=null?`<span class="tstars">${starRow(b)}</span>`:'');
   $('playBtn').textContent=b!=null?t('Play again'):t('Play');
   $('homeStars').textContent='★ '+LEVELS.reduce((a,l)=>a+(save.best[l.id]||0),0);
   const ch=save.challenge; $('homeCh').hidden=!ch;
   if(ch){const cl=LEVELS.find(l=>l.id===ch.level);$('homeCh').textContent='🏆 '+t('{from} challenged you on {title}. Beat {score}★.',{from:ch.from,title:T(cl),score:ch.score});}
-  $('ggrid').innerHTML=LEVELS.map((l,k)=>{const bb=save.best[l.id], ok=unlocked(k);
-    return `<button class="gcard" data-i="${k}" ${ok?'':'disabled'} aria-label="${esc(T(l))}${ok?'':', '+t('locked')}">${thumbSVG(l,bb!=null)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}<b>${k+1}. ${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${bb!=null?starRow(bb):''}</small></button>`;}).join('');
+  const card=k=>{const l=LEVELS[k], bb=save.best[l.id], ok=unlocked(k), buy=buyable(k);
+    const lab=ok?'':buy?', '+t('unlock for {coins}',{coins:tn(bonusPrice(l),'coin')}):l.bonus?', '+t('restore {title} first',{title:t(l.title)}):', '+t('locked');
+    return `<button class="gcard${l.bonus?' bonus':''}${buy?' buy':''}" data-i="${k}" ${ok||buy?'':'disabled'} aria-label="${esc(T(l))}${lab}">${thumbSVG(l,bb!=null)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}<b>${l.bonus?'':(k+1)+'. '}${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${bb!=null?starRow(bb):buy?`${bonusPrice(l)} <span class="coin"></span>`:l.bonus?esc(t('Bonus')):''}</small></button>`;};
+  if(CHAPTERS) $('ggrid').innerHTML=CHAPTERS.map((c,ci)=>{const [a,z]=chapterRange(ci), ids=LEVELS.slice(a,z).map(l=>l.id);
+      const got=ids.filter(id=>save.best[id]!=null).length, bonus=LEVELS.map((l,k)=>k).filter(k=>LEVELS[k].bonus&&ids.includes(LEVELS[k].base));
+      return `<h3 class="gch"><span>${t('Chapter {n}',{n:ci+1})}</span>${esc(t(c.name))}<small>${got} / ${z-a}</small></h3>`+[...Array(z-a).keys()].map(x=>card(a+x)).join('')+bonus.map(card).join('');}).join('');
+  else $('ggrid').innerHTML=LEVELS.map((l,k)=>card(k)).join('');
   renderDailyQuiz(); renderDailyPic();
   if(HALL) renderHall();
   renderCoins();
@@ -379,7 +425,7 @@ function showTab(t){
 }
 function goHome(tab){
   hideHand(); state=null; parts=[]; hideCoach();
-  ['endOverlay','introOverlay','quitOverlay','quizOverlay','settingsOverlay'].forEach(id=>$(id).hidden=true);
+  ['endOverlay','introOverlay','quitOverlay','quizOverlay','settingsOverlay','buyOverlay'].forEach(id=>$(id).hidden=true);
   $('game').hidden=true; $('home').hidden=false;
   renderMenu(); showTab(tab||'home'); $('homeMain').scrollTop=0;
 }
@@ -390,19 +436,57 @@ document.querySelectorAll('.tab').forEach(b=>{
 });
 $('playBtn').onclick=()=>{ if(HALL){ if(unlocked(hallCenter)) start(hallCenter); } else start(nextIndex()); };
 $('nextPic').onclick=()=>start(nextIndex());
-$('ggrid').addEventListener('click',e=>{const c=e.target.closest('.gcard');if(c&&!c.disabled)start(+c.dataset.i);});
+$('ggrid').addEventListener('click',e=>{const c=e.target.closest('.gcard'); if(!c||c.disabled) return; const i=+c.dataset.i; if(unlocked(i)) start(i); else if(buyable(i)) openBuy(i);});
+// ---------- Chapters, star chests and bonus pictures ----------
+function chapterRange(ci){let a=0; for(let c=0;c<ci;c++) a+=CHAPTERS[c].count; return [a,Math.min(MAIN,a+CHAPTERS[ci].count)];}
+function chapterOf(i){const l=LEVELS[i], k=l.bonus?LEVELS.findIndex(x=>x.id===l.base):i; for(let c=0;c<CHAPTERS.length;c++){const [a,z]=chapterRange(c); if(k>=a&&k<z) return c;} return CHAPTERS.length-1;}
+const chapterDone=ci=>{const [a,z]=chapterRange(ci); return LEVELS.slice(a,z).every(l=>save.best[l.id]!=null);};
+const totalStars=()=>LEVELS.reduce((a,l)=>a+(save.best[l.id]||0),0);
+const unlockedBoosters=()=>Object.keys(BOOSTERS).filter(b=>save.inv[b]!=null);
+// Rewards earned since the last check: finished chapters and star chests. Paid out once, listed on the result card.
+function claimRewards(){
+  const out=[];
+  if(CHAPTERS) CHAPTERS.forEach((c,ci)=>{ if(save.chapters[ci]||!chapterDone(ci)) return; save.chapters[ci]=true;
+    const bs=unlockedBoosters(); bs.forEach(b=>save.inv[b]++); addCoins(EC.chapterCoins);
+    out.push(t('Chapter {n} complete: {name}! +{coins}',{n:ci+1,name:t(c.name),coins:tn(EC.chapterCoins,'coin')})+(bs.length?' '+t('and +1 of every booster.'):'.'));
+    track('chapter_complete',{chapter:ci+1}); });
+  if(CHESTS) while(Math.floor(totalStars()/CHESTS.every)>save.chests){ save.chests++;
+    const bs=unlockedBoosters(), got=[]; for(let j=0;j<CHESTS.boosters&&bs.length;j++){const b=bs[Math.random()*bs.length|0]; save.inv[b]++; got.push(BOOSTERS[b].name);}
+    addCoins(CHESTS.coins);
+    out.push(t('Star chest {n} opened: +{coins}',{n:save.chests,coins:tn(CHESTS.coins,'coin')})+(got.length?', '+got.join(', '):'')+'.');
+    track('chest_open',{n:save.chests,stars:totalStars()}); }
+  if(out.length) persist();
+  return out;
+}
+let buyIdx=-1;
+function openBuy(i){
+  const l=LEVELS[i], p=bonusPrice(l), ok=save.coins>=p; buyIdx=i;
+  $('buyImg').innerHTML=thumbSVG(l,false);
+  $('buyTitle').textContent=T(l);
+  $('buyText').innerHTML=t('A bonus page: {title} in new colors. {parts}.',{title:esc(t(l.title)),parts:tn(l.regions.length,'part')})+' '+
+    (ok?t('Unlock it for {coins}?',{coins:tn(p,'coin')}):t('It costs {price}. You have {have}. Restore pictures and open star chests to earn more.',{price:tn(p,'coin'),have:save.coins}));
+  $('buyOk').innerHTML=ok?`${t('Unlock')} · ${p} <span class="coin"></span>`:t('OK');
+  $('buyOverlay').hidden=false;
+}
+$('buyCancel').onclick=()=>{$('buyOverlay').hidden=true;};
+$('buyOk').onclick=()=>{
+  const i=buyIdx, l=LEVELS[i]; $('buyOverlay').hidden=true; if(!l||!buyable(i)) return;
+  const p=bonusPrice(l); if(save.coins<p) return;
+  addCoins(-p); save.bought[l.id]=true; persist(); sfx('coin'); track('bonus_unlock',{level:l.id,price:p});
+  start(i);
+};
 $('backBtn').innerHTML=icon('back'); $('endHomeBtn').innerHTML=icon('home');
 $('backBtn').onclick=()=>{
   if(state&&!state.finished&&Object.keys(state.done).length) $('quitOverlay').hidden=false; else goHome();
 };
 $('quitStay').onclick=()=>{$('quitOverlay').hidden=true;};
-$('quitLeave').onclick=()=>goHome();
+$('quitLeave').onclick=()=>{track('level_quit',Object.assign(lvProps(),{parts_done:state?Object.keys(state.done).length:0,parts:L.regions.length,paint_left:state?state.paint:0})); goHome();};
 $('endHomeBtn').onclick=()=>goHome();
 
 function start(i,o={}){
   L=LEVELS[i]; L.index=i;
-  const daily=!!(o.daily&&DAILY), budget=daily?dailyBudget(L):L.budget;
-  state={done:{},stars:{},used:{},hinted:{},rescued:{},drops:[],fr:[],freeLeft:0,picking:false,forced:false,hintMsg:null,paint:budget,budget,daily,earned:0,finished:false,quizUsed:false};
+  const daily=!!(o.daily&&DAILY), twist=daily?dailyTwist():null, budget=daily?dailyBudget(L,twist):L.budget;
+  state={twist,done:{},stars:{},used:{},hinted:{},rescued:{},drops:[],fr:[],freeLeft:0,picking:false,forced:false,hintMsg:null,paint:budget,budget,daily,earned:0,finished:false,quizUsed:false};
   $('home').hidden=true; $('game').hidden=false; document.querySelector('.board').scrollTop=0;
   $('credit').innerHTML=L.credit?t(L.credit):'';
   const ks=L.paints||PAINTS.map(p=>p.k);
@@ -414,6 +498,7 @@ function start(i,o={}){
   $('endOverlay').hidden=true;
   select(L.regions[0].id);
   showIntro();
+  track('level_start',Object.assign(lvProps(),{twist:twist||undefined,budget,replay:save.best[L.id]!=null}));
 }
 function showIntro(){
   // Hand out boosters whose intro picture has been reached (also covers players who skip ahead).
@@ -433,7 +518,7 @@ function showIntro(){
   let html='';
   if(state.daily){
     const s=dailyStreakNext();
-    html+=`<div class="booster">${icon('daily')}<b>${t('Daily picture: {title}',{title:esc(T(L))})}</b><br>${t('Less paint than usual: {drops}.',{drops:tn(state.budget,'drop')})} ${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</div>`;
+    html+=`<div class="booster">${icon('daily')}<b>${t('Daily picture: {title}',{title:esc(T(L))})}</b><br>${twistText(state.twist,state.budget)} ${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</div>`;
   }
   if(chal){
     const ci=LEVELS.findIndex(l=>l.id===chal.level), n=LEVELS.slice(0,ci).filter(l=>save.best[l.id]==null).length;
@@ -442,10 +527,10 @@ function showIntro(){
   }
   if(tierNote) html+=`<div class="booster"><b>${t('{tier} picture.',{tier:TIERS[L.tier].label})}</b> ${L.tier==='nightmare'?t('Very little spare paint and colors that look almost the same.'):t('Less spare paint and closer shades than usual.')} ${t('Boosters help here. Rewards are ×{m}.',{m:TIERS[L.tier].mult})}</div>`;
   html+=fresh.map(b=>`<div class="booster">${icon(b)}<b>${t('New booster: {name}',{name:BOOSTERS[b].name})}</b><br>${BOOSTERS[b].text}<br>${t('You get {n} free. After that, {price} each.',{n:FREE_BOOSTERS,price:BOOSTERS[b].price+' <span class="coin"></span>'})}</div>`).join('');
-  $('introBoosters').innerHTML=html;
+  $('introBoosters').innerHTML=html; $('introBtn').textContent=t("Let's paint");
   $('introOverlay').hidden=false;
 }
-$('introBtn').onclick=()=>{$('introOverlay').hidden=true; startHands();};
+$('introBtn').onclick=()=>{$('introOverlay').hidden=true; if(state) startHands();};
 
 function regionEl(r){
   return r.stroke
@@ -560,11 +645,14 @@ function isLocked(b){
   const lv=introAt(b); toast(t('{name} unlocks in picture {n}: {title}',{name:BOOSTERS[b].name,n:lv+1,title:T(LEVELS[lv])})); return true;
 }
 // Use one booster from the inventory, or buy it with coins when the inventory is empty.
-function canUse(b){return save.inv[b]>0||save.coins>=BOOSTERS[b].price;}
+function canUse(b){return !(state&&state.twist==='noboost')&&(save.inv[b]>0||save.coins>=BOOSTERS[b].price);}
 function spend(b){
-  if(save.inv[b]>0){save.inv[b]--;persist();}
+  if(state&&state.twist==='noboost'){toast(t("No boosters in today's challenge."));buzz(40);sfx('wrong');return false;}
+  const had=save.inv[b]>0;
+  if(had){save.inv[b]--;persist();}
   else if(save.coins>=BOOSTERS[b].price){addCoins(-BOOSTERS[b].price); sfx('coin');toast(t('{name} bought: {coins}',{name:BOOSTERS[b].name,coins:tn(BOOSTERS[b].price,'coin')}));}
   else{toast(t('{name} costs {price}. You have {have}.',{name:BOOSTERS[b].name,price:tn(BOOSTERS[b].price,'coin'),have:save.coins}));buzz(40);sfx('wrong');return false;}
+  track('booster_used',Object.assign(lvProps(),{booster:b,bought:!had}));
   renderActions(); return true;
 }
 // A drop poured under Free drops never came out of the pot, so taking it out refunds nothing.
@@ -796,7 +884,12 @@ $('hintBtn').onclick=()=>{
   state.hinted[state.sel]=true; state.hintMsg=nextHint(); renderHint();
 };
 $('retryBtn').onclick=()=>start(L.index,{daily:state&&state.daily});
-$('nextBtn').onclick=()=>start(Math.min(L.index+1,LEVELS.length-1));
+// Next: the next main picture, or after a bonus picture the next unlocked bonus one not yet restored (-1: none).
+function nextAfter(i){
+  if(!LEVELS[i].bonus) return i+1<MAIN?i+1:-1;
+  return LEVELS.findIndex((l,k)=>k>i&&l.bonus&&unlocked(k)&&save.best[l.id]==null);
+}
+$('nextBtn').onclick=()=>{const n=nextAfter(L.index); if(n<0) goHome(); else start(n);};
 $('rescueBtn').onclick=rescue;
 $('shareBtn').onclick=share;
 
@@ -820,6 +913,7 @@ function apply(){
   const gb=g.getBoundingClientRect();
   burst(gb.left+gb.width/2,gb.top+gb.height/2,[hex(r.target),hex(r.target),'#ffffff'],18,{speed:5,size:4,decay:.028,gravity:.12});
   const c=s*COINS_PER_STAR*TIERS[L.tier].mult; addCoins(c);
+  track('part_complete',Object.assign(lvProps(),{part:r.id,part_index:Object.keys(state.done).length,stars:s,drops:used,par:r.min}));
   // Like ColorFind: show drops used against the minimum (the recipe size) for this part.
   sfx('restore',Object.keys(state.done).length/L.regions.length);
   toast(`${N(r)} ${'★'.repeat(s)}${'☆'.repeat(3-s)} · ${used<=r.min?t('perfect: {drops}',{drops:tn(used,'drop')}):t('{drops}, min {min}',{drops:tn(used,'drop'),min:r.min})} · +${tn(c,'coin')}`);
@@ -902,7 +996,7 @@ function countUp(el,to){
 }
 function pictureStars(){return Math.max(1,Math.round(sumStars()/L.regions.length));}
 function win(){
-  const st=state, s=pictureStars(), last=L.index===LEVELS.length-1, first=save.best[L.id]==null;
+  const st=state, s=pictureStars(), last=!L.bonus&&L.index===MAIN-1, first=save.best[L.id]==null;
   const total=sumStars(), max=L.regions.length*3;
   const bonus=(first?FIRST_CLEAR_BONUS:REPLAY_BONUS)*TIERS[L.tier].mult; addCoins(bonus);
   save.best[L.id]=Math.max(save.best[L.id]||0,s);
@@ -911,6 +1005,7 @@ function win(){
   let daily=null;
   if(state.daily&&!dailyDone()){const streak=dailyStreakNext(), c=dailyReward(streak); save.daily={last:dayKey(),streak}; addCoins(c); daily={streak,c};
     setTimeout(()=>{if(state===st) sfx('daily');},1400);}
+  const rewards=claimRewards();
   persist(); renderMenu(); updateHud(); buzz([30,60,30,60,70]);
   $('endTitle').textContent=t('{title} restored',{title:T(L)});
   $('endStars').innerHTML=[0,1,2].map(i=>`<span class="${i<s?'':'off'}" style="animation-delay:${250+i*280}ms">★</span>`).join('');
@@ -919,7 +1014,8 @@ function win(){
     `<br>${t('Drops used <b>{used}</b> · minimum <b>{min}</b>',{used:usedAll,min:minAll})}${usedAll<=minAll?' · '+t('perfect!'):''}`+
     (daily?`<br><b>${t('Daily picture done! +{coins} · streak: {days}.',{coins:tn(daily.c,'coin'),days:tn(daily.streak,'day')})}</b>`:'')+
     (ch?(beaten?`<br><b>${t("You beat {from}'s {score}★!",{from:esc(ch.from),score:ch.score})}</b>`:'<br>'+t('{from} still leads: {score}★ vs your {you}★. Replay to beat it.',{from:esc(ch.from),score:ch.score,you:total})):'')+
-    (L.credit?`<br>${t(L.credit)}.`:'')+(QZ&&factFor(L.id)?`<br><i>${t('Did you know?')}</i> ${esc(t(factFor(L.id).fact))}`:'')+(last?'<br>'+t('That was the last picture.'):'');
+    (L.credit?`<br>${t(L.credit)}.`:'')+(QZ&&factFor(L.id)?`<br><i>${t('Did you know?')}</i> ${esc(t(factFor(L.id).fact))}`:'')+(last?'<br>'+t('That was the last picture of the book. Bonus pages wait in the gallery.'):'')+
+    rewards.map(x=>`<br><b>${esc(x)}</b>`).join('');
   countUp($('earnNum'),state.earned);
   for(let i=0;i<s;i++) setTimeout(()=>{ if(state!==st) return; sfx('star',i); const b=$('endStars').children[i].getBoundingClientRect();
     burst(b.left+b.width/2,b.top+b.height/2,[INK,'#ffffff'],14,{speed:5,shapes:['star'],decay:.03,size:4,gravity:.1}); },450+i*280);
@@ -937,9 +1033,11 @@ function win(){
   $('rescueBtn').hidden=true; $('quizOfferBtn').hidden=true;
   $('endOverlay').classList.add('low');
   $('retryBtn').textContent=t('Replay');
-  $('nextBtn').hidden=last;
+  $('nextBtn').hidden=last||nextAfter(L.index)<0;
   $('endOverlay').hidden=false;
   fitEndCard();
+  const usedPaint=state.budget-state.paint;
+  track('level_complete',Object.assign(lvProps(),{stars:s,total_stars:total,max_stars:max,drops:usedAll,min_drops:minAll,paint_used:usedPaint,budget:state.budget,first,coins:state.earned}));
 }
 // Desktop: the result card fills the right column (mixer top to picture bottom), so the restored picture stays in view with no gaps.
 function fitEndCard(){
@@ -1005,6 +1103,7 @@ function outOfPaint(){
   hideHand();
   const r=current(), ok=save.coins>=RESCUE_PRICE;
   $('endTitle').textContent=t('Out of paint'); buzz([60,40,60]); sfx('fail');
+  track('out_of_paint',Object.assign(lvProps(),{part:r.id,parts_done:Object.keys(state.done).length,parts:L.regions.length,coins:save.coins}));
   $('endStars').textContent='';
   $('endText').innerHTML=t('Parts restored: {done} of {all}.',{done:Object.keys(state.done).length,all:L.regions.length})+' '+
     (ok?t('Restart <b>{part}</b> with fresh paint and keep the rest of your work.',{part:esc(N(r))}):t('Restarting a part costs {price}. You have {have}.',{price:tn(RESCUE_PRICE,'coin'),have:save.coins}));
@@ -1022,7 +1121,7 @@ function outOfPaint(){
 function rescue(){
   if(save.coins<RESCUE_PRICE) return;
   addCoins(-RESCUE_PRICE);
-  const r=current();
+  const r=current(); track('rescue',Object.assign(lvProps(),{part:r.id}));
   state.paint=Math.max(state.paint+(state.used[r.id]||0),r.min+4);
   state.used[r.id]=0; state.rescued[r.id]=true;
   $('endOverlay').hidden=true;
@@ -1032,12 +1131,20 @@ function rescue(){
 // ---------- Daily picture (only for games that define G.daily) ----------
 // Every day one restored picture comes back with less paint. Restoring it pays coins that grow with the streak.
 const dayHash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;};
+// The pool: restored pictures plus bonus pictures whose base is restored (a daily bonus picture is a free try; restoring it unlocks it).
 function dailyPool(){
-  const done=LEVELS.map((l,i)=>i).filter(i=>save.best[LEVELS[i].id]!=null), hard=done.filter(i=>LEVELS[i].tier!=='easy');
+  const done=LEVELS.map((l,i)=>i).filter(i=>{const l=LEVELS[i]; return l.bonus?baseDone(l):save.best[l.id]!=null;}), hard=done.filter(i=>LEVELS[i].tier!=='easy');
   return hard.length>=2?hard:done; // skip the tutorials once there is enough else to pick from
 }
+// Each day has a twist: less paint (lean), no boosters (noboost) or no match % shown (blind).
+const TWISTS=['lean','noboost','blind'];
+const dailyTwist=()=>TWISTS[dayHash('twist'+dayKey())%TWISTS.length];
+const twistName=w=>({lean:t('Less paint'),noboost:t('No boosters'),blind:t('No match %')})[w]||'';
+function twistText(w,budget){
+  return w==='noboost'?t("Today's twist: no boosters. Plan every drop."):w==='blind'?t("Today's twist: the match % stays hidden. Trust your eyes."):t('Less paint than usual: {drops}.',{drops:tn(budget,'drop')});
+}
 function dailyIndex(){const p=dailyPool(); return p.length?p[dayHash(GAME_NAME+dayKey())%p.length]:-1;}
-function dailyBudget(l){return Math.min(l.budget,Math.ceil(l.regions.reduce((a,r)=>a+r.min,0)*DAILY.ratio));}
+function dailyBudget(l,w){return w&&w!=='lean'?l.budget:Math.min(l.budget,Math.ceil(l.regions.reduce((a,r)=>a+r.min,0)*DAILY.ratio));}
 const dailyDone=()=>!!save.daily&&save.daily.last===dayKey();
 function dailyStreakNext(){const d=save.daily; if(!d) return 1; if(d.last===dayKey()) return d.streak; return d.last===dayKey(new Date(Date.now()-864e5))?d.streak+1:1;}
 const dailyReward=s=>DAILY.coins[Math.min(s,DAILY.coins.length)-1];
@@ -1049,6 +1156,7 @@ function renderDailyPic(){
     `<small>${esc(T(lv))}${dailyDone()?'':` · +${dailyReward(s)} <span class="coin"></span>`}</small></span>`;
 }
 $('dailyPicBtn').onclick=()=>{const i=dailyIndex(); if(i>=0) start(i,{daily:true});};
+if($('bonusBtn')) $('bonusBtn').onclick=()=>{showTab('gallery'); const c=$('ggrid').querySelector('.gcard.buy'); if(c) c.scrollIntoView({block:'center'});};
 // ---------- Art quiz (only for games that define G.quiz) ----------
 const QZ=G.quiz||null;
 const levelOf=id=>LEVELS.find(l=>l.id===id);
@@ -1259,7 +1367,8 @@ if(V2){
     const ks=L.paints||PAINTS.map(x=>x.k);
     $('drops').innerHTML=ks.filter(k=>c[k]).map(k=>`<button class="dchip" data-k="${k}" aria-label="${t('{n} {paint}. Tap to take one out.',{n:c[k],paint:PN(k)})}"><i style="background:${hex(PMAP[k].rgb)}"></i>×${c[k]}</button>`).join('')
       ||`<em>${t('Your drops show up here')}</em>`;
-    $('pctNum').textContent=p==null?'':p+'%';
+    const blind=state.twist==='blind'&&p!=null&&p<95;
+    $('pctNum').textContent=p==null?'':blind?'?':p+'%';
     $('meter').setAttribute('aria-valuenow',p||0);
     if(!state.done[r.id]) paintRegion(r.id,m?hex(m):null);
     const used=state.used[r.id]||0, pace=paceOf(r), over=used>r.min;
@@ -1275,7 +1384,7 @@ if(V2){
     if(override){msg.textContent=override[0];msg.className='msg '+override[1];}
     else if(!m){msg.textContent=t('Tap a paint to start');msg.className='msg';}
     else if(p>=95){msg.textContent=t('Match! Painting…');msg.className='msg good';}
-    else{msg.textContent=v2advice(m,r.target,p);msg.className='msg';}
+    else{msg.textContent=blind?t('Trust your eyes'):v2advice(m,r.target,p);msg.className='msg';}
   };
   const _updateHud=updateHud;
   updateHud=function(){
@@ -1390,7 +1499,7 @@ if(V2){
     const s=dailyStreakNext(), lv=LEVELS[i], done=dailyDone(), filled=Math.min(7,done?s:s-1);
     b.classList.toggle('done',done);
     b.innerHTML=`<span class="dthumb">${thumbSVG(lv,true)}</span><span class="dbody"><span class="dtop"><b>${t('Daily picture')}</b>`+
-      `<small>${done?t('Done · streak: {days}',{days:tn(s,'day')}):`+${dailyReward(s)} <span class="coin"></span>`}</small></span>`+
+      `<small>${done?t('Done · streak: {days}',{days:tn(s,'day')}):`${esc(twistName(dailyTwist()))} · +${dailyReward(s)} <span class="coin"></span>`}</small></span>`+
       `<span class="dbars" aria-label="${t('Streak: {days}',{days:tn(done?s:s-1,'day')})}">${[0,1,2,3,4,5,6].map(k=>`<i class="${k<filled?'on':''}"></i>`).join('')}</span></span>`;
   };
   const TIPS=G.tips||[];
@@ -1403,12 +1512,46 @@ if(V2){
       `<div class="tipeq" aria-hidden="true">${eq}</div><div class="tiptext">${esc(t(tp.text))}</div>`;
   }
   $('tipCard').addEventListener('click',e=>{ if(e.target.closest('.tipnext')){ v2.tip++; renderTip(); } });
+  // A ready chest or finished chapter pays out on a tap (a won picture also pays out on its result card).
+  $('progCards').addEventListener('click',e=>{
+    if(!e.target.closest('.pcard.ready')) return;
+    const got=claimRewards(); if(!got.length) return;
+    sfx('fanfare'); buzz([30,60,30]);
+    const r=e.target.closest('.pcard').getBoundingClientRect(); burst(r.left+r.width/2,r.top+r.height/2,[INK,'#ffffff'],30,{speed:7,shapes:['star','circle'],decay:.02,size:5});
+    $('introTitle').textContent=t('Rewards'); $('introText').hidden=true;
+    $('introBoosters').innerHTML=got.map(x=>`<div class="booster">${esc(x)}</div>`).join(''); $('introBtn').textContent=t('Nice!');
+    $('introOverlay').hidden=false; renderMenu();
+  });
+  // Chapter progress (dots for its pictures) and the next star chest; a button for bonus pages ready to unlock.
+  function renderProgress(i){
+    $('progCards').hidden=!CHAPTERS&&!CHESTS;
+    if(CHAPTERS){
+      const ci=chapterOf(i), [a,z]=chapterRange(ci), got=LEVELS.slice(a,z).filter(l=>save.best[l.id]!=null).length;
+      $('nextLabel').textContent=t('Chapter {n}',{n:ci+1})+' · '+t(CHAPTERS[ci].name)+(TIERS[LEVELS[i].tier].label?' · '+TIERS[LEVELS[i].tier].label:'');
+      $('chapterCard').innerHTML=`<small>${t('Chapter {n} of {all}',{n:ci+1,all:CHAPTERS.length})}</small><b>${esc(t(CHAPTERS[ci].name))}</b>`+
+        `<span class="pdots">${LEVELS.slice(a,z).map((l,k)=>`<i class="${save.best[l.id]!=null?'on':a+k===i?'cur':''}"></i>`).join('')}</span>`+
+        `<small>${chapterDone(ci)&&!save.chapters[ci]?`<b class="ready">${t('Tap to collect')}</b>`:t('Finish it: +{coins} and a booster of each kind',{coins:tn(EC.chapterCoins,'coin')})}</small>`;
+      $('chapterCard').setAttribute('aria-label',t('Chapter {n}: {name}, {done} of {all} pictures',{n:ci+1,name:t(CHAPTERS[ci].name),done:got,all:z-a}));
+    }
+    $('chapterCard').hidden=!CHAPTERS; $('chestCard').hidden=!CHESTS;
+    if(CHESTS){
+      const st=totalStars(), next=(save.chests+1)*CHESTS.every, from=save.chests*CHESTS.every, pc=Math.max(0,Math.min(100,(st-from)/(next-from)*100));
+      $('chestCard').innerHTML=`<small>${t('Star chest')}</small><b>${STAR}${Math.min(st,next)} / ${next}</b><span class="bar"><i style="width:${pc}%"></i></span>`+
+        `<small>${st>=next?`<b class="ready">${t('Tap to open')}</b>`:t('+{coins} and {n} boosters',{coins:tn(CHESTS.coins,'coin'),n:CHESTS.boosters})}</small>`;
+      $('chestCard').classList.toggle('ready',st>=next);
+    }
+    if(CHAPTERS) $('chapterCard').classList.toggle('ready',CHAPTERS.some((c,k)=>chapterDone(k)&&!save.chapters[k]));
+    const nb=LEVELS.filter((l,k)=>buyable(k)).length, bb=$('bonusBtn'); bb.hidden=!nb;
+    if(nb) bb.innerHTML=icon('gallery')+`<span class="dlab"><b>${t('Bonus pages')}</b><small>${t('{n} ready to unlock with coins',{n:nb})}</small></span>`;
+  }
   const _renderMenu=renderMenu;
   renderMenu=function(){
     _renderMenu();
     const i=nextIndex(), lv=LEVELS[i], doneN=LEVELS.filter(l=>save.best[l.id]!=null).length;
     $('heroMeta').textContent=tn(lv.regions.length,'part');
-    $('heroBar').style.width=(doneN/LEVELS.length*100)+'%';
+    const doneMain=LEVELS.slice(0,MAIN).filter(l=>save.best[l.id]!=null).length;
+    $('heroBar').style.width=(doneMain/MAIN*100)+'%';
+    renderProgress(i);
     $('homeStars').innerHTML=STAR+LEVELS.reduce((a,l)=>a+(save.best[l.id]||0),0);
     renderTip();
   };
@@ -1417,11 +1560,11 @@ if(V2){
 // ---------- Cheat menu (staging, localhost or ?cheats) ----------
 if(CHEATS){
   $('cheatBtn').innerHTML=icon('wrench');
-  const sel=$('cheatLevel'); sel.innerHTML=LEVELS.map((l,i)=>`<option value="${i}">${i+1}. ${esc(T(l))}${TIERS[l.tier].label?' · '+TIERS[l.tier].label:''}</option>`).join('');
+  const sel=$('cheatLevel'); sel.innerHTML=LEVELS.map((l,i)=>`<option value="${i}">${l.bonus?'Bonus':i+1}. ${esc(T(l))}${TIERS[l.tier].label?' · '+TIERS[l.tier].label:''}</option>`).join('');
   let armed=false;
   const refresh=()=>{ persist(); renderCoins(true); if(state){ updateHud(); renderActions(); } else renderMenu(); };
   const open=()=>{ const g=!!state&&!state.finished; ['paint','solve','finish'].forEach(c=>$('cheatOverlay').querySelector(`[data-c="${c}"]`).disabled=!g);
-    if(L) sel.value=L.index; armed=false; $('cheatReset').textContent='Erase staging save'; $('cheatOverlay').hidden=false; };
+    if(L) sel.value=L.index; armed=false; $('cheatEvents').textContent=EVENTS.join('\n')||'No events yet'; $('cheatReset').textContent='Erase staging save'; $('cheatOverlay').hidden=false; };
   $('cheatBtn').onclick=open;
   // Sound test: play every effect in the old or the new set to compare them on a phone.
   const SND=[['drop','W','Drop White'],['drop','C','Drop Cyan'],['drop','M','Drop Magenta'],['drop','Y','Drop Yellow'],['drop','K','Drop Black'],
@@ -1464,4 +1607,5 @@ if(CHEATS){
 }
 
 goHome();
+track('game_open',{lang:I18N.lang,restored:LEVELS.filter(l=>save.best[l.id]!=null).length,coins:save.coins});
 })();

@@ -106,6 +106,18 @@ window.SFX=(function(){
   function glock(f,at=0,v=.16,dur=1.3){ part(f,dur,{gain:v,at,send:.7}); part(f*2.76,dur*.35,{gain:v*.32,at,send:.6}); part(f*5.4,dur*.12,{gain:v*.12,at,send:.5}); }
   // Harp pluck: triangle with a quick decay and a softer octave.
   function pluck(f,at=0,v=.18,dur=.9){ part(f,dur,{type:'triangle',gain:v,at,send:.6}); part(f*2,dur*.4,{gain:v*.25,at,send:.5}); }
+  // Whoosh: noise through a band-pass that sweeps up, swelling then fading, panned across; plus a thin airy top.
+  function whoosh(dur){
+    const t=ctx.currentTime, src=ctx.createBufferSource(), bp=ctx.createBiquadFilter(), g=ctx.createGain();
+    src.buffer=noiseBuffer(); src.loop=true; bp.type='bandpass'; bp.Q.value=1.3;
+    bp.frequency.setValueAtTime(320,t); bp.frequency.exponentialRampToValueAtTime(2600,t+dur*.75);
+    g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(vary(.26,.1),t+dur*.3); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    src.connect(bp); bp.connect(g);
+    let last=g;
+    if(ctx.createStereoPanner){ const p=ctx.createStereoPanner(); p.pan.setValueAtTime(-.5,t); p.pan.linearRampToValueAtTime(.6,t+dur); g.connect(p); last=p; }
+    route(last,.35); src.start(t); src.stop(t+dur+.05);
+    hiss(dur*.8,{type:'highpass',f:4000,to:7000,gain:.035,attack:dur*.3,send:.5});
+  }
   const DROP2={W:1046,C:880,M:784,Y:1175,K:587}; // per paint; black is the lowest, yellow the brightest
   const V2={
     drop:k=>bloop(vary(DROP2[k]||880,.03),0,vary(.32,.12)),
@@ -128,8 +140,8 @@ window.SFX=(function(){
     daily:()=>{[76,79,83,88].forEach((n,i)=>glock(NOTE(n),i*.08,.12,1));},
     // Magic: a quick sparkle run with a breath of air
     magic:()=>{[84,88,91,96,100].forEach((n,i)=>glock(NOTE(n),i*.04,.06,.7)); hiss(.35,{type:'highpass',f:6000,gain:.025,send:.6});},
-    // a removed paint blows away: a soft puff rising in pitch
-    snap:()=>{hiss(.32,{f:900,to:5200,q:.8,gain:.07,send:.4,attack:.04});},
+    // a removed paint blows away as dust: an airy whoosh that sweeps up and drifts left to right, like the grains
+    snap:()=>whoosh(.62),
     // a star falls off the pace row
     starLost:()=>{part(NOTE(91),.4,{to:NOTE(79),slide:.35,gain:.09,send:.6}); glock(NOTE(79),.12,.05,.5);}
   };

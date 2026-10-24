@@ -1460,18 +1460,22 @@ if(V2){
     setTimeout(()=>b.remove(),1900);
   }
   // A removed paint blows away as dust (and its chip dissolves when it was the last drop of that paint).
+  // The removed paint turns into dust and blows away to the right (with a whoosh). The grains start packed in the
+  // swatch's circle, so the chip itself seems to dissolve; when it was the last drop, its label goes to dust too.
   function snap(k,last){
-    if(last) sfx('snap');
+    sfx('snap');
     if(reduced) return;
     const ch=$('drops').querySelector(`.dchip[data-k="${k}"]`); if(!ch) return;
-    const cr=ch.getBoundingClientRect(), sw=ch.querySelector('i').getBoundingClientRect(), col=hex(PMAP[k].rgb);
-    const layer=document.createElement('div'); layer.className='dustLayer'; layer.style.left=sw.left+'px'; layer.style.top=sw.top+'px';
-    // grains leave left to right and drift far up-right, so the trail reads as the paint blowing away
-    let h=''; for(let i=0;i<40;i++){const x=Math.random()*22|0,y=Math.random()*22|0,sz=(1.5+Math.random()*2.5).toFixed(1);
-      h+=`<span style="left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;background:${col};--dx:${30+Math.random()*80|0}px;--dy:${-80+Math.random()*60|0}px;animation-delay:${(x/22*.5+Math.random()*.1).toFixed(2)}s"></span>`;}
+    const cr=ch.getBoundingClientRect(), sw=ch.querySelector('i').getBoundingClientRect(), col=hex(PMAP[k].rgb), ink=getComputedStyle(ch).color;
+    const layer=document.createElement('div'); layer.className='dustLayer'; layer.style.left=cr.left+'px'; layer.style.top=cr.top+'px';
+    const W=cr.width, rad=sw.width/2, cx=sw.left-cr.left+rad, cy=sw.top-cr.top+rad;
+    const grain=(x,y,c)=>{const sz=(1.4+Math.random()*2.2).toFixed(1);
+      return `<span style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${sz}px;height:${sz}px;background:${c};--dx:${40+Math.random()*110|0}px;--dy:${-110+Math.random()*80|0}px;animation-delay:${(x/W*.55+Math.random()*.12).toFixed(2)}s"></span>`;};
+    let h='';
+    for(let i=0;i<110;i++){const a=Math.random()*Math.PI*2, d=Math.sqrt(Math.random())*rad; h+=grain(cx+Math.cos(a)*d-1,cy+Math.sin(a)*d-1,col);}
+    if(last) for(let i=0;i<45;i++) h+=grain(rad*2+6+Math.random()*(W-rad*2-12),cr.height/2-6+Math.random()*12,ink);
     layer.innerHTML=h; document.body.appendChild(layer);
-    if(last){const g=ch.cloneNode(true); g.className='dchip ghostChip'; g.style.left=cr.left+'px'; g.style.top=cr.top+'px'; g.style.width=cr.width+'px'; document.body.appendChild(g); setTimeout(()=>g.remove(),1300);}
-    setTimeout(()=>layer.remove(),2300);
+    setTimeout(()=>layer.remove(),2600);
   }
   function starFall(el){
     if(el) sfx('starLost');
@@ -1484,7 +1488,7 @@ if(V2){
     const k=state.drops[i], free=state.fr[i];
     snap(k,state.drops.filter(x=>x===k).length===1);
     state.drops.splice(i,1); state.fr.splice(i,1); state.picking=false; state.hintMsg=null;
-    refundDrop(free); sfx('undo'); renderMix(msg); afterMixChange();
+    refundDrop(free); renderMix(msg); afterMixChange();
   }
   // A drop that takes the mix further from the target gets called out right away.
   const _addDrop=addDrop;

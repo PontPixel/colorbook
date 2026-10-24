@@ -782,3 +782,19 @@ body.v2{--grainEdge:rgba(35,40,58,.35)}
 .holidays .gch{display:flex;align-items:baseline;gap:8px;margin:16px 2px 8px;font-size:17px}
 .holidays .gch span{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .holidays .gch small{margin-left:auto;font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+/* Holidays: two separate collections */
+.hcols{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.hcol{appearance:none;border:0;display:flex;align-items:center;gap:14px;width:100%;padding:12px;border-radius:20px;background:var(--panel);box-shadow:var(--shadow);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.hcol:active{transform:scale(.98)}
+.hcol.live.christmas{box-shadow:inset 0 0 0 2px #2e7a4c,var(--shadow)}
+.hcol.live.thanksgiving{box-shadow:inset 0 0 0 2px #e57d22,var(--shadow)}
+.hcol .hcov{width:112px;flex:none;border-radius:12px;overflow:hidden;line-height:0;border:1px solid var(--line)}
+.hcol .hcov svg{display:block;width:100%;height:auto}
+.hcol .hinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.hcol .hinfo b{font:800 16px/1.2 "Inter",system-ui,sans-serif}
+.hcol .hinfo small{font-size:12px;font-weight:600;color:var(--muted)}
+.hcol .hinfo em{font-style:normal;font-weight:800;color:var(--ink);text-transform:uppercase;letter-spacing:.05em}
+.hcol .dbars{display:flex;gap:4px}.hcol .dbars i{flex:1;height:6px;border-radius:3px;background:var(--track)}
+.hcol.christmas .dbars i.on{background:#d1423a}.hcol.thanksgiving .dbars i.on{background:#e57d22}
+.holback{appearance:none;border:0;background:none;color:var(--muted);font:700 14px "Inter",system-ui,sans-serif;display:flex;align-items:center;gap:4px;padding:8px 0;cursor:pointer;min-height:44px}
+.holback .ico{width:18px;height:18px}

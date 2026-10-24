@@ -290,3 +290,11 @@ ru:{'Holidays':'Праздники','Christmas':'Рождество','Thanksgivi
 '<b>{season} pictures.</b> Holiday pictures to restore, here only until {date}. Tap the card, or the Holidays tab below.':'<b>Праздник: {season}.</b> Праздничные картинки, только до {date}. Нажмите на карточку или на вкладку «Праздники» внизу.',
 'Merry Christmas!':'Счастливого Рождества!','Happy Thanksgiving!':'С Днём благодарения!'}
 });
+I18N.add({
+fr:{'{season} collection':'Collection {season}','Open until {date}':'Ouverte jusqu’au {date}','Opens on {date}':'Ouvre le {date}','Back to Holidays':'Retour aux fêtes',
+'Outside its season, only the pictures you already started can be played.':'Hors saison, seules les images déjà commencées peuvent être jouées.',
+'Holiday collections open in their season. Pictures you started stay playable.':'Les collections des fêtes ouvrent à leur saison. Les images commencées restent jouables.'},
+ru:{'{season} collection':'Коллекция: {season}','Open until {date}':'Открыта до {date}','Opens on {date}':'Откроется {date}','Back to Holidays':'Назад к праздникам',
+'Outside its season, only the pictures you already started can be played.':'Вне сезона можно играть только в уже начатые картинки.',
+'Holiday collections open in their season. Pictures you started stay playable.':'Праздничные коллекции открываются в свой сезон. Начатые картинки остаются доступны.'}
+});

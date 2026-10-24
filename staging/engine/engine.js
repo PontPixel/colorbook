@@ -1887,18 +1887,35 @@ if(V2){
     return `<button class="gcard" data-i="${k}" ${ok?'':'disabled'} aria-label="${esc(T(l))}${ok?'':', '+t('locked')}">${thumbSVG(l,b!=null,pt&&pt.stars)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}`+
       `<b>${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${b!=null?starRow(b):pt?t('{done} of {all} parts',{done:Object.keys(pt.stars).length,all:l.regions.length}):''}</small></button>`;
   }
+  // Two separate collections, each with its own card (dates, progress); a card opens that collection's pictures.
+  const SEASONS=['thanksgiving','christmas'];
+  function seasonStatus(s){
+    const on=seasonOn();
+    if(on===s) return t('Open until {date}',{date:seasonDate(seasonEnd(s))});
+    const n=seasonNext(); const at=n.s===s?n.at:new Date(n.at.getFullYear()+(s==='thanksgiving'&&n.s==='christmas'?1:0),s==='christmas'?11:10,1);
+    return t('Opens on {date}',{date:seasonDate(at)});
+  }
   renderHolidays=function(){
-    const on=seasonOn(), el=$('holidays'); if(!el) return;
-    const played=s=>seasonPics(s).some(i=>save.best[LEVELS[i].id]!=null||(save.partial&&save.partial[LEVELS[i].id]));
-    const groups=['thanksgiving','christmas'].filter(s=>s===on||played(s)).sort((a,b)=>(b===on)-(a===on));
-    let h=`<h2>${t('Holidays')}</h2>`;
-    if(on) h+=`<p class="hsub">${t('{season} pictures, here until {date}.',{season:seasonName(on),date:seasonDate(seasonEnd(on))})}</p>`;
-    else{ const n=seasonNext(); h+=`<div class="hteaser">${icon('gift')}<b>${t('{season} pictures arrive on {date}.',{season:seasonName(n.s),date:seasonDate(n.at)})}</b><small>${t('Holiday pictures open only in their season. The ones you played stay here.')}</small></div>`; }
-    h+=groups.map(s=>{ const ids=seasonPics(s), got=ids.filter(i=>save.best[LEVELS[i].id]!=null).length;
-      return `<h3 class="gch"><span>${s===on?t('Now'):t('Last season')}</span>${esc(seasonName(s))}<small>${got} / ${ids.length}</small></h3><div class="ggrid">${ids.map(holCard).join('')}</div>`; }).join('');
-    el.innerHTML=h;
+    const el=$('holidays'); if(!el) return; const on=seasonOn(), view=v2.holView;
+    if(view){
+      const ids=seasonPics(view), got=ids.filter(i=>save.best[LEVELS[i].id]!=null).length;
+      el.innerHTML=`<button class="holback" aria-label="${t('Back to Holidays')}">${icon('back')}${t('Holidays')}</button>`+
+        `<h2>${t('{season} collection',{season:seasonName(view)})}</h2><p class="hsub">${seasonStatus(view)} · ${t('{done} of {all} restored',{done:got,all:ids.length})}</p>`+
+        (on===view?'':`<p class="hsub">${t('Outside its season, only the pictures you already started can be played.')}</p>`)+
+        `<div class="ggrid">${ids.map(holCard).join('')}</div>`;
+      return;
+    }
+    el.innerHTML=`<h2>${t('Holidays')}</h2><p class="hsub">${t('Holiday collections open in their season. Pictures you started stay playable.')}</p><div class="hcols">`+
+      SEASONS.map(s=>{ const ids=seasonPics(s), got=ids.filter(i=>save.best[LEVELS[i].id]!=null).length, live=on===s, cover=LEVELS[ids[0]];
+        return `<button class="hcol ${s}${live?' live':''}" data-s="${s}"><span class="hcov">${thumbSVG(cover,got>0)}</span><span class="hinfo"><b>${t('{season} collection',{season:seasonName(s)})}</b>`+
+          `<small>${live?`<em>${t('Now')}</em> `:''}${seasonStatus(s)}</small><span class="dbars">${ids.map(i=>`<i class="${save.best[LEVELS[i].id]!=null?'on':''}"></i>`).join('')}</span>`+
+          `<small>${t('{done} of {all} restored',{done:got,all:ids.length})}</small></span></button>`; }).join('')+`</div>`;
   };
-  $('holidays').addEventListener('click',e=>{ const c=e.target.closest('.gcard'); if(c&&!c.disabled) start(+c.dataset.i); });
+
+  $('holidays').addEventListener('click',e=>{
+    if(e.target.closest('.holback')){ v2.holView=null; renderHolidays(); return; }
+    const col=e.target.closest('.hcol'); if(col){ v2.holView=col.dataset.s; renderHolidays(); $('holidays').scrollTop=0; return; }
+    const c=e.target.closest('.gcard'); if(c&&!c.disabled) start(+c.dataset.i); });
   function renderSeasonCard(){
     const b=$('seasonBtn'), on=seasonOn(); b.hidden=!on; if(!on) return;
     const ids=seasonPics(on), got=ids.filter(i=>save.best[LEVELS[i].id]!=null).length, next=ids.find(i=>save.best[LEVELS[i].id]==null), lv=LEVELS[next!=null?next:ids[0]];
@@ -1907,7 +1924,9 @@ if(V2){
       `<small>${t('until {date}',{date:seasonDate(seasonEnd(on))})}</small></span><span class="dname">${got===ids.length?t('All restored. Happy holidays!'):t('{done} of {all} restored',{done:got,all:ids.length})}</span>`+
       `<span class="dbars">${ids.map(i=>`<i class="${save.best[LEVELS[i].id]!=null?'on':''}"></i>`).join('')}</span></span>`;
   }
-  $('seasonBtn').onclick=()=>showTab('holidays');
+  $('seasonBtn').onclick=()=>{ v2.holView=seasonOn(); showTab('holidays'); };
+  // the Holidays tab itself opens on the two collections
+  if(holTab) holTab.addEventListener('click',()=>{ if(v2.holView){ v2.holView=null; renderHolidays(); } });
   const _renderMenu=renderMenu;
   renderMenu=function(){
     _renderMenu(); renderSeasonCard(); if(!$('holidays').hidden) renderHolidays();

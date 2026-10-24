@@ -381,6 +381,7 @@ body.v2{--wall:#f3f1ec;--line:#e2ded5;--soft:#ebe7df;--track:#e4e0d7;--muted:#62
 .home.v2 .topl{display:flex;gap:8px}
 .home.v2 .homeMain{align-items:stretch;text-align:left;gap:12px;padding-top:2px}
 .home.v2 .homeMain::before,.home.v2 .homeMain::after{display:none}
+.home.v2 .homeMain>*{width:100%;max-width:520px;align-self:center}
 .v2hero{background:var(--panel);border-radius:24px;box-shadow:var(--shadow);padding:10px 10px 12px;display:flex;flex-direction:column;gap:10px;flex:none}
 .home.v2 .v2hero .nextPic{width:100%;min-width:0;padding:0;border-radius:14px;box-shadow:none;border:1px solid var(--line);overflow:hidden;background:#fbfbfc}
 .home.v2 .v2hero .nextPic svg{border-radius:0}

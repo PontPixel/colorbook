@@ -654,15 +654,6 @@ body.v2 .card .bfree{font-size:13px}
 .wrap.v2 .paintrow .plab>span{align-items:flex-start}
 .wrap.v2 .paintrow .plab small{text-transform:none;letter-spacing:0}
 /* ---------- Playtest round 3 ---------- */
-/* Target and mix sit on a paper tray (light in both themes, like the picture), so black, white and dark targets
-   always read, and the empty bowl is a dashed outline instead of a dark disc that looks like a color. */
-.wrap.v2 .swatches{background:#f6f4ef;border-radius:16px;padding:10px 6px 8px;
-  --ink:#1f2330;--muted:#5d6271;--panel:#f6f4ef;--v2warn:#b35500;color:#1f2330}
-.wrap.v2 .swatches .chip{box-shadow:inset 0 0 0 1px rgba(35,40,58,.18)}
-.wrap.v2 .swatches #targetChip{box-shadow:inset 0 0 0 1px rgba(35,40,58,.18),0 0 0 3px #f6f4ef,0 0 0 5px var(--tc,#23283a),0 0 0 6px rgba(35,40,58,.25)}
-.wrap.v2 .swatches #mixChip.empty{background:#ece8e0;box-shadow:none;border:2px dashed #b5b0a4}
-.wrap.v2 .swatches .msg{color:#5d6271}.wrap.v2 .swatches .msg.good{color:#1f2330}.wrap.v2 .swatches .msg.bad{color:#b35500}
-.wrap.v2 .swatches #pctNum.worse{color:#b35500}
 /* paint pot: change floats off the counter */
 .wrap.v2 .paintrow{position:relative}
 .pfloat{position:absolute;right:16px;top:2px;font:800 15px "Inter",system-ui,sans-serif;color:var(--v2warn);pointer-events:none;animation:v2float .9s ease-out both}
@@ -672,7 +663,47 @@ body.v2 .card .bfree{font-size:13px}
 .wrap.v2 .paintrow.coach{position:relative;z-index:5;box-shadow:0 0 0 3px var(--ink),var(--shadow)}
 .coachTip .coachOk{margin-top:10px;width:100%;padding:11px}
 .cheats #cheatNew{width:100%}
-/* Target ring: always dark ink, so gray, olive or pale targets never look like a disabled control */
-.wrap.v2 .swatches #targetChip{box-shadow:inset 0 0 0 1px rgba(35,40,58,.2),0 0 0 3px #f6f4ef,0 0 0 6px #23283a}
 .dustLayer{width:auto;height:auto}
-.wrap.v2 .swatches #mixLab{white-space:normal;text-align:center;max-width:92px;line-height:1.2}
+/* ---------- Playtest round 4 ---------- */
+/* Back on the dark card. The target ring is the ink color (light in dark mode, dark in light mode), so black,
+   gray or olive targets always stand out as the goal; the empty bowl is a dashed outline, never a dark disc. */
+.wrap.v2 #targetChip{box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),0 0 0 3px var(--panel),0 0 0 5.5px var(--ink)}
+.wrap.v2 #mixChip.empty{background:transparent;box-shadow:none;border:2px dashed var(--muted)}
+.wrap.v2 #mixLab{white-space:normal;text-align:center;max-width:92px;line-height:1.2}
+/* The bowl shows what's in it: a ring around the mix split by paint, in proportion */
+.wrap.v2 #mixChip::before{content:"";position:absolute;inset:-8px;border-radius:50%;background:var(--ring,none);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4.5px));pointer-events:none}
+/* Drops live on the paints: each paint shows how many drops of it are in the bowl, with a minus to take one out */
+.wrap.v2 .drops{display:none}
+.wrap.v2 .pwrap{position:relative;display:flex;justify-content:center}
+.wrap.v2 .pcount{position:absolute;top:-4px;right:calc(50% - 38px);min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;border-radius:11px;background:var(--ink);color:var(--on-ink);
+  font:800 12px/22px "Inter",system-ui,sans-serif;text-align:center;box-shadow:0 0 0 2px var(--wall);pointer-events:none;animation:v2pop .25s cubic-bezier(.2,1.6,.4,1)}
+.wrap.v2 .pminus{position:absolute;top:-8px;left:calc(50% - 44px);width:32px;height:32px;border:0;border-radius:50%;background:none;padding:0;cursor:pointer;display:grid;place-items:center}
+.wrap.v2 .pminus i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--panel);color:var(--ink);box-shadow:0 0 0 2px var(--wall),0 1px 4px rgba(0,0,0,.25);font:800 16px/1 "Inter",system-ui,sans-serif}
+.wrap.v2 .pminus[hidden]{display:none}
+@keyframes v2pop{from{transform:scale(.4)}}
+/* Home tutorials */
+.hlift{position:relative;z-index:5;box-shadow:0 0 0 3px var(--ink),var(--shadow)!important}
+.htip{position:fixed;left:16px;right:16px;z-index:6;max-width:480px;margin:0 auto;background:var(--panel);color:var(--ink);border-radius:16px;padding:14px 16px;box-shadow:0 12px 40px rgba(0,0,0,.35);font-size:14px;line-height:1.45;display:flex;flex-direction:column;gap:10px;animation:cardin .35s cubic-bezier(.2,1.4,.5,1)}
+.htip .btn{padding:11px}
+/* Undo demo: the Undo button takes back the last drop, then a minus takes out one paint */
+.dm-undo2{display:flex;align-items:center;justify-content:center;gap:14px;width:240px}
+.dm-undo2 .ubtn{width:40px;height:40px;border-radius:12px;background:var(--panel);display:grid;place-items:center;box-shadow:var(--shadow);animation:uBtn 5s infinite}
+.dm-undo2 .ubtn .ico{width:22px;height:22px}
+.dm-undo2 .up{position:relative;width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.dm-undo2 .up b{position:absolute;top:-8px;right:-8px;min-width:18px;height:18px;border-radius:9px;background:var(--ink);color:var(--on-ink);font:800 11px/18px "Inter",system-ui,sans-serif;text-align:center}
+.dm-undo2 .up em{position:absolute;top:-9px;left:-9px;width:18px;height:18px;border-radius:50%;background:var(--panel);color:var(--ink);font:800 13px/18px "Inter",system-ui,sans-serif;text-align:center;font-style:normal;box-shadow:0 1px 3px rgba(0,0,0,.3);animation:uMinus 5s infinite}
+.dm-undo2 .up-y b{animation:uLast 5s infinite}
+.dm-undo2 .up-m b{animation:uPick 5s infinite}
+.dm-undo2 .ucap{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:11px;font-weight:700;color:var(--muted);opacity:0}
+.dm-undo2{position:relative;height:80px}
+.dm-undo2 .ucap-a{animation:uCapA 5s infinite}.dm-undo2 .ucap-b{animation:uCapB 5s infinite}
+@keyframes uBtn{0%,8%{transform:none}14%{transform:scale(.88);background:var(--ink);color:var(--on-ink)}22%,100%{transform:none}}
+@keyframes uLast{0%,14%{opacity:1;transform:none}26%,92%{opacity:0;transform:translateY(-14px)}100%{opacity:1;transform:none}}
+@keyframes uMinus{0%,50%{transform:none}58%{transform:scale(.8);background:var(--ink);color:var(--on-ink)}66%,100%{transform:none}}
+@keyframes uPick{0%,58%{opacity:1;transform:none}70%,92%{opacity:0;transform:translate(10px,-10px)}100%{opacity:1;transform:none}}
+@keyframes uCapA{0%,5%{opacity:0}10%,40%{opacity:1}46%,100%{opacity:0}}
+@keyframes uCapB{0%,48%{opacity:0}54%,88%{opacity:1}94%,100%{opacity:0}}
+.pcount.bump{animation:v2pop .25s cubic-bezier(.2,1.6,.4,1)}
+.wrap.v2 .pwrap{min-width:0}
+.wrap.v2 .pwrap>.paint{width:100%}

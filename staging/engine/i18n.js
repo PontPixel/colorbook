@@ -225,3 +225,18 @@ ru:{'This is your <b>paint pot</b>. Every drop you add comes out of it, and Undo
 '<b>Rest needs</b> is what the unpainted parts take at par. If the pot runs dry, a refill costs coins, so make every drop count.':'<b>Для остального нужно</b> — столько краски нужно оставшимся частям по норме. Если банка опустеет, пополнение стоит монет, так что берегите каждую каплю.',
 'Got it':'Понятно'}
 });
+// Playtest round 4: drops on the paints, Home tutorials, Undo demo
+I18N.add({
+fr:{'Takes back your last drop. Or tap the minus on any paint to take out one drop of just that paint. The paint comes back.':'Reprend votre dernière goutte. Ou touchez le moins sur une peinture pour retirer une goutte de cette peinture seulement. La peinture revient.',
+'Take out one drop of {paint}':'Retirer une goutte de {paint}','Undo: last drop':'Annuler : dernière goutte','Minus: that paint':'Moins : cette peinture',
+'<b>Chapters.</b> Pictures come in chapters of five. Finish a chapter for coins and one booster of each kind.':'<b>Chapitres.</b> Les images vont par chapitres de cinq. Terminez un chapitre pour des pièces et un bonus de chaque sorte.',
+'<b>Star chest.</b> Every star you earn goes in here. When it fills up, it opens: coins and boosters.':'<b>Coffre à étoiles.</b> Chaque étoile gagnée y va. Quand il est plein, il s’ouvre : pièces et bonus.',
+'<b>Daily picture.</b> Each day a picture you restored comes back with a twist: less paint, no boosters or a hidden match %. Play on days in a row to grow your streak and the reward.':'<b>Image du jour.</b> Chaque jour, une image restaurée revient avec une contrainte : moins de peinture, pas de bonus ou % caché. Jouez plusieurs jours de suite pour allonger la série et la récompense.',
+'<b>Mixing tips.</b> A new one every day. Tap the arrow to read more.':'<b>Astuces de mélange.</b> Une nouvelle chaque jour. Touchez la flèche pour en lire d’autres.'},
+ru:{'Takes back your last drop. Or tap the minus on any paint to take out one drop of just that paint. The paint comes back.':'Забирает последнюю каплю. Или нажмите минус на краске, чтобы убрать одну каплю только этой краски. Краска возвращается.',
+'Take out one drop of {paint}':'Убрать одну каплю: {paint}','Undo: last drop':'Отменить: последняя капля','Minus: that paint':'Минус: эта краска',
+'<b>Chapters.</b> Pictures come in chapters of five. Finish a chapter for coins and one booster of each kind.':'<b>Главы.</b> Картинки идут главами по пять. Пройдите главу — получите монеты и по одному бустеру каждого вида.',
+'<b>Star chest.</b> Every star you earn goes in here. When it fills up, it opens: coins and boosters.':'<b>Звёздный сундук.</b> Сюда идут все заработанные звёзды. Когда он заполнится, откроется: монеты и бустеры.',
+'<b>Daily picture.</b> Each day a picture you restored comes back with a twist: less paint, no boosters or a hidden match %. Play on days in a row to grow your streak and the reward.':'<b>Картинка дня.</b> Каждый день одна из восстановленных картинок возвращается с условием: меньше краски, без бустеров или без процента совпадения. Играйте несколько дней подряд — серия и награда растут.',
+'<b>Mixing tips.</b> A new one every day. Tap the arrow to read more.':'<b>Советы по смешиванию.</b> Каждый день новый. Нажмите на стрелку, чтобы прочитать ещё.'}
+});

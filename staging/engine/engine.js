@@ -273,8 +273,8 @@ function v2Scenes(){ return `
       <div class="actions">
         <div class="boosters">
           <button class="btn boost" id="undoBtn"></button>
-          <button class="btn boost" id="paletteBtn"></button>
           <button class="btn boost" id="magicBtn"></button>
+          <button class="btn boost" id="paletteBtn"></button>
           <button class="btn boost" id="brushBtn"></button>
         </div>
       </div>
@@ -326,7 +326,7 @@ const BOOSTERS={
 // They are introduced on the pictures that used to introduce Hint, Pick and Empty.
 if(V2){
   delete BOOSTERS.hint; delete BOOSTERS.pick; delete BOOSTERS.empty;
-  BOOSTERS.undo.text=t('Takes back your last drop. You can also tap a paint in the bowl to take out just that one. The paint comes back.');
+  BOOSTERS.undo.text=t('Takes back your last drop. Or tap the minus on any paint to take out one drop of just that paint. The paint comes back.');
   Object.assign(BOOSTERS,{
     magic:{name:t('Magic'),price:40,text:t('Puts the next right drop in the bowl, or takes a wrong one out. That part can earn at most 2 stars.')},
     palette:{name:t('Palette'),price:25,text:t('Dims the paints this part does not use, until the part is painted. The part can still earn 3 stars.')},
@@ -1409,6 +1409,14 @@ if(V2){
     const chip=$('mixChip'); chip.classList.toggle('empty',!m); chip.style.background=m?hex(m):'';
     $('mixLab').textContent=state.drops.length&&!state.applying?t('Tap to pour out'):t('Mix');
     const ks=L.paints||PAINTS.map(x=>x.k);
+    // drops in the bowl: a count and a minus on each paint, and a ring around the bowl split by paint
+    wrapPaints();
+    const canMinus=save.inv.undo!=null&&!state.lesson;
+    $('paints').querySelectorAll('.pwrap').forEach(w=>{ const k=w.querySelector('.paint').dataset.k, n=c[k]||0, pc=w.querySelector('.pcount'), pm=w.querySelector('.pminus');
+      if(n){ if(pc.textContent!==String(n)) restart(pc,'bump'); pc.textContent=String(n); } pc.hidden=!n; pm.hidden=!(n&&canMinus); });
+    const tot=state.drops.length, segs=ks.filter(k=>c[k]); let acc=0;
+    $('mixChip').style.setProperty('--ring',tot?'conic-gradient('+segs.map(k=>{const a=acc/tot*360, b=(acc+=c[k])/tot*360, col=k==='K'?'#5a5f6e':hex(PMAP[k].rgb), gap=segs.length>1?1.5:0;
+      return `transparent ${a}deg ${a+gap}deg,${col} ${a+gap}deg ${b}deg`;}).join(',')+')':'none');
     $('drops').innerHTML=ks.filter(k=>c[k]).map(k=>`<button class="dchip" data-k="${k}" aria-label="${t('{n} {paint}. Tap to take one out.',{n:c[k],paint:PN(k)})}"><i style="background:${hex(PMAP[k].rgb)}"></i>×${c[k]}</button>`).join('')
       ||`<em>${t('Your drops show up here')}</em>`;
     const blind=state.twist==='blind'&&p!=null&&p<95;
@@ -1460,20 +1468,29 @@ if(V2){
     setTimeout(()=>b.remove(),1900);
   }
   // A removed paint blows away as dust (and its chip dissolves when it was the last drop of that paint).
-  // The removed paint turns into dust and blows away to the right (with a whoosh). The grains start packed in the
-  // swatch's circle, so the chip itself seems to dissolve; when it was the last drop, its label goes to dust too.
-  function snap(k,last){
+  // Each paint gets a count of its drops in the bowl and a minus that takes one out (it uses an Undo).
+  function wrapPaints(){
+    $('paints').querySelectorAll('.paint').forEach(b=>{ if(b.parentElement.classList.contains('pwrap')) return;
+      const w=document.createElement('div'); w.className='pwrap'; b.before(w); w.appendChild(b); const k=b.dataset.k;
+      w.insertAdjacentHTML('beforeend',`<span class="pcount" hidden></span><button class="pminus" data-k="${k}" hidden aria-label="${t('Take out one drop of {paint}',{paint:PN(k)})}"><i>−</i></button>`); });
+  }
+  $('paints').addEventListener('click',e=>{
+    const m=e.target.closest('.pminus'); if(!m||!state||state.applying||state.forced||state.lesson) return;
+    const k=m.dataset.k; if(!state.drops.includes(k)||isLocked('undo')||!spend('undo')) return;
+    removeAt(state.drops.lastIndexOf(k),[t('{paint} taken out. Paint refunded.',{paint:PN(k)}),'']);
+  });
+  // The removed paint turns into dust that leaves the bowl and blows away to the right, with a whoosh.
+  // The grains start packed in the bowl's ring and rim in that paint's color.
+  function snap(k){
     sfx('snap');
     if(reduced) return;
-    const ch=$('drops').querySelector(`.dchip[data-k="${k}"]`); if(!ch) return;
-    const cr=ch.getBoundingClientRect(), sw=ch.querySelector('i').getBoundingClientRect(), col=hex(PMAP[k].rgb), ink=getComputedStyle(ch).color;
-    const layer=document.createElement('div'); layer.className='dustLayer'; layer.style.left=cr.left+'px'; layer.style.top=cr.top+'px';
-    const W=cr.width, rad=sw.width/2, cx=sw.left-cr.left+rad, cy=sw.top-cr.top+rad;
-    const grain=(x,y,c)=>{const sz=(1.4+Math.random()*2.2).toFixed(1);
-      return `<span style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${sz}px;height:${sz}px;background:${c};--dx:${40+Math.random()*110|0}px;--dy:${-110+Math.random()*80|0}px;animation-delay:${(x/W*.55+Math.random()*.12).toFixed(2)}s"></span>`;};
+    const mc=$('mixChip').getBoundingClientRect(), col=hex(PMAP[k].rgb);
+    const layer=document.createElement('div'); layer.className='dustLayer'; layer.style.left=mc.left+'px'; layer.style.top=mc.top+'px';
+    const R=mc.width/2, W=mc.width+16;
+    const grain=(x,y)=>{const sz=(1.4+Math.random()*2.4).toFixed(1);
+      return `<span style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${sz}px;height:${sz}px;background:${col};--dx:${50+Math.random()*120|0}px;--dy:${-120+Math.random()*90|0}px;animation-delay:${((x+8)/W*.55+Math.random()*.12).toFixed(2)}s"></span>`;};
     let h='';
-    for(let i=0;i<110;i++){const a=Math.random()*Math.PI*2, d=Math.sqrt(Math.random())*rad; h+=grain(cx+Math.cos(a)*d-1,cy+Math.sin(a)*d-1,col);}
-    if(last) for(let i=0;i<45;i++) h+=grain(rad*2+6+Math.random()*(W-rad*2-12),cr.height/2-6+Math.random()*12,ink);
+    for(let i=0;i<150;i++){const a=Math.random()*Math.PI*2, d=i<90?R+2+Math.random()*6:Math.sqrt(Math.random())*R*.9; h+=grain(R+Math.cos(a)*d-1,R+Math.sin(a)*d-1);}
     layer.innerHTML=h; document.body.appendChild(layer);
     setTimeout(()=>layer.remove(),2600);
   }
@@ -1486,7 +1503,7 @@ if(V2){
   }
   function removeAt(i,msg){
     const k=state.drops[i], free=state.fr[i];
-    snap(k,state.drops.filter(x=>x===k).length===1);
+    snap(k);
     state.drops.splice(i,1); state.fr.splice(i,1); state.picking=false; state.hintMsg=null;
     refundDrop(free); renderMix(msg); afterMixChange();
   }
@@ -1615,7 +1632,8 @@ if(V2){
   $('retryBtn').onclick=()=>{ if(save.partial&&L){ delete save.partial[L.id]; persist(); } start(L.index,{daily:state&&state.daily}); };
   // Start-of-picture cards come one at a time: the picture's own news first, then each new booster with a demo.
   const DEMO={
-    undo:'<div class="dm dm-undo"><span class="dmbowl"></span><i class="dmdrop"></i></div>',
+    undo:'<div class="dm dm-undo2"><span class="ubtn">'+icon('undo')+'</span>'+[['#00a8eb','c'],['#e31285','m'],['#ffe60d','y']].map(([c,k])=>`<span class="up up-${k}" style="background:${c}"><b>1</b>${k==='m'?'<em>−</em>':''}</span>`).join('')+
+      `<span class="ucap ucap-a">${t('Undo: last drop')}</span><span class="ucap ucap-b">${t('Minus: that paint')}</span></div>`,
     magic:'<div class="dm dm-magic"><span class="dmbowl"></span><i class="dmdrop"></i><span class="dmwand">'+icon('magic')+'</span></div>',
     palette:'<div class="dm dm-palette">'+['#fafaf7','#00a8eb','#e31285','#ffe60d','#212126'].map((c,i)=>`<i style="background:${c}" class="${i===2||i===3?'keep':'fade'}"></i>`).join('')+'</div>',
     brush:'<div class="dm dm-brush"><svg viewBox="0 0 120 80" aria-hidden="true"><path class="dmshape" d="M20 60Q20 20 60 20T100 60Z"/><path class="dmfill" d="M20 60Q20 20 60 20T100 60Z"/><path class="dmline" d="M20 60Q20 20 60 20T100 60Z"/></svg><span class="dmbrush">'+icon('brush')+'</span></div>'};
@@ -1676,7 +1694,31 @@ if(V2){
   // Lessons lift controls above the dim layer; a running entrance animation would trap them under it.
   const _startLesson=startLesson; startLesson=function(k){ $('game').classList.remove('entering'); return _startLesson(k); };
   const _forceUndo=forceUndo; forceUndo=function(k){ $('game').classList.remove('entering'); _forceUndo(k); };
-  const _goHome=goHome; goHome=function(tab){ _goHome(tab); enter($('home')); };
+  const _goHome=goHome; goHome=function(tab){ _goHome(tab); enter($('home')); clearTimeout(v2.ht); v2.ht=setTimeout(homeCoach,1250); };
+  // Home tutorials: the first time each card shows up (after a first picture is restored), one card per visit is
+  // lifted above a dim layer with a short note on what it is and why it matters.
+  document.body.insertAdjacentHTML('beforeend','<div class="htip" id="homeTip" role="dialog" hidden></div>');
+  const HOMETIPS=[
+    {key:'hChapter',el:'chapterCard',text:()=>t('<b>Chapters.</b> Pictures come in chapters of five. Finish a chapter for coins and one booster of each kind.')},
+    {key:'hChest',el:'chestCard',text:()=>t('<b>Star chest.</b> Every star you earn goes in here. When it fills up, it opens: coins and boosters.')},
+    {key:'hDaily',el:'dailyPicBtn',text:()=>t('<b>Daily picture.</b> Each day a picture you restored comes back with a twist: less paint, no boosters or a hidden match %. Play on days in a row to grow your streak and the reward.')},
+    {key:'hTip',el:'tipCard',text:()=>t('<b>Mixing tips.</b> A new one every day. Tap the arrow to read more.')}];
+  function homeCoach(){
+    if($('home').hidden||!$('homeMain').offsetParent||!LEVELS.some(l=>save.best[l.id]!=null)) return;
+    if(['introOverlay','settingsOverlay','buyOverlay','quizOverlay'].some(id=>$(id)&&!$(id).hidden)) return;
+    const h=HOMETIPS.find(x=>!save.tut[x.key]&&$(x.el)&&!$(x.el).hidden&&$(x.el).offsetParent&&!$(x.el).closest('[hidden]'));
+    if(!h) return;
+    const el=$(h.el); $('home').classList.remove('entering');
+    el.scrollIntoView({block:'center'}); // instant, so the note is placed against the card's final position
+    setTimeout(()=>{
+      if($('home').hidden) return;
+      el.classList.add('hlift'); $('coachDim').hidden=false;
+      const tip=$('homeTip'); tip.innerHTML=h.text()+`<button class="btn primary">${t('Got it')}</button>`; tip.hidden=false;
+      const r=el.getBoundingClientRect(), th=tip.offsetHeight, below=r.bottom+12+th<innerHeight-90;
+      tip.style.top=(below?r.bottom+12:Math.max(12,r.top-12-th))+'px';
+      tip.querySelector('button').onclick=()=>{ save.tut[h.key]=true; persist(); el.classList.remove('hlift'); $('coachDim').hidden=true; tip.hidden=true; };
+    },reduced?0:350);
+  }
   // Home: the next picture as a hero card, the daily picture with its streak, and a mixing tip.
   renderDailyPic=function(){
     const b=$('dailyPicBtn'), i=DAILY?dailyIndex():-1; b.hidden=i<0; if(i<0) return;

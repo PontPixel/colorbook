@@ -188,6 +188,7 @@ document.body.insertAdjacentHTML('afterbegin',(V2?v2Scenes():`
 <div class="overlay" id="cheatOverlay" hidden>
   <div class="card cheats">
     <h2>Cheats</h2>
+    <button class="btn primary" data-c="newgame" id="cheatNew">New game: start over from picture 1</button>
     <p>Staging only. This build has its own save, so nothing here touches the live game.</p>
     <div class="cgrid">
       <button class="btn" data-c="coins100">+100 coins</button><button class="btn" data-c="coins1000">+1000 coins</button>
@@ -200,7 +201,6 @@ document.body.insertAdjacentHTML('afterbegin',(V2?v2Scenes():`
     <div class="csnd"><div class="csndhead"><b>Sounds</b><div class="seg" id="sfxSet"><button data-v="v1">Old</button><button data-v="v2">New</button></div></div>
       <div class="cgrid c3" id="sfxGrid"></div></div>
     <details class="cev"><summary>Analytics events (last 40)</summary><pre id="cheatEvents"></pre></details>
-    <button class="btn" data-c="reset" id="cheatReset">Erase staging save</button>
     <button class="btn primary" data-c="close">Close</button>
   </div>
 </div>`:''));
@@ -1435,6 +1435,11 @@ if(V2){
     _updateHud(); if(!state) return;
     $('progress').textContent=t('{done} of {all} parts restored',{done:Object.keys(state.done).length,all:L.regions.length});
     $('paintLeft').textContent=tn(state.paint,'drop');
+    // every change of the pot floats off the counter (−1 for a drop, +1 for a refund)
+    if(v2.lastPaint!=null&&v2.lastL===L&&state.paint!==v2.lastPaint&&!reduced){
+      const d=state.paint-v2.lastPaint, f=document.createElement('span'); f.className='pfloat'+(d>0?' up':''); f.textContent=(d>0?'+':'−')+Math.abs(d);
+      $('paintRow').appendChild(f); setTimeout(()=>f.remove(),900); }
+    v2.lastPaint=state.paint; v2.lastL=L;
     // How much the unpainted parts need at par (minus the paid drops already in the bowl), and a warning when short.
     const r=current(), undone=L.regions.filter(x=>!state.done[x.id]);
     let need=undone.reduce((a,x)=>a+x.min,0); if(r&&!state.done[r.id]) need-=Math.min(r.min,state.fr.filter(x=>!x).length);
@@ -1564,7 +1569,21 @@ if(V2){
       save.partial[L.id]={stars:pick(state.stars),used:pick(state.used),hinted:pick(state.hinted),rescued:pick(state.rescued),paint:state.paint,at:Date.now()}; }
     persist();
   }
-  const _apply=apply; apply=function(){ _apply(); savePartial(); };
+  const _apply=apply; apply=function(){ _apply(); savePartial();
+    if(save.tut.drag&&!save.tut.paint&&state&&!state.finished) setTimeout(paintTip,800); };
+  // One-time guided tip on the paint pot: what it is, what "Rest needs" means, why it matters.
+  function paintTip(){
+    if(save.tut.paint||!state||state.finished||state.forced||state.lesson||state.applying||!$('introOverlay').hidden||!$('endOverlay').hidden) return;
+    save.tut.paint=true; persist(); hideHand();
+    $('game').classList.remove('entering');
+    const row=$('paintRow'); row.classList.add('coach');
+    $('coachTip').innerHTML=t('This is your <b>paint pot</b>. Every drop you add comes out of it, and Undo puts it back.')+'<br>'+
+      t('<b>Rest needs</b> is what the unpainted parts take at par. If the pot runs dry, a refill costs coins, so make every drop count.')+
+      `<br><button class="btn primary coachOk">${t('Got it')}</button>`;
+    $('coachTip').hidden=false; $('coachDim').hidden=false; document.body.classList.add('coaching');
+    revealInBoard($('coachTip'));
+    $('coachTip').querySelector('.coachOk').onclick=()=>{ hideCoach(); startHands(); };
+  }
   // Home leads with the picture you left half-way (the latest one), unless a friend's challenge is waiting.
   const _nextIndex=nextIndex;
   nextIndex=function(){
@@ -1732,7 +1751,7 @@ if(CHEATS){
   let armed=false;
   const refresh=()=>{ persist(); renderCoins(true); if(state){ updateHud(); renderActions(); } else renderMenu(); };
   const open=()=>{ const g=!!state&&!state.finished; ['paint','solve','finish'].forEach(c=>$('cheatOverlay').querySelector(`[data-c="${c}"]`).disabled=!g);
-    if(L) sel.value=L.index; armed=false; $('cheatEvents').textContent=EVENTS.join('\n')||'No events yet'; $('cheatReset').textContent='Erase staging save'; $('cheatOverlay').hidden=false; };
+    if(L) sel.value=L.index; armed=false; $('cheatEvents').textContent=EVENTS.join('\n')||'No events yet'; $('cheatNew').textContent='New game: start over from picture 1'; $('cheatOverlay').hidden=false; };
   $('cheatBtn').onclick=open;
   // Sound test: play every effect in the old or the new set to compare them on a phone.
   const SND=[['drop','W','Drop White'],['drop','C','Drop Cyan'],['drop','M','Drop Magenta'],['drop','Y','Drop Yellow'],['drop','K','Drop Black'],
@@ -1767,13 +1786,15 @@ if(CHEATS){
     if(c==='newDay'){ if(save.daily) save.daily.last=dayKey(new Date(Date.now()-864e5)); refresh(); toast('Daily picture is open again, streak kept'); return; }
     if(c==='tutorials'){ save.tut={}; save.seen={}; persist(); toast('Tutorials and tip cards will show again'); return; }
     if(c==='jump'){ close(); start(+sel.value); return; }
-    if(c==='reset'){
-      if(!armed){ armed=true; b.textContent='Tap again to erase everything'; return; }
-      try{localStorage.removeItem(SAVE_KEY);}catch(err){} location.reload();
+    // Wipes this build's save (coins, stars, boosters, tutorials, progress) and opens picture 1, as a first-time player.
+    if(c==='newgame'){
+      if(!armed){ armed=true; b.textContent='Tap again: erase this save and start over'; return; }
+      try{localStorage.removeItem(SAVE_KEY); sessionStorage.setItem('pp-newgame','1');}catch(err){} location.reload();
     }
   });
 }
 
 goHome();
+if(CHEATS){ try{ if(sessionStorage.getItem('pp-newgame')){ sessionStorage.removeItem('pp-newgame'); start(0); } }catch(e){} }
 track('game_open',{lang:I18N.lang,restored:LEVELS.filter(l=>save.best[l.id]!=null).length,coins:save.coins});
 })();

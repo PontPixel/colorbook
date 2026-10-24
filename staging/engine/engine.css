@@ -653,3 +653,22 @@ body.v2 .card .bfree{font-size:13px}
 @keyframes dmBrush{0%,15%{transform:translateX(0)}65%{transform:translateX(86px)}90%{transform:translateX(86px);opacity:1}100%{transform:translateX(0);opacity:0}}
 .wrap.v2 .paintrow .plab>span{align-items:flex-start}
 .wrap.v2 .paintrow .plab small{text-transform:none;letter-spacing:0}
+/* ---------- Playtest round 3 ---------- */
+/* Target and mix sit on a paper tray (light in both themes, like the picture), so black, white and dark targets
+   always read, and the empty bowl is a dashed outline instead of a dark disc that looks like a color. */
+.wrap.v2 .swatches{background:#f6f4ef;border-radius:16px;padding:10px 6px 8px;
+  --ink:#1f2330;--muted:#5d6271;--panel:#f6f4ef;--v2warn:#b35500;color:#1f2330}
+.wrap.v2 .swatches .chip{box-shadow:inset 0 0 0 1px rgba(35,40,58,.18)}
+.wrap.v2 .swatches #targetChip{box-shadow:inset 0 0 0 1px rgba(35,40,58,.18),0 0 0 3px #f6f4ef,0 0 0 5px var(--tc,#23283a),0 0 0 6px rgba(35,40,58,.25)}
+.wrap.v2 .swatches #mixChip.empty{background:#ece8e0;box-shadow:none;border:2px dashed #b5b0a4}
+.wrap.v2 .swatches .msg{color:#5d6271}.wrap.v2 .swatches .msg.good{color:#1f2330}.wrap.v2 .swatches .msg.bad{color:#b35500}
+.wrap.v2 .swatches #pctNum.worse{color:#b35500}
+/* paint pot: change floats off the counter */
+.wrap.v2 .paintrow{position:relative}
+.pfloat{position:absolute;right:16px;top:2px;font:800 15px "Inter",system-ui,sans-serif;color:var(--v2warn);pointer-events:none;animation:v2float .9s ease-out both}
+.pfloat.up{color:var(--ink)}
+@keyframes v2float{0%{opacity:0;transform:translateY(8px)}20%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
+/* paint pot tip: the panel is lifted above the dim layer */
+.wrap.v2 .paintrow.coach{position:relative;z-index:5;box-shadow:0 0 0 3px var(--ink),var(--shadow)}
+.coachTip .coachOk{margin-top:10px;width:100%;padding:11px}
+.cheats #cheatNew{width:100%}

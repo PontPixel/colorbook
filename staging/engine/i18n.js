@@ -216,3 +216,12 @@ ru:{'Palette':'Палитра','Dims the paints this part does not use, until th
 'That took it further away':'Стало дальше от цели','Rest needs {n}':'Для остального нужно {n}','{done} of {all} parts':'Частей: {done} из {all}',
 'Welcome back: {n} of {all} parts already painted.':'С возвращением: уже раскрашено частей — {n} из {all}.'}
 });
+// Playtest round 3: paint pot tip
+I18N.add({
+fr:{'This is your <b>paint pot</b>. Every drop you add comes out of it, and Undo puts it back.':'Voici votre <b>pot de peinture</b>. Chaque goutte ajoutée y est prise, et Annuler la remet.',
+'<b>Rest needs</b> is what the unpainted parts take at par. If the pot runs dry, a refill costs coins, so make every drop count.':'<b>Il en faut</b> indique ce que demandent les parties restantes au par. Si le pot est vide, le remplir coûte des pièces : chaque goutte compte.',
+'Got it':'Compris'},
+ru:{'This is your <b>paint pot</b>. Every drop you add comes out of it, and Undo puts it back.':'Это ваша <b>банка с краской</b>. Каждая капля берётся из неё, а «Отменить» возвращает каплю обратно.',
+'<b>Rest needs</b> is what the unpainted parts take at par. If the pot runs dry, a refill costs coins, so make every drop count.':'<b>Для остального нужно</b> — столько краски нужно оставшимся частям по норме. Если банка опустеет, пополнение стоит монет, так что берегите каждую каплю.',
+'Got it':'Понятно'}
+});

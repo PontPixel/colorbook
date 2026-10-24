@@ -1481,8 +1481,8 @@ if(V2){
       const w=document.createElement('div'); w.className='pwrap'; b.before(w); w.appendChild(b); const k=b.dataset.k;
       w.insertAdjacentHTML('beforeend',`<span class="pcount" hidden></span>`); });
   }
-  // The removed drop turns its chip into dust that blows away to the right, with a whoosh: grains packed in the
-  // chip's swatch (and its label when it was the last drop of that paint).
+  // The removed drop's paint turns into dust that blows away to the right, with a whoosh: grains packed in the
+  // chip's swatch. When it was the last drop of that paint, the empty chip fades out under the dust.
   function snap(k){
     sfx('snap');
     if(reduced) return;
@@ -1495,8 +1495,10 @@ if(V2){
       return `<span style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${sz}px;height:${sz}px;background:${c};--dx:${40+Math.random()*110|0}px;--dy:${-110+Math.random()*80|0}px;animation-delay:${(x/W*.55+Math.random()*.12).toFixed(2)}s"></span>`;};
     let h='';
     for(let i=0;i<120;i++){const a=Math.random()*Math.PI*2, d=Math.sqrt(Math.random())*rad; h+=grain(cx+Math.cos(a)*d-1,cy+Math.sin(a)*d-1,col);}
-    if(last) for(let i=0;i<45;i++) h+=grain(rad*2+6+Math.random()*Math.max(4,W-rad*2-12),cr.height/2-6+Math.random()*12,ink);
     layer.innerHTML=h; document.body.appendChild(layer);
+    // only the paint turns to dust; the rest of the chip (pill and count) just fades away quietly
+    if(last){ const g=ch.cloneNode(true); g.className='dchip chipFade'; g.querySelector('i').style.visibility='hidden';
+      g.style.left=cr.left+'px'; g.style.top=cr.top+'px'; g.style.width=cr.width+'px'; document.body.appendChild(g); setTimeout(()=>g.remove(),500); }
     setTimeout(()=>layer.remove(),2600);
   }
 

@@ -758,3 +758,6 @@ body.v2{--heart:#ff4d63}
 .noboost{display:none}
 .wrap.v2.dreamday .boosters{display:none}
 .wrap.v2.dreamday .noboost{display:block;text-align:center;font-size:13px;font-weight:700;color:var(--muted);padding:14px 0}
+/* the emptied chip leaves quietly while its paint blows away as dust */
+.chipFade{position:fixed;z-index:6;pointer-events:none;animation:v2chipfade .4s ease-out both}
+@keyframes v2chipfade{to{opacity:0;transform:scale(.85)}}

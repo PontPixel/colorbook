@@ -710,3 +710,21 @@ body.v2 .card .bfree{font-size:13px}
 /* "Tap another part" label over the picture while the hand shows it */
 .picHint{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:2;background:var(--ink);color:var(--on-ink);border-radius:99px;padding:7px 14px;font:700 13px "Inter",system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.25);pointer-events:none;animation:cardin .35s cubic-bezier(.2,1.4,.5,1)}
 .wrap.v2 #mixChip::before{inset:-7px}
+/* Chapter and chest cards are tappable: details before they are ready, the reward once they are */
+.home.v2 .pcard{cursor:pointer;position:relative}
+.home.v2 .pcard:not(.ready)::after{content:"›";position:absolute;right:12px;top:8px;font:700 18px "Inter",system-ui,sans-serif;color:var(--muted)}
+.home.v2 .pcard:active{transform:scale(.98)}
+.clist{display:flex;flex-direction:column;gap:6px;text-align:left}
+.crow{appearance:none;border:0;background:var(--wall);border-radius:12px;padding:6px;display:flex;align-items:center;gap:10px;color:var(--ink);font:inherit;cursor:pointer;text-align:left}
+.crow:disabled{cursor:default;opacity:.5}
+.crow .cth{width:56px;flex:none;border-radius:8px;overflow:hidden;line-height:0;border:1px solid var(--line)}
+.crow .cth svg{display:block;width:100%;height:auto}
+.crow .cnm{display:flex;flex-direction:column;gap:2px;min-width:0}
+.crow .cnm b{font-size:14px}.crow .cnm small{font-size:12px;color:var(--muted)}
+.crow .cnm small span{color:var(--v2gold)}.crow .cnm small span.off{color:var(--line)}
+.cnote{font-size:13px}
+.chestinfo{display:flex;flex-direction:column;gap:10px;text-align:left}
+.chestinfo>b{display:flex;align-items:center;gap:6px;font:800 22px "Inter",system-ui,sans-serif}
+.chestinfo>b svg{width:22px;height:22px;fill:var(--v2gold)}
+.chestinfo .bar{height:8px}.chestinfo .bar i{background:var(--v2gold)}
+.chestinfo p{font-size:14px;margin:0}

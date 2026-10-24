@@ -1696,14 +1696,14 @@ if(V2){
   // lifted above a dim layer with a short note on what it is and why it matters.
   document.body.insertAdjacentHTML('beforeend','<div class="htip" id="homeTip" role="dialog" hidden></div>');
   const HOMETIPS=[
-    {key:'hChapter',el:'chapterCard',text:()=>t('<b>Chapters.</b> Pictures come in chapters of five. Finish a chapter for coins and one booster of each kind.')},
-    {key:'hChest',el:'chestCard',text:()=>t('<b>Star chest.</b> Every star you earn goes in here. When it fills up, it opens: coins and boosters.')},
+    {key:'hChapter',el:'chapterCard',when:()=>chapterReady(),text:()=>t('<b>Chapter complete!</b> Pictures come in chapters of five, and each finished chapter pays coins and one booster of each kind. Tap the card to collect.')},
+    {key:'hChest',el:'chestCard',when:()=>chestReady(),text:()=>t('<b>Your star chest is full!</b> Every star you earn goes in here, and a full chest opens with coins and boosters. Tap it to open.')},
     {key:'hDaily',el:'dailyPicBtn',text:()=>t('<b>Daily picture.</b> Each day a picture you restored comes back with a twist: less paint, no boosters or a hidden match %. Play on days in a row to grow your streak and the reward.')},
     {key:'hTip',el:'tipCard',text:()=>t('<b>Mixing tips.</b> A new one every day. Tap the arrow to read more.')}];
   function homeCoach(){
     if($('home').hidden||!$('homeMain').offsetParent||!LEVELS.some(l=>save.best[l.id]!=null)) return;
     if(['introOverlay','settingsOverlay','buyOverlay','quizOverlay'].some(id=>$(id)&&!$(id).hidden)) return;
-    const h=HOMETIPS.find(x=>!save.tut[x.key]&&$(x.el)&&!$(x.el).hidden&&$(x.el).offsetParent&&!$(x.el).closest('[hidden]'));
+    const h=HOMETIPS.find(x=>!save.tut[x.key]&&(!x.when||x.when())&&$(x.el)&&!$(x.el).hidden&&$(x.el).offsetParent&&!$(x.el).closest('[hidden]'));
     if(!h) return;
     const el=$(h.el); $('home').classList.remove('entering');
     el.scrollIntoView({block:'center'}); // instant, so the note is placed against the card's final position
@@ -1713,7 +1713,8 @@ if(V2){
       const tip=$('homeTip'); tip.innerHTML=h.text()+`<button class="btn primary">${t('Got it')}</button>`; tip.hidden=false;
       const r=el.getBoundingClientRect(), th=tip.offsetHeight, below=r.bottom+12+th<innerHeight-90;
       tip.style.top=(below?r.bottom+12:Math.max(12,r.top-12-th))+'px';
-      tip.querySelector('button').onclick=()=>{ save.tut[h.key]=true; persist(); el.classList.remove('hlift'); $('coachDim').hidden=true; tip.hidden=true; };
+      v2.homeTipDone=()=>{ save.tut[h.key]=true; persist(); el.classList.remove('hlift'); $('coachDim').hidden=true; tip.hidden=true; v2.homeTipDone=null; };
+      tip.querySelector('button').onclick=()=>v2.homeTipDone();
     },reduced?0:350);
   }
   // Home: the next picture as a hero card, the daily picture with its streak, and a mixing tip.
@@ -1735,9 +1736,38 @@ if(V2){
       `<div class="tipeq" aria-hidden="true">${eq}</div><div class="tiptext">${esc(t(tp.text))}</div>`;
   }
   $('tipCard').addEventListener('click',e=>{ if(e.target.closest('.tipnext')){ v2.tip++; renderTip(); } });
-  // A ready chest or finished chapter pays out on a tap (a won picture also pays out on its result card).
+  // Rewards wait on Home: the result card of the picture that finishes a chapter (or fills the chest) sends you
+  // there with "Collect your reward", and the card pays out on a tap. Before that, the cards open their details.
+  const chapterReady=()=>!!CHAPTERS&&CHAPTERS.some((c,k)=>chapterDone(k)&&!save.chapters[k]);
+  const chestReady=()=>!!CHESTS&&Math.floor(totalStars()/CHESTS.every)>save.chests;
+  const _claim=claimRewards; claimRewards=function(){ return v2.inWin?[]:_claim(); };
+  const _winR=win; win=function(){ v2.inWin=true; try{ _winR(); } finally{ v2.inWin=false; }
+    v2.collect=chapterReady()||chestReady();
+    if(v2.collect){ const nb=$('nextBtn'); nb.hidden=false; nb.textContent=t('Collect your reward'); } };
+  $('nextBtn').onclick=()=>{ if(v2.collect){ v2.collect=false; goHome(); return; } const n=nextAfter(L.index); if(n<0) goHome(); else start(n); };
+  ['chapterCard','chestCard'].forEach(id=>{ $(id).setAttribute('role','button'); $(id).tabIndex=0; $(id).addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); $(id).click(); } }); });
+  function infoSheet(title,html){
+    v2.cards=[]; $('introTitle').textContent=title; $('introText').hidden=true; $('introBoosters').innerHTML=html; $('introBtn').textContent=t('Close');
+    $('introOverlay').hidden=false; restart($('introOverlay').querySelector('.card'),'swap');
+  }
+  function chapterInfo(){
+    const ci=chapterOf(nextIndex()), [a,z]=chapterRange(ci), got=LEVELS.slice(a,z).filter(l=>save.best[l.id]!=null).length;
+    const rows=LEVELS.slice(a,z).map((l,k)=>{ const i=a+k, b=save.best[l.id], ok=unlocked(i), pt=save.partial&&save.partial[l.id];
+      return `<button class="crow" data-i="${i}" ${ok?'':'disabled'}><span class="cth">${thumbSVG(l,b!=null,pt&&pt.stars)}</span><span class="cnm"><b>${esc(T(l))}</b><small>${b!=null?starRow(b):pt?t('{done} of {all} parts',{done:Object.keys(pt.stars).length,all:l.regions.length}):ok?t('Next'):t('Locked')}</small></span></button>`; }).join('');
+    infoSheet(t('Chapter {n}: {name}',{n:ci+1,name:t(CHAPTERS[ci].name)}),
+      `<div class="clist">${rows}</div><p class="cnote">${t('{done} of {all} restored. Finish them all: +{coins} and one booster of each kind.',{done:got,all:z-a,coins:tn(EC.chapterCoins,'coin')})}</p>`);
+  }
+  function chestInfo(){
+    const st=totalStars(), next=(save.chests+1)*CHESTS.every, from=save.chests*CHESTS.every, pc=Math.max(0,Math.min(100,(st-from)/(next-from)*100));
+    infoSheet(t('Star chest'),`<div class="chestinfo"><b>${STAR}${Math.min(st,next)} / ${next}</b><span class="bar"><i style="width:${pc}%"></i></span>`+
+      `<p>${t('{n} more stars to open it. Every star from every picture counts; a part restored at par earns 3.',{n:Math.max(0,next-st)})}</p>`+
+      `<p>${t('Inside: +{coins} and {n} boosters.',{coins:tn(CHESTS.coins,'coin'),n:CHESTS.boosters})}</p></div>`);
+  }
+  $('introBoosters').addEventListener('click',e=>{ const r=e.target.closest('.crow'); if(!r||r.disabled) return; $('introOverlay').hidden=true; start(+r.dataset.i); });
   $('progCards').addEventListener('click',e=>{
-    if(!e.target.closest('.pcard.ready')) return;
+    const card=e.target.closest('.pcard'); if(!card) return;
+    if(v2.homeTipDone) v2.homeTipDone();
+    if(!card.classList.contains('ready')){ if(card.id==='chapterCard') chapterInfo(); else chestInfo(); return; }
     const got=claimRewards(); if(!got.length) return;
     sfx('fanfare'); buzz([30,60,30]);
     const r=e.target.closest('.pcard').getBoundingClientRect(); burst(r.left+r.width/2,r.top+r.height/2,[INK,'#ffffff'],30,{speed:7,shapes:['star','circle'],decay:.02,size:5});
@@ -1751,10 +1781,12 @@ if(V2){
     if(CHAPTERS){
       const ci=chapterOf(i), [a,z]=chapterRange(ci), got=LEVELS.slice(a,z).filter(l=>save.best[l.id]!=null).length;
       $('nextLabel').textContent=t('Chapter {n}',{n:ci+1})+' · '+t(CHAPTERS[ci].name)+(TIERS[LEVELS[i].tier].label?' · '+TIERS[LEVELS[i].tier].label:'');
-      $('chapterCard').innerHTML=`<small>${t('Chapter {n} of {all}',{n:ci+1,all:CHAPTERS.length})}</small><b>${esc(t(CHAPTERS[ci].name))}</b>`+
-        `<span class="pdots">${LEVELS.slice(a,z).map((l,k)=>`<i class="${save.best[l.id]!=null?'on':a+k===i?'cur':''}"></i>`).join('')}</span>`+
-        `<small>${chapterDone(ci)&&!save.chapters[ci]?`<b class="ready">${t('Tap to collect')}</b>`:t('Finish it: +{coins} and a booster of each kind',{coins:tn(EC.chapterCoins,'coin')})}</small>`;
-      $('chapterCard').setAttribute('aria-label',t('Chapter {n}: {name}, {done} of {all} pictures',{n:ci+1,name:t(CHAPTERS[ci].name),done:got,all:z-a}));
+      // the card keeps showing a finished chapter until its reward is collected
+      const rc=CHAPTERS.findIndex((c,k)=>chapterDone(k)&&!save.chapters[k]), cc=rc>=0?rc:ci, [ca,cz]=chapterRange(cc), cgot=LEVELS.slice(ca,cz).filter(l=>save.best[l.id]!=null).length;
+      $('chapterCard').innerHTML=`<small>${t('Chapter {n} of {all}',{n:cc+1,all:CHAPTERS.length})}</small><b>${esc(t(CHAPTERS[cc].name))}</b>`+
+        `<span class="pdots">${LEVELS.slice(ca,cz).map((l,k)=>`<i class="${save.best[l.id]!=null?'on':ca+k===i?'cur':''}"></i>`).join('')}</span>`+
+        `<small>${rc>=0?`<b class="ready">${t('Tap to collect')}</b>`:t('Finish it: +{coins} and a booster of each kind',{coins:tn(EC.chapterCoins,'coin')})}</small>`;
+      $('chapterCard').setAttribute('aria-label',t('Chapter {n}: {name}, {done} of {all} pictures',{n:cc+1,name:t(CHAPTERS[cc].name),done:cgot,all:cz-ca}));
     }
     $('chapterCard').hidden=!CHAPTERS; $('chestCard').hidden=!CHESTS;
     if(CHESTS){

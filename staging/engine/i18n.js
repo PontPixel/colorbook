@@ -244,3 +244,17 @@ I18N.add({
 fr:{'Takes back your last drop. The paint comes back to the pot.':'Reprend votre dernière goutte. La peinture retourne dans le pot.','Tap any faded part to paint it next':'Touchez une partie décolorée pour la peindre'},
 ru:{'Takes back your last drop. The paint comes back to the pot.':'Забирает последнюю каплю. Краска возвращается в банку.','Tap any faded part to paint it next':'Нажмите на любую выцветшую часть, чтобы раскрасить её'}
 });
+I18N.add({
+fr:{'<b>Chapter complete!</b> Pictures come in chapters of five, and each finished chapter pays coins and one booster of each kind. Tap the card to collect.':'<b>Chapitre terminé !</b> Les images vont par chapitres de cinq, et chaque chapitre terminé rapporte des pièces et un bonus de chaque sorte. Touchez la carte pour récupérer.',
+'<b>Your star chest is full!</b> Every star you earn goes in here, and a full chest opens with coins and boosters. Tap it to open.':'<b>Votre coffre à étoiles est plein !</b> Chaque étoile gagnée y va, et un coffre plein s’ouvre avec des pièces et des bonus. Touchez-le pour l’ouvrir.',
+'Collect your reward':'Récupérer la récompense','Close':'Fermer','Chapter {n}: {name}':'Chapitre {n} : {name}','Locked':'Verrouillée',
+'{done} of {all} restored. Finish them all: +{coins} and one booster of each kind.':'{done} sur {all} restaurées. Terminez-les toutes : +{coins} et un bonus de chaque sorte.',
+'{n} more stars to open it. Every star from every picture counts; a part restored at par earns 3.':'Encore {n} étoiles pour l’ouvrir. Chaque étoile compte ; une partie restaurée au par en rapporte 3.',
+'Inside: +{coins} and {n} boosters.':'Dedans : +{coins} et {n} bonus.'},
+ru:{'<b>Chapter complete!</b> Pictures come in chapters of five, and each finished chapter pays coins and one booster of each kind. Tap the card to collect.':'<b>Глава пройдена!</b> Картинки идут главами по пять, и за каждую главу дают монеты и по бустеру каждого вида. Нажмите на карточку, чтобы забрать.',
+'<b>Your star chest is full!</b> Every star you earn goes in here, and a full chest opens with coins and boosters. Tap it to open.':'<b>Звёздный сундук полон!</b> Сюда идут все заработанные звёзды, а полный сундук открывается с монетами и бустерами. Нажмите, чтобы открыть.',
+'Collect your reward':'Забрать награду','Close':'Закрыть','Chapter {n}: {name}':'Глава {n}: {name}','Locked':'Закрыто',
+'{done} of {all} restored. Finish them all: +{coins} and one booster of each kind.':'Восстановлено {done} из {all}. Пройдите все: +{coins} и по бустеру каждого вида.',
+'{n} more stars to open it. Every star from every picture counts; a part restored at par earns 3.':'До открытия ещё звёзд: {n}. Считаются звёзды со всех картинок; часть, восстановленная по норме, даёт 3.',
+'Inside: +{coins} and {n} boosters.':'Внутри: +{coins} и бустеров: {n}.'}
+});

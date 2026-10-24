@@ -412,13 +412,22 @@ body.v2{--wall:#f3f1ec;--line:#e2ded5;--soft:#ebe7df;--track:#e4e0d7;--muted:#62
 .gtitle b{font:800 17px/1.2 "Inter",system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gtitle small{font-size:12px;font-weight:600;color:var(--muted)}
 .wrap.v2 .board{gap:10px}
-.wrap.v2 .stage{max-width:max(240px,calc((100dvh - 540px) * 4 / 3));gap:8px}
+.wrap.v2 .stage{max-width:max(240px,calc((100dvh - 490px) * 4 / 3));gap:8px}
 .wrap.v2 .ctrl{display:flex;flex-direction:column;gap:10px}
 .wrap.v2 .frame{padding:0;overflow:hidden;border-radius:18px;background:#fbfbfc}
 .wrap.v2 svg.scene{border-radius:0}
 .wrap.v2 .region.sel{animation:none}
-.wrap.v2 .region.v2wait{animation:v2breathe 1.6s ease-in-out infinite}
-@keyframes v2breathe{50%{fill:#dfe3ea}}
+.wrap.v2 .region.v2wait{animation:v2breathe 1.8s ease-in-out infinite}
+@keyframes v2breathe{50%{fill:var(--tint,#dfe3ea)}}
+/* Spotlight on the selected part (see spotlight() in engine.js) */
+.wrap.v2 .spotDim{fill:#1d2233;opacity:.18;pointer-events:none;animation:spotIn .35s ease both}
+.wrap.v2 .spotGlow{fill:none;stroke-linejoin:round;stroke-linecap:round;opacity:.9;pointer-events:none;animation:spotIn .35s ease both,spotGlow 1.8s .35s ease-in-out infinite}
+.wrap.v2 .selOutline{pointer-events:none;animation:spotIn .25s ease both}
+@keyframes spotIn{from{opacity:0}}
+/* decor inside the dim mask counts as "in front": painted white, keeping shapes that are only strokes */
+#spotM .occ *{fill:#fff!important;stroke:#fff!important}
+#spotM .occ [fill=none],#spotM .occ [fill=none] *{fill:none!important}
+@keyframes spotGlow{50%{opacity:.4}}
 .wrap.v2 .selOutline{stroke-dasharray:none;animation:none;stroke-width:2.4}
 .parts{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:6px 8px;margin:0 -8px;flex:none}
 .parts::-webkit-scrollbar{display:none}
@@ -547,10 +556,10 @@ body.v2{--wall:#f3f1ec;--line:#e2ded5;--soft:#ebe7df;--track:#e4e0d7;--muted:#62
 .pcard.ready{cursor:pointer;box-shadow:0 0 0 2px var(--ink),var(--shadow)}
 .pcard .ready{color:var(--ink);font-weight:800}
 /* Phones: the picture gets the width; the mixer, paints and boosters get compact so it all still fits one screen.
-   Picture width = (screen height − 455px) × 4/3, so a 390×690 iPhone in Safari shows it at ~320px of 358.
+   Picture width = (screen height − 405px) × 4/3, so a 390×690 iPhone in Safari shows it at full width.
    Below 760px of height the Target/Mix captions go (the ring and the live mix on the picture say the same). */
 @media (max-width:899px), (orientation:portrait){
-  .wrap.v2 .stage{max-width:max(260px,calc((100dvh - 455px) * 4 / 3));gap:6px}
+  .wrap.v2 .stage{max-width:max(260px,calc((100dvh - 405px) * 4 / 3));gap:6px}
   .wrap.v2 .board{gap:8px}
   .wrap.v2 .ctrl{gap:8px}
   .wrap.v2 .parts{padding:4px 8px;gap:7px}

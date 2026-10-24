@@ -52,7 +52,7 @@ const LEVELS=[
     <path d="M70 74v-6M160 52v-6M250 78v-6"/></g>
     <g pointer-events="none" stroke="${INK}" stroke-width="1.3" stroke-linecap="round" opacity=".45"><path d="M30 30l-4 9M110 20l-4 9M205 34l-4 9M290 22l-4 9M20 150l-4 9M300 168l-4 9M120 160l-4 9M205 172l-4 9"/></g>`
 },
-{ id:'fruit', title:'Fruit bowl', sub:'Two paints make a new color.', budget:12, tier:'easy', paints:['C','M','Y'], intro:'pick',
+{ id:'fruit', title:'Fruit bowl', sub:'Two paints make a new color.', budget:12, tier:'easy', paints:['C','M','Y'], coach:['tapPart'], coachPart:'plum', intro:'pick',
   tip:{title:'Mixing two colors',text:'Red, green and blue are not in your paint set. Mix them: one drop of each of two paints.'},
   bg:`<rect width="320" height="240" fill="#f4eee4"/><rect y="188" width="320" height="52" fill="#dcc7aa"/><line x1="0" y1="188" x2="320" y2="188" stroke="${INK}" stroke-width="2"/>`,
   regions:[
@@ -81,7 +81,7 @@ const LEVELS=[
     <path d="M196 52q8-8 16 0q8-8 16 0"/><path d="M236 70q6-6 12 0q6-6 12 0"/>
     <path d="M20 138q10-6 20 0M130 130q10-6 20 0M240 136q10-6 20 0"/></g>`
 },
-{ id:'shelf', title:'Kitchen shelf', sub:'Everything on the shelf is cracked and faded. Mend it.', tier:'normal', coach:['tapPart'], coachPart:'mug',
+{ id:'shelf', title:'Kitchen shelf', sub:'Everything on the shelf is cracked and faded. Mend it.', tier:'normal',
   tip:{title:'A bigger picture',text:'All the parts share one paint pot, so plan your drops. You can tap any faded part to work on it. If the pot runs dry, coins can rescue the part you are on.'},
   regions:[
     {id:'lemon',name:'Lemon',recipe:{Y:1},svg:'<ellipse cx="211" cy="162" rx="11" ry="8"/>',crack:'M205 157l4 4-2 3 5 2'},

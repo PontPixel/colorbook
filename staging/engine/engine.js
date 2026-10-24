@@ -254,7 +254,6 @@ function v2Scenes(){ return `
       </div>
       <div class="credit" id="credit"></div>
       <div class="chbar" id="chBar" hidden></div>
-      <div class="parts" id="partsStrip" role="list" aria-label="${t('Parts of the picture')}"></div>
     </div>
     <div class="ctrl">
       <section class="mixer" aria-label="${t('Mixing table')}">
@@ -965,7 +964,7 @@ function tick(){
 
 // ---------- Picture complete: celebration ----------
 function finishPicture(){
-  hideHand(); const st=state; $('selLayer').innerHTML=''; renderMix();
+  hideHand(); const st=state; $('selLayer').innerHTML=''; scene.querySelectorAll('.spotUnder').forEach(e=>e.remove()); renderMix();
   setTimeout(()=>{ if(state!==st) return; celebrate(st); setTimeout(()=>{if(state===st) win();},2400); },450);
 }
 function celebrate(st){
@@ -1056,7 +1055,7 @@ function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);
 // Renders the restored picture as a 1080×1080 PNG card. Built ahead of time so the share tap stays a direct user gesture.
 async function makeShareFile(total,max){
   const c=scene.cloneNode(true);
-  c.querySelectorAll('#selLayer,#fxLayer,.crack').forEach(e=>e.remove());
+  c.querySelectorAll('#selLayer,#fxLayer,.crack,.spotUnder').forEach(e=>e.remove());
   c.querySelectorAll('.region').forEach(g=>g.removeAttribute('style'));
   c.setAttribute('xmlns','http://www.w3.org/2000/svg'); c.setAttribute('width','960'); c.setAttribute('height','720');
   const load=src=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=src;});
@@ -1322,36 +1321,52 @@ if(V2){
   const restart=(el,cls)=>{ if(!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
   // Stars the current part would get right now (same rule as apply()).
   const paceOf=r=>{const u=state.used[r.id]||0; let s=u<=r.min?3:u<=r.min+2?2:1; return state.hinted[r.id]||state.rescued[r.id]?Math.min(s,2):s;};
-  // The selected part shows the live mix on the picture itself; while the bowl is empty it breathes softly.
+  // The selected part shows the live mix on the picture itself; while the bowl is empty it breathes toward a pale
+  // tint of its target color. Only the selected part ever breathes.
   function paintRegion(id,col){
     const g=scene.querySelector(`.region[data-id="${id}"]`), r=L.regions.find(x=>x.id===id); if(!g||!r) return;
     g.setAttribute(r.stroke?'stroke':'fill',col||(r.stroke?BLANK_STROKE:BLANK));
-    g.classList.toggle('v2wait',!col&&!r.stroke&&state.sel===id&&!state.done[id]);
+    const wait=!col&&!r.stroke&&state.sel===id&&!state.done[id];
+    g.classList.toggle('v2wait',wait);
+    if(wait) g.style.setProperty('--tint',hex(r.target.map(v=>0.984*0.75+v*0.25)));
   }
-  function renderParts(){
-    const el=$('partsStrip'); if(!state||!L) return;
-    el.innerHTML=L.regions.map(r=>{const done=!!state.done[r.id], sel=r.id===state.sel&&!done, light=lab(r.target)[0]>70;
-      return `<button class="pchip${done?' done':''}${sel?' sel':''}" role="listitem" data-id="${r.id}" style="background:${hex(r.target)};color:${light?INK:'#fff'}" aria-label="${esc(N(r))}, ${done?t('done'):sel?t('selected'):t('to do')}">${done?icon('check'):''}</button>`;}).join('');
-    const s=el.querySelector('.sel'); if(s) el.scrollLeft=Math.max(0,s.offsetLeft-el.clientWidth/2+s.offsetWidth/2);
+  // Spotlight on the selected part: the rest of the picture dims a little, the part gets a soft glow in its
+  // target color and a crisp outline. Parts are switched by tapping them on the picture.
+  // Glow and outline sit right above the part in the drawing order, so things drawn in front of it (a bowl over a
+  // plum) still cover them; the dim layer on top leaves a hole for the part minus those front shapes and the decor.
+  function spotlight(r){
+    scene.querySelectorAll('.spotUnder').forEach(e=>e.remove());
+    const shape=(o,col,extra)=>o.stroke?`<g fill="none" stroke="${col}" stroke-width="${o.stroke+extra}" stroke-linecap="round">${o.svg}</g>`:`<g fill="${col}" stroke="${col}" stroke-width="${1.6+extra}" stroke-linejoin="round">${o.svg}</g>`;
+    const front=L.order.slice(L.order.indexOf(r.id)+1).map(id=>L.regions.find(x=>x.id===id)).filter(Boolean);
+    const g=scene.querySelector(`.region[data-id="${r.id}"]`);
+    if(g){
+      const u=document.createElementNS('http://www.w3.org/2000/svg','g'); u.setAttribute('class','spotUnder'); u.setAttribute('pointer-events','none');
+      u.innerHTML=`<g class="spotGlow" filter="url(#spotF)" style="stroke:${hex(r.target)};stroke-width:${r.stroke?r.stroke+8:7}px">${r.svg}</g>`+
+        `<g class="selOutline${r.stroke?' thick':''}"${r.stroke?` style="stroke-width:${r.stroke+6}px"`:''}>${r.svg}</g>`;
+      g.after(u);
+    }
+    return `<defs><mask id="spotM" maskUnits="userSpaceOnUse" x="0" y="0" width="320" height="240"><rect width="320" height="240" fill="#fff"/>${shape(r,'#000',2)}`+
+      `${front.map(o=>shape(o,'#fff',0)).join('')}<g class="occ">${L.decor||''}</g></mask>`+
+      `<filter id="spotF" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.6"/></filter></defs>`+
+      `<rect class="spotDim" width="320" height="240" mask="url(#spotM)"/>`;
   }
-  $('partsStrip').addEventListener('click',e=>{
-    const b=e.target.closest('.pchip'); if(!b||!state) return; const id=b.dataset.id;
-    if(!state.done[id]&&!state.forced&&!state.lesson&&!state.applying&&id!==state.sel){handDone('tapPart'); select(id);}
-  });
   // Switching parts with paint in the bowl gives the paid drops back (the old screen dropped them).
   const _select=select;
   select=function(id){
     if(!state) return;
     const prev=state.sel;
-    if(prev&&prev!==id&&!state.done[prev]){
-      if(state.drops.length){ state.paint+=state.fr.filter(x=>!x).length; state.used[prev]=Math.max(0,(state.used[prev]||0)-state.drops.length); }
-      state.drops=[]; state.fr=[]; paintRegion(prev,null);
-    }
+    const leaving=prev&&prev!==id&&!state.done[prev];
+    if(leaving&&state.drops.length){ state.paint+=state.fr.filter(x=>!x).length; state.used[prev]=Math.max(0,(state.used[prev]||0)-state.drops.length); }
+    if(leaving){ state.drops=[]; state.fr=[]; }
     const r=L.regions.find(x=>x.id===id); v2.pace=3; v2.over=false;
     if(r){ state.sel=id; v2.pace=paceOf(r); v2.over=(state.used[id]||0)>r.min; }
+    // repaint the part we left only after the selection moved, or it keeps breathing (two parts looked selected)
+    if(leaving) paintRegion(prev,null);
+    scene.querySelectorAll('.region.v2wait').forEach(g=>{ if(g.dataset.id!==id) g.classList.remove('v2wait'); });
     _select(id);
+    if(r) $('selLayer').innerHTML=spotlight(r);
     $('targetChip').style.setProperty('--tc',hex(current().target));
-    renderParts(); updateHud();
+    updateHud();
   };
   function v2advice(m,tg,p){
     if(p>=85) return t('So close');
@@ -1391,7 +1406,6 @@ if(V2){
     _updateHud(); if(!state) return;
     $('progress').textContent=t('{done} of {all} parts restored',{done:Object.keys(state.done).length,all:L.regions.length});
     $('paintLeft').textContent=tn(state.paint,'drop')+(state.freeLeft>0?' +'+t('{n} free',{n:state.freeLeft}):'');
-    renderParts();
   };
   // Bubble that flies out of the bowl when Magic acts, lingers, then dissolves.
   function bubble(k,text){

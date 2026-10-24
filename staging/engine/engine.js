@@ -1423,7 +1423,8 @@ if(V2){
     // chips in the order each paint first went in: Undo always takes the newest drop, so a chip that empties is the
     // last one and nothing slides under its dust
     const seen=[...new Set(state.drops)];
-    $('drops').innerHTML=seen.map(k=>`<span class="dchip" data-k="${k}" aria-label="${t('{n} {paint}',{n:c[k],paint:PN(k)})}"><i style="background:${hex(PMAP[k].rgb)}"></i>×${c[k]}</span>`).join('')
+    // a div, not a span: the old screen's `.drops span` rule draws small rotated teardrops
+    $('drops').innerHTML=seen.map(k=>`<div class="dchip" data-k="${k}" role="img" aria-label="${t('{n} {paint}',{n:c[k],paint:PN(k)})}"><i style="background:${hex(PMAP[k].rgb)}"></i>×${c[k]}</div>`).join('')
       ||`<em>${t('Your drops show up here')}</em>`;
     const blind=state.twist==='blind'&&p!=null&&p<95;
     $('pctNum').textContent=p==null?'':blind?'?':p+'%';

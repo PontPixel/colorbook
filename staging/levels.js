@@ -81,6 +81,22 @@ const LEVELS=[
     <path d="M196 52q8-8 16 0q8-8 16 0"/><path d="M236 70q6-6 12 0q6-6 12 0"/>
     <path d="M20 138q10-6 20 0M130 130q10-6 20 0M240 136q10-6 20 0"/></g>`
 },
+{ id:'rainbow', title:'Rainbow', sub:'Every band is a mix of two paints, except yellow.', tier:'normal',
+  tip:{title:'A rainbow',text:'Every band of the rainbow is a mix of two paints, except <b>Yellow</b>. More of one paint pulls the color toward it: more yellow turns red into orange.'},
+  regions:[
+    {id:'red',name:'Red band',recipe:{M:1,Y:1},svg:'<path d="M10 200A150 150 0 0 1 310 200H294A134 134 0 0 0 26 200Z"/>'},
+    {id:'orange',name:'Orange band',recipe:{M:1,Y:2},svg:'<path d="M26 200A134 134 0 0 1 294 200H278A118 118 0 0 0 42 200Z"/>'},
+    {id:'yellow',name:'Yellow band',recipe:{Y:1},svg:'<path d="M42 200A118 118 0 0 1 278 200H262A102 102 0 0 0 58 200Z"/>'},
+    {id:'green',name:'Green band',recipe:{C:1,Y:1},svg:'<path d="M58 200A102 102 0 0 1 262 200H246A86 86 0 0 0 74 200Z"/>'},
+    {id:'blue',name:'Blue band',recipe:{C:2,M:1},svg:'<path d="M74 200A86 86 0 0 1 246 200H230A70 70 0 0 0 90 200Z"/>'},
+    {id:'violet',name:'Violet band',recipe:{C:1,M:2},svg:'<path d="M90 200A70 70 0 0 1 230 200H214A54 54 0 0 0 106 200Z"/>'},
+    {id:'clouds',name:'Clouds',recipe:{W:1},svg:'<path d="M-6 206q0-24 26-24q10-20 34-12q22-6 30 14q20 2 18 22Z"/><path d="M222 206q0-24 26-24q10-20 34-12q22-6 30 14q20 2 18 22Z"/>'},
+    {id:'grass',name:'Meadow',recipe:{W:1,C:1,Y:3},svg:'<path d="M0 200Q160 186 320 200V240H0Z"/>'},
+    {id:'sky',name:'Sky',recipe:{W:3,C:1},svg:'<rect width="320" height="240"/>'},
+  ],
+  order:['sky','grass','red','orange','yellow','green','blue','violet','clouds'],
+  decor:''
+},
 { id:'shelf', intro:'empty', title:'Kitchen shelf', sub:'Everything on the shelf is cracked and faded. Mend it.', tier:'normal',
   tip:{title:'A bigger picture',text:'All the parts share one paint pot, so plan your drops. You can tap any faded part to work on it. If the pot runs dry, coins can rescue the part you are on.'},
   regions:[
@@ -688,7 +704,7 @@ VARIANTS.forEach(v=>{const b=LEVELS.find(l=>l.id===v.base), lk=LOOKS[v.look]; if
     regions:b.regions.map(r=>Object.assign({},r,{recipe:v.recipes[r.id]})),order:b.order,decor:b.decor});
 });
 // Chapters of the main path (a bonus picture sits in its base picture's chapter).
-const CHAPTERS=[{name:'First colors',count:5},{name:'At home',count:5},{name:'Into the wild',count:5},{name:'Big adventures',count:5},
+const CHAPTERS=[{name:'First colors',count:5},{name:'At home',count:6},{name:'Into the wild',count:5},{name:'Big adventures',count:5},
   {name:'Sweet treats',count:5},{name:'In bloom',count:5},{name:'Through the seasons',count:5},{name:'Masterpieces',count:5}];
 // Content translations (keys = the English text above)
 const STRINGS={
@@ -804,6 +820,13 @@ ru:{'First colors':'Первые цвета','At home':'Дома','Into the wild
 }].forEach(d=>{Object.assign(STRINGS.fr,d.fr);Object.assign(STRINGS.ru,d.ru);});
 // Economy and progression: 1 coin per star (boosters and bonus pages keep their value), chapters with a reward, a chest every 25 stars.
 // analytics.ga4: a GA4 measurement id (G-…) turns on event tracking on the live site; empty = off.
+// Rainbow (chapter 2 opener) strings
+Object.assign(STRINGS.fr,{'Rainbow':'Arc-en-ciel','Every band is a mix of two paints, except yellow.':'Chaque bande est un mélange de deux peintures, sauf le jaune.','A rainbow':'Un arc-en-ciel',
+ 'Every band of the rainbow is a mix of two paints, except <b>Yellow</b>. More of one paint pulls the color toward it: more yellow turns red into orange.':'Chaque bande de l’arc-en-ciel est un mélange de deux peintures, sauf le <b>Jaune</b>. Plus d’une peinture tire la couleur vers elle : plus de jaune change le rouge en orange.',
+ 'Red band':'Bande rouge','Orange band':'Bande orange','Yellow band':'Bande jaune','Green band':'Bande verte','Blue band':'Bande bleue','Violet band':'Bande violette','Clouds':'Nuages','Meadow':'Prairie'});
+Object.assign(STRINGS.ru,{'Rainbow':'Радуга','Every band is a mix of two paints, except yellow.':'Каждая полоса — смесь двух красок, кроме жёлтой.','A rainbow':'Радуга',
+ 'Every band of the rainbow is a mix of two paints, except <b>Yellow</b>. More of one paint pulls the color toward it: more yellow turns red into orange.':'Каждая полоса радуги — смесь двух красок, кроме <b>жёлтой</b>. Чем больше одной краски, тем ближе к ней цвет: больше жёлтого превращает красный в оранжевый.',
+ 'Red band':'Красная полоса','Orange band':'Оранжевая полоса','Yellow band':'Жёлтая полоса','Green band':'Зелёная полоса','Blue band':'Синяя полоса','Violet band':'Фиолетовая полоса','Clouds':'Облака','Meadow':'Луг'});
 window.GAME={name:'ColorBook', saveKey:'paintMender', firstProper:'shelf', daily:DAILY, v2:true, tips:TIPS,
   economy:{coinsPerStar:1}, chapters:CHAPTERS, chests:{every:25,coins:30,boosters:2}, analytics:{ga4:''},
   logo:'img/logo-hero.jpg', shareLogo:'img/logo-card.jpg', levels:LEVELS, strings:STRINGS};

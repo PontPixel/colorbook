@@ -323,3 +323,8 @@ ru:{'Advertisement':'Реклама','Ad':'Реклама','Close the ad and get
 });
 
 I18N.add({fr:{'New':'Nouveau'},ru:{'New':'Новое'}});
+I18N.add({
+fr:{'Empty · free':'Vider · gratuit','Drops':'Gouttes','So close.':'Presque.','3 hearts: a paint this part doesn\'t use costs one. Tuning the mix is free.':'3 cœurs : une peinture que cette partie n’utilise pas en coûte un. Ajuster le mélange est gratuit.','Your first Magic is on the house: no star lost.':'Votre première Magie est offerte : aucune étoile perdue.'},
+ru:{'Empty · free':'Вылить · бесплатно','Drops':'Капли','So close.':'Почти.','3 hearts: a paint this part doesn\'t use costs one. Tuning the mix is free.':'3 сердца: краска, которой нет в этой части, стоит одно. Подбирать смесь — бесплатно.','Your first Magic is on the house: no star lost.':'Первая Магия бесплатна: звезда не теряется.'}
+});
+

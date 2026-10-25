@@ -269,7 +269,7 @@ function v2Scenes(){ return `
         <div class="swatches">
           <div class="sw"><div class="chip target" id="targetChip"></div><small>${t('Target')}</small></div>
           <div class="mxmid"><div id="pctNum"></div><div class="msg" id="msg"></div><button class="btn primary brushok" id="brushOk" hidden>${t('Paint it')}</button></div>
-          <div class="sw"><button class="chip empty" id="mixChip" aria-label="${t('Your mix. Tap to pour out the bowl.')}"></button><small id="mixLab">${t('Mix')}</small></div>
+          <div class="sw"><button class="chip empty" id="mixChip" aria-label="${t('Your mix. Tap to pour out the bowl.')}"></button><span class="pourtag" id="pourTag" aria-hidden="true" hidden>${t('Empty · free')}</span><small id="mixLab">${t('Mix')}</small></div>
         </div>
         <div class="drops" id="drops"></div>
         <div id="meter" hidden><div class="bar"><i id="barFill"></i></div></div>
@@ -1451,7 +1451,10 @@ if(V2){
   // the biggest of the lightness, strength (chroma) and hue differences, with the hue named from the target.
   const HUE=[[25,'pink'],[50,'red'],[78,'orange'],[112,'yellow'],[170,'green'],[235,'teal'],[290,'blue'],[330,'violet'],[361,'pink']];
   function v2advice(m,tg,p){
-    if(p>=85) return t('So close');
+    const a=v2dir(m,tg);
+    return p>=85?t('So close.')+' '+a:a;
+  }
+  function v2dir(m,tg){
     const A=lab(m), B=lab(tg), dL=A[0]-B[0], cA=Math.hypot(A[1],A[2]), cB=Math.hypot(B[1],B[2]), dC=cA-cB;
     let dH=0;
     if(cA>8&&cB>8){ const d=Math.atan2(Math.sin(Math.atan2(B[2],B[1])-Math.atan2(A[2],A[1])),Math.cos(Math.atan2(B[2],B[1])-Math.atan2(A[2],A[1]))); dH=2*Math.sqrt(cA*cB)*Math.abs(Math.sin(d/2)); }
@@ -1477,7 +1480,9 @@ if(V2){
     const c=counts(), m=mix(c), p=m?matchPct(m,r.target):null;
     if(!state.drops.length) state.picking=false;
     const chip=$('mixChip'); chip.classList.toggle('empty',!m); chip.style.background=m?hex(m):'';
-    $('mixLab').textContent=state.drops.length&&!state.applying?t('Tap to pour out'):t('Mix');
+    $('mixLab').textContent=t('Mix');
+    // emptying the bowl is free and gives the paint back: say so on the bowl itself whenever there is something in it
+    $('pourTag').hidden=!(state.drops.length&&!state.applying&&!state.brushing&&!state.brushOk);
     const ks=L.paints||PAINTS.map(x=>x.k);
     // drops in the bowl: a count and a minus on each paint, and a ring around the bowl split by paint
     wrapPaints();
@@ -1496,7 +1501,7 @@ if(V2){
     $('meter').setAttribute('aria-valuenow',p||0);
     if(!state.done[r.id]) paintRegion(r.id,m?hex(m):null);
     const used=state.used[r.id]||0, pace=paceOf(r), over=used>r.min;
-    const ct=$('counter'); ct.innerHTML=`<b>${used}</b><span>/ ${r.min}</span>${over?`<em>${t('over par')}</em>`:''}`;
+    const ct=$('counter'); ct.innerHTML=`<small>${t('Drops')}</small><b>${used}</b><span>/ ${r.min}</span>${over?`<em>${t('over par')}</em>`:''}`;
     ct.classList.toggle('over',over); ct.setAttribute('aria-label',t('{used} drops used, par {min}',{used,min:r.min}));
     if(over&&!v2.over) restart(ct,'shake'); v2.over=over;
     const ps=$('paceStars'); ps.innerHTML=[0,1,2].map(i=>`<span class="${i<pace?'on':''}">${STAR}</span>`).join('');
@@ -1605,7 +1610,7 @@ if(V2){
     const ok=_addDrop(k,via);
     if(ok&&state&&state.hearts&&r&&!state.forced){
       const after=state.drops.length?matchPct(mix(counts()),r.target):0;
-      if(!r.recipe[k]||(before!=null&&after<before&&!state.applying)) loseHeart();
+      if(!r.recipe[k]) loseHeart(); // a dip while tuning is part of mixing; only a paint the part doesn't use costs a heart
     }
     if(ok&&via!=='magic'&&state&&!state.applying&&!state.forced&&r){
       const used=state.used[r.id]||0;
@@ -1643,7 +1648,8 @@ if(V2){
     if(h.done){toast(t('Your mix is already right.'));return;}
     if(!h.remove&&state.paint<=0&&!(state.freeLeft>0)){toast(t('The pot is empty.'));return;}
     if(!spend('magic')) return;
-    state.hinted[state.sel]=true; sfx('magic');
+    if(!save.tut.magicFree){ save.tut.magicFree=true; persist(); toast(t('Your first Magic is on the house: no star lost.')); } else state.hinted[state.sel]=true;
+    sfx('magic');
     if(h.remove){ bubble(h.k,t('Took out {paint}',{paint:PN(h.k)})); removeAt(state.drops.lastIndexOf(h.k)); }
     else{ bubble(h.k,'+1 '+PN(h.k)); addDrop(h.k,'magic'); }
   };
@@ -1773,7 +1779,8 @@ if(V2){
     $('rescueBtn').hidden=true; $('quizOfferBtn').hidden=true; $('shareBox').hidden=true;
     $('endOverlay').classList.remove('low'); $('retryBtn').textContent=t('Try again'); $('nextBtn').hidden=true; $('endOverlay').hidden=false;
   }
-  dailyIndex=function(){ if(!DREAMS.length) return -1; if(LEVELS.slice(0,MAIN).filter(l=>save.best[l.id]!=null).length<3) return -1; return DREAMS[dayHash('dream'+dayKey())%DREAMS.length]; };
+  // the daily shows up after chapter 1, once two-paint mixes and ratios have been taught
+  dailyIndex=function(){ if(!DREAMS.length) return -1; if(LEVELS.slice(0,MAIN).filter(l=>save.best[l.id]!=null).length<5) return -1; return DREAMS[dayHash('dream'+dayKey())%DREAMS.length]; };
   // Progress is kept now, so leaving needs no warning (except on the daily picture, which isn't kept).
   $('backBtn').onclick=()=>{ if(state&&state.daily&&!state.finished&&Object.keys(state.done).length) $('quitOverlay').hidden=false; else goHome(); };
   // "Start picture over" really starts over.
@@ -1790,7 +1797,7 @@ if(V2){
     const fresh=L.dream||L.season?[]:Object.keys(BOOSTERS).filter(b=>save.inv[b]==null&&introAt(b)>=0&&introAt(b)<=L.index);
     fresh.forEach(b=>save.inv[b]=FREE_BOOSTERS);
     const tip=!save.seen[L.id]&&L.tip;
-    const tierKey='tier-'+L.tier, tierNote=TIERS[L.tier].label&&!save.seen[tierKey];
+    const tierKey='tier-'+L.tier, tierNote=TIERS[L.tier].label&&!save.seen[tierKey]&&!state.daily; // the daily has no boosters: its own rules card says so
     if(tierNote) save.seen[tierKey]=true;
     const chal=save.challenge&&save.challenge.fresh?save.challenge:null;
     if(chal) chal.fresh=false;
@@ -1799,7 +1806,7 @@ if(V2){
     const cards=[];
     if(state.daily&&L.dream){ const s=dailyStreakNext(), page=DREAMS.indexOf(L.index)+1;
       cards.push({title:t('Daily challenge'),html:`<div class="dream"><small>${t('Grandma\'s dream journal · page {n}',{n:page})}</small><b>${esc(T(L))}</b><p>${esc(t(L.story))}</p></div>`+
-        `<ul class="drules"><li>${HEART}${t('3 hearts: a paint this part doesn\'t use, or a drop that takes the mix further away, costs one.')}</li><li>${icon('lock')}${t('No boosters, and only a little spare paint.')}</li>`+
+        `<ul class="drules"><li>${HEART}${t('3 hearts: a paint this part doesn\'t use costs one. Tuning the mix is free.')}</li><li>${icon('lock')}${t('No boosters, and only a little spare paint.')}</li>`+
         `<li>${icon('daily')}${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</li></ul>`}); }
     else if(state.daily){ const s=dailyStreakNext();
       cards.push({title:t('Daily picture'),html:`<div class="booster">${icon('daily')}<b>${t('Daily picture: {title}',{title:esc(T(L))})}</b><br>${twistText(state.twist,state.budget)} ${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</div>`}); }
@@ -1852,6 +1859,10 @@ if(V2){
   $('stamp').insertAdjacentHTML('afterend',`<div class="picHint" id="picHint" hidden>${t('Tap any faded part to paint it next')}</div>`);
   const _playHand=playHand; playHand=function(cfg){ _playHand(cfg); $('picHint').hidden=cfg.kind!=='tapPart'; };
   const _hideHand=hideHand; hideHand=function(){ _hideHand(); const h=$('picHint'); if(h) h.hidden=true; };
+  // a pending or open Home note never follows you into a picture or another tab (tapping the lifted card counts as seen)
+  const dropHomeTip=()=>{ clearTimeout(v2.ht); if(v2.homeTipDone) v2.homeTipDone(); };
+  const _startH=start; start=function(i,o){ dropHomeTip(); return _startH(i,o); };
+  const _showTabH=showTab; showTab=function(tb){ if(tb!=='home') dropHomeTip(); return _showTabH(tb); };
   const _goHome=goHome; goHome=function(tab){ _goHome(tab); enter($('home')); clearTimeout(v2.ht); v2.ht=setTimeout(homeCoach,1250); };
   // Home tutorials: the first time each card shows up (after a first picture is restored), one card per visit is
   // lifted above a dim layer with a short note on what it is and why it matters.
@@ -1902,7 +1913,7 @@ if(V2){
     if(L.season) $('endText').insertAdjacentHTML('afterbegin',`<b class="fest">${t({halloween:'Happy Halloween!',thanksgiving:'Happy Thanksgiving!',christmas:'Merry Christmas!'}[L.season])}</b><br>`);
     v2.collect=chapterReady()||chestReady();
     const nb=$('nextBtn'); nb.textContent=v2.collect?t('Collect your reward'):t('Next picture'); if(v2.collect) nb.hidden=false; };
-  $('nextBtn').onclick=()=>{ if(v2.collect){ v2.collect=false; goHome(); return; } const n=nextAfter(L.index); if(n<0) goHome(); else start(n); };
+  $('nextBtn').onclick=()=>{ if(v2.collect){ v2.collect=false; goHome(); const got=claimRewards(); if(got.length){ sfx('fanfare'); buzz([30,60,30]); renderMenu(); rewardReveal(lastRewards); } return; } const n=nextAfter(L.index); if(n<0) goHome(); else start(n); };
   ['chapterCard','chestCard'].forEach(id=>{ $(id).setAttribute('role','button'); $(id).tabIndex=0; $(id).addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); $(id).click(); } }); });
   function infoSheet(title,html){
     v2.cards=[]; $('introTitle').textContent=title; $('introText').hidden=true; $('introBoosters').innerHTML=html; $('introBtn').textContent=t('Close');

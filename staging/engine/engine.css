@@ -959,3 +959,9 @@ body.v2 .coin.big{display:block;width:72px;height:72px;margin:0 auto;border-widt
 .home.v2 #chapterCard .pdots i.on{background:linear-gradient(90deg,#f6cf4e,#e0a92a)}
 .home.v2 #chapterCard .pdots i.cur{background:var(--track);box-shadow:inset 0 0 0 1.5px #e0a92a}
 .gallery .bonusbtn .newtag{margin-left:8px;padding:2px 8px;border-radius:999px;background:#e0344b;color:#fff;font:800 11px "Inter",system-ui,sans-serif;font-style:normal;text-transform:uppercase;letter-spacing:.05em}
+/* free-empty pill on the bowl; drop counter label */
+.wrap.v2 .sw{position:relative}
+.wrap.v2 .pourtag{position:absolute;left:50%;top:calc(100% - 22px);transform:translateX(-50%);padding:2px 8px;border-radius:999px;background:var(--ink);color:var(--on-ink);font:800 10.5px/1.4 "Inter",system-ui,sans-serif;white-space:nowrap;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.2);animation:spotIn .25s ease both}
+.wrap.v2 .pourtag[hidden]{display:none}
+.counter small{font-size:11px;font-weight:700;opacity:.7;margin-right:2px}
+

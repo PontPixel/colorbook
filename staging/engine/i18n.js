@@ -322,3 +322,4 @@ ru:{'Advertisement':'Реклама','Ad':'Реклама','Close the ad and get
 '+{n} coins':'+{n} монет','Watch an ad: restart {part} free':'Реклама: начать «{part}» заново бесплатно','Watch an ad: +{n} coins':'Реклама: +{n} монет'}
 });
 
+I18N.add({fr:{'New':'Nouveau'},ru:{'New':'Новое'}});

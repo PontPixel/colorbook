@@ -216,7 +216,6 @@ function v2Scenes(){ return `
   </div>
   <section class="homeMain" id="homeMain">
     <div class="v2hero">
-      <svg class="hdeco" viewBox="0 0 320 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><circle cx="300" cy="18" r="46"/><circle cx="252" cy="-6" r="22"/><circle cx="16" cy="392" r="54"/><circle cx="70" cy="404" r="20"/><g class="hspark"><path d="M286 300l2.4 6 6 2.4-6 2.4-2.4 6-2.4-6-6-2.4 6-2.4Z"/><path d="M30 250l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6Z"/><circle cx="304" cy="350" r="2"/><circle cx="14" cy="300" r="1.6"/></g></svg>
       <button class="nextPic" id="nextPic" aria-label="${t('Play next picture')}"></button>
       <div class="v2info">
         <div class="nextLabel" id="nextLabel"></div>
@@ -2045,7 +2044,10 @@ if(V2){
     }
     if(CHAPTERS) $('chapterCard').classList.toggle('ready',CHAPTERS.some((c,k)=>chapterDone(k)&&!save.chapters[k]));
     const nb=LEVELS.filter((l,k)=>buyable(k)).length, bb=$('bonusBtn'); bb.hidden=!nb;
-    const gt=document.querySelector('.tab[data-tab="gallery"]'); if(gt) gt.classList.toggle('hasnew',!!nb);
+    // the Gallery tab's dot means "new bonus pages since you last opened the Gallery"; the button there says New
+    v2.bonusN=nb; if((save.bonusSeen||0)>nb){ save.bonusSeen=nb; persist(); }
+    const fresh=nb>(save.bonusSeen||0), gt=document.querySelector('.tab[data-tab="gallery"]'); if(gt) gt.classList.toggle('hasnew',fresh);
+    if(nb&&fresh) bb.insertAdjacentHTML('beforeend',`<em class="newtag">${t('New')}</em>`);
     if(nb) bb.innerHTML=icon('gallery')+`<span class="dlab"><b>${t('Bonus pages')}</b><small>${t('{n} ready to unlock with coins',{n:nb})}</small></span>`;
   }
   // ---------- Holidays tab and Home card ----------
@@ -2108,8 +2110,9 @@ if(V2){
   $('seasonBtn').onclick=()=>{ v2.holView=seasonOn(); showTab('holidays'); };
   // the Holidays tab itself opens on the collections
   if(holTab) holTab.addEventListener('click',()=>{ if(v2.holView){ v2.holView=null; renderHolidays(); } });
-  // chapter themes for the hero card: [deep, bright]
-  const CH_THEMES=[['#5e1630','#e8505b'],['#5c2a0c','#e8962a'],['#0f3a26','#3fa65a'],['#11265a','#3a7bd5'],['#561238','#e05a9a'],['#2a1756','#8e55cc'],['#4f200e','#d9682a'],['#3a2c06','#c9a227']];
+  const CH_COLORS=['#e8505b','#e8962a','#3fa65a','#3a7bd5','#e05a9a','#8e55cc','#d9682a','#c9a227'];
+  const galTab=document.querySelector('.tab[data-tab="gallery"]');
+  if(galTab) galTab.addEventListener('click',()=>{ if((v2.bonusN||0)>(save.bonusSeen||0)){ save.bonusSeen=v2.bonusN; persist(); setTimeout(()=>galTab.classList.remove('hasnew'),600); } });
   const _renderMenu=renderMenu;
   renderMenu=function(){
     _renderMenu(); renderSeasonCard(); if(!$('holidays').hidden) renderHolidays();
@@ -2125,9 +2128,8 @@ if(V2){
       $('heroBar').style.width=(doneMain/MAIN*100)+'%';
     }
     // the chapter's accent color, and one dot per part in the color it will be (done parts get a check)
-    const ci=CHAPTERS?chapterOf(i):0, th=CH_THEMES[ci%CH_THEMES.length], hero=document.querySelector('.v2hero');
-    hero.style.setProperty('--chd',th[0]); hero.style.setProperty('--chc',th[1]);
-    // one segment per part: restored parts fill in with their own color
+    const ci=CHAPTERS?chapterOf(i):0; document.querySelector('.v2hero').style.setProperty('--chc',CH_COLORS[ci%CH_COLORS.length]);
+    // one dot per part in its color: a ring until the part is restored, then solid with a check
     $('heroSw').innerHTML=lv.regions.map(r=>`<i class="${pt&&pt.stars[r.id]!=null?'on':''}" style="--pc:${hex(r.target)}"></i>`).join('');
     renderProgress(i);
     $('homeStars').innerHTML=STAR+LEVELS.reduce((a,l)=>a+(save.best[l.id]||0),0);

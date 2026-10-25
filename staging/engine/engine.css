@@ -182,7 +182,7 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .overlay:not([hidden]) .card{animation:cardin .45s cubic-bezier(.2,1.4,.5,1)}
 @keyframes cardin{from{transform:translateY(40px) scale(.9);opacity:0}}
 .overlay.low{align-items:flex-end;background:rgba(20,24,40,.12);-webkit-backdrop-filter:none;backdrop-filter:none;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
-#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:6}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6} /* absolute in the fixed body: a fixed layer at the top edge makes iPhone Safari tint the status bar gray */
 /* ---------- Scenes ---------- */
 .iconbtn{appearance:none;width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;padding:0;box-shadow:0 2px 6px rgba(20,24,40,.06)}
 .iconbtn .ico{width:20px;height:20px}

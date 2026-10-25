@@ -1345,7 +1345,15 @@ const THEME_KEY='pontpixel-theme', VIB_KEY='pontpixel-vibration';
 let theme='auto', vibOn=true; try{theme=localStorage.getItem(THEME_KEY)||'auto'; vibOn=localStorage.getItem(VIB_KEY)!=='off';}catch(e){}
 const canVibrate=typeof navigator.vibrate==='function';
 function buzz(p){ if(vibOn&&canVibrate){try{navigator.vibrate(p);}catch(e){}} }
-function applyTheme(){ if(theme==='auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme=theme; }
+function applyTheme(){ if(theme==='auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme=theme; syncBarColor(); }
+// iPhone Safari tints the status bar area from theme-color (or by sampling the top of the page): give it the page's
+// own background so it never falls back to gray, and follow theme changes.
+function syncBarColor(){
+  const bg=getComputedStyle(document.body).backgroundColor; document.documentElement.style.backgroundColor=bg;
+  let m=document.querySelector('meta[name="theme-color"]'); if(!m){ m=document.createElement('meta'); m.name='theme-color'; document.head.appendChild(m); }
+  m.content=bg;
+}
+try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>setTimeout(syncBarColor,0)); }catch(e){}
 function renderSettings(){
   document.querySelectorAll('#setTheme button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===theme));
   document.querySelectorAll('#setLang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===I18N.pref||(I18N.pref==='auto'&&b.dataset.v==='auto')));

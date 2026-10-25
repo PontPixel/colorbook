@@ -327,4 +327,12 @@ I18N.add({
 fr:{'Empty · free':'Vider · gratuit','Drops':'Gouttes','So close.':'Presque.','3 hearts: a paint this part doesn\'t use costs one. Tuning the mix is free.':'3 cœurs : une peinture que cette partie n’utilise pas en coûte un. Ajuster le mélange est gratuit.','Your first Magic is on the house: no star lost.':'Votre première Magie est offerte : aucune étoile perdue.'},
 ru:{'Empty · free':'Вылить · бесплатно','Drops':'Капли','So close.':'Почти.','3 hearts: a paint this part doesn\'t use costs one. Tuning the mix is free.':'3 сердца: краска, которой нет в этой части, стоит одно. Подбирать смесь — бесплатно.','Your first Magic is on the house: no star lost.':'Первая Магия бесплатна: звезда не теряется.'}
 });
+I18N.add({
+fr:{'Holiday pictures mix like the later chapters. Take your time: emptying the bowl is free, and Hard ones are marked.':'Les images des fêtes se mélangent comme les chapitres avancés. Prenez votre temps : vider le bol est gratuit, et les difficiles sont signalées.',
+'Holiday pictures':'Images des fêtes','These mix like the later chapters, so the shades are closer. Each part starts with its easiest mix; Palette and Magic help, and emptying the bowl is free.':'Elles se mélangent comme les chapitres avancés : les teintes sont plus proches. Chaque image commence par son mélange le plus simple ; Palette et Magie aident, et vider le bol est gratuit.',
+'Later in your book':'Plus loin dans votre livre'},
+ru:{'Holiday pictures mix like the later chapters. Take your time: emptying the bowl is free, and Hard ones are marked.':'Праздничные картинки смешиваются как поздние главы. Не спешите: вылить миску можно бесплатно, а сложные отмечены.',
+'Holiday pictures':'Праздничные картинки','These mix like the later chapters, so the shades are closer. Each part starts with its easiest mix; Palette and Magic help, and emptying the bowl is free.':'Они смешиваются как поздние главы, оттенки ближе. Каждая картинка начинается с самой простой смеси; помогают Палитра и Магия, а вылить миску можно бесплатно.',
+'Later in your book':'Дальше в вашей книге'}
+});
 

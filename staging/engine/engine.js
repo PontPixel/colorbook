@@ -1718,7 +1718,7 @@ if(V2){
     persist();
   }
   const _apply=apply; apply=function(){ _apply(); savePartial();
-    if(save.tut.drag&&!save.tut.paint&&state&&!state.finished) setTimeout(paintTip,800); };
+    if(save.tut.drag&&!save.tut.paint&&state&&!state.finished&&L.index>=2&&L.index<MAIN) setTimeout(paintTip,800); };
   // One-time guided tip on the paint pot: what it is, what "Rest needs" means, why it matters.
   function paintTip(){
     if(save.tut.paint||!state||state.finished||state.forced||state.lesson||state.applying||!$('introOverlay').hidden||!$('endOverlay').hidden) return;
@@ -1753,6 +1753,8 @@ if(V2){
   }
   const _start=start;
   start=function(i,o){ v2.quiet=false; v2.paintLv=0; _start(i,o); resume(); $('gTitle').textContent=T(L); enter($('game'));
+    // the very first picture keeps every control in place but quiets the efficiency details and locked boosters
+    $('game').classList.toggle('calm',L.index===0&&!(state&&state.daily));
     state.hearts=state.daily&&L.dream?3:0; renderHearts(); $('game').classList.toggle('dreamday',!!(state.daily&&L.dream)); };
   // ---------- Daily challenge: a page from Grandma's dream journal ----------
   // One dream per day (same for everyone), 3 hearts, no boosters, tight paint. A drop of a paint the part doesn't
@@ -1814,6 +1816,8 @@ if(V2){
       cards.push({title:t('{from} challenged you!',{from:chal.from}),html:`<div class="booster">🏆 ${t('Restore <b>{title}</b> with more than <b>{score}★</b>.',{title:esc(T(LEVELS[ci])),score:chal.score})}`+
         (n&&!unlocked(ci)?' '+t('First, finish the warm-up pictures to unlock it ({pics}).',{pics:tn(n,'picture')}):'')+'</div>'}); }
     if(tip) cards.push({title:t(tip.title),text:t(tip.text)});
+    if(L.season&&!save.seen['holiday-intro']){ save.seen['holiday-intro']=true; persist();
+      cards.push({title:t('Holiday pictures'),text:t('These mix like the later chapters, so the shades are closer. Each part starts with its easiest mix; Palette and Magic help, and emptying the bowl is free.')}); }
     if(tierNote) cards.push({title:t('{tier} picture',{tier:TIERS[L.tier].label}),text:(L.tier==='nightmare'?t('Very little spare paint and colors that look almost the same.'):t('Less spare paint and closer shades than usual.'))+' '+t('Boosters help here. Rewards are ×{m}.',{m:TIERS[L.tier].mult})});
     fresh.forEach(b=>cards.push({title:t('New booster: {name}',{name:BOOSTERS[b].name}),
       html:`<div class="bdemo">${DEMO[b]||icon(b)}</div><p class="btext">${BOOSTERS[b].text}</p><p class="bfree">${t('You get {n} free. After that, {price} each.',{n:FREE_BOOSTERS,price:BOOSTERS[b].price+' <span class="coin"></span>'})}</p>`}));
@@ -1944,7 +1948,7 @@ if(V2){
   // one (coins count up, each booster with its icon); Collect closes it with confetti.
   document.body.insertAdjacentHTML('beforeend',`<div class="overlay rwOverlay" id="rwOverlay" hidden><div class="rwcard" role="dialog" aria-modal="true" aria-labelledby="rwTitle">
     <div class="rwrays" aria-hidden="true"></div><div class="rwicon" id="rwIcon" aria-hidden="true"></div><small class="rwkick" id="rwKick"></small><h2 id="rwTitle"></h2>
-    <div class="rwitems" id="rwItems"></div><button class="btn primary rwgo" id="rwGo">${t('Collect')}</button></div></div>`);
+    <div class="rwitems" id="rwItems"></div><div class="rwpeek" id="rwPeek" hidden></div><button class="btn primary rwgo" id="rwGo">${t('Collect')}</button></div></div>`);
   const RW_ICON={chapter:'<svg viewBox="0 0 64 64"><path d="M20 8h24v14a12 12 0 0 1-24 0Z" fill="#f4c542" stroke="#8a5a0b" stroke-width="2.5" stroke-linejoin="round"/><path d="M20 12H10q0 14 12 16M44 12h10q0 14-12 16" fill="none" stroke="#8a5a0b" stroke-width="2.5" stroke-linecap="round"/><path d="M28 34h8v10h-8Z" fill="#e0a92a" stroke="#8a5a0b" stroke-width="2.5"/><rect x="18" y="44" width="28" height="9" rx="2" fill="#f4c542" stroke="#8a5a0b" stroke-width="2.5"/><path d="M26 14q2 8 6 10" stroke="#fff6d0" stroke-width="3" stroke-linecap="round" fill="none"/></svg>',
     chest:'<svg viewBox="0 0 64 64"><path d="M8 28q0-16 24-16t24 16Z" fill="#c4692c" stroke="#5c2c0e" stroke-width="2.5" stroke-linejoin="round"/><rect x="8" y="28" width="48" height="26" rx="3" fill="#a9541f" stroke="#5c2c0e" stroke-width="2.5"/><path d="M8 34h48M20 13v41M44 13v41" stroke="#f4c542" stroke-width="4"/><rect x="27" y="29" width="10" height="12" rx="2" fill="#f4c542" stroke="#5c2c0e" stroke-width="2"/></svg>'};
   function rewardReveal(list){
@@ -1956,6 +1960,10 @@ if(V2){
     $('rwTitle').textContent=head.kind==='chapter'?head.name:t('Chest opened!');
     $('rwItems').innerHTML=`<div class="rwitem coins" style="--d:0"><span class="rwbig"><span class="coin"></span></span><b>+<span id="rwCoins">0</span></b><small>${t('Coins')}</small></div>`+
       Object.entries(bc).map(([b,n],i)=>`<div class="rwitem" style="--d:${i+1}"><span class="rwbig">${icon(b)}</span><b>+${n}</b><small>${esc(BOOSTERS[b].name)}</small></div>`).join('');
+    // after the first chapter, a peek at what the book holds later (a landscape, a scene, flowers)
+    const peek=head.kind==='chapter'&&head.n===1?['lighthouse','bakery','blossoms'].map(id=>LEVELS.find(l=>l.id===id)).filter(Boolean):[];
+    $('rwPeek').hidden=!peek.length;
+    if(peek.length) $('rwPeek').innerHTML=`<small>${t('Later in your book')}</small><span>${peek.map(l=>`<i>${thumbSVG(l,true)}</i>`).join('')}</span>`;
     const ov=$('rwOverlay'); ov.hidden=false; restart(ov.querySelector('.rwcard'),'rwin');
     const el=$('rwCoins'), t0=performance.now()+350, dur=reduced?0:800;
     const tick=now=>{ const k=dur?Math.max(0,Math.min(1,(now-t0)/dur)):1; el.textContent=Math.round(coins*(1-Math.pow(1-k,3))); if(k<1&&!ov.hidden) requestAnimationFrame(tick); else sfx('coin'); };
@@ -2092,6 +2100,7 @@ if(V2){
       const ids=seasonPics(view), got=ids.filter(i=>save.best[LEVELS[i].id]!=null).length;
       el.innerHTML=`<button class="holback" aria-label="${t('Back to Holidays')}">${icon('back')}${t('Holidays')}</button>`+
         `<h2>${t('{season} collection',{season:seasonName(view)})}</h2><p class="hsub">${seasonStatus(view)} · ${t('{done} of {all} restored',{done:got,all:ids.length})}</p>`+
+        `<p class="hsub hcue">${t('Holiday pictures mix like the later chapters. Take your time: emptying the bowl is free, and Hard ones are marked.')}</p>`+
         (on===view?'':`<p class="hsub">${t('Outside its season, only the pictures you already started can be played.')}</p>`)+
         `<div class="ggrid">${ids.map(holCard).join('')}</div>`;
       return;

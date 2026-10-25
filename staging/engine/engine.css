@@ -964,4 +964,15 @@ body.v2 .coin.big{display:block;width:72px;height:72px;margin:0 auto;border-widt
 .wrap.v2 .pourtag{position:absolute;left:50%;top:calc(100% - 22px);transform:translateX(-50%);padding:2px 8px;border-radius:999px;background:var(--ink);color:var(--on-ink);font:800 10.5px/1.4 "Inter",system-ui,sans-serif;white-space:nowrap;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.2);animation:spotIn .25s ease both}
 .wrap.v2 .pourtag[hidden]{display:none}
 .counter small{font-size:11px;font-weight:700;opacity:.7;margin-right:2px}
+/* first picture: efficiency details and locked boosters stay in place but quiet */
+#game.calm .mxpace,#game.calm #paintNeed{opacity:.35}
+#game.calm .actions .btn.locked{opacity:.4}
+/* holidays: difficulty cue; chapter 1 reward: a peek at later pictures */
+.holidays .hcue{color:var(--ink);opacity:.8}
+.rwpeek{margin:-6px 0 18px;display:flex;flex-direction:column;gap:8px;animation:rwpop .45s cubic-bezier(.2,1.5,.4,1) .9s both}
+.rwpeek[hidden]{display:none}
+.rwpeek small{font:800 11px "Inter",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.rwpeek span{display:flex;gap:8px;justify-content:center}
+.rwpeek i{flex:1;max-width:96px;border-radius:10px;overflow:hidden;line-height:0;box-shadow:0 0 0 1.5px var(--line),0 4px 10px rgba(0,0,0,.15)}
+.rwpeek i svg{display:block;width:100%;height:auto}
 

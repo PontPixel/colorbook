@@ -197,7 +197,7 @@ document.body.insertAdjacentHTML('afterbegin',(V2?v2Scenes():`
       <button class="btn" data-c="solve">Solve this part</button><button class="btn" data-c="finish">Finish picture ★★★</button>
       <button class="btn" data-c="unlock">Unlock all pictures</button><button class="btn" data-c="restoreAll">Restore all ★★★</button>
       <button class="btn" data-c="newDay">Daily: new day</button><button class="btn" data-c="tutorials">Replay tutorials</button>
-      <button class="btn" data-c="s-halloween">Season: Halloween</button><button class="btn" data-c="s-thanksgiving">Season: Thanksgiving</button><button class="btn" data-c="s-christmas">Season: Christmas</button>
+      <button class="btn" data-c="hl" id="cheatHl">Highlight: aura</button><button class="btn" data-c="s-halloween">Season: Halloween</button><button class="btn" data-c="s-thanksgiving">Season: Thanksgiving</button><button class="btn" data-c="s-christmas">Season: Christmas</button>
       <button class="btn" data-c="s-off">Season: none</button><button class="btn" data-c="s-auto">Season: by date</button>
     </div>
     <div class="cjump"><select id="cheatLevel" aria-label="Picture"></select><button class="btn primary" data-c="jump">Play</button></div>
@@ -224,18 +224,18 @@ function v2Scenes(){ return `
       </div>
       <button class="btn play" id="playBtn">${t('Play')}</button>
     </div>
-    <button class="btn quizbtn seasoncard" id="seasonBtn" hidden></button>
+    <button class="btn quizbtn evcard seasoncard" id="seasonBtn" hidden></button>
+    <button class="btn quizbtn evcard daily" id="dailyPicBtn" hidden></button>
     <div class="chbar" id="homeCh" hidden></div>
     <div class="progcards" id="progCards" hidden><div class="pcard" id="chapterCard"></div><div class="pcard" id="chestCard"></div></div>
-    <button class="btn quizbtn v2daily" id="dailyPicBtn" hidden></button>
-    <button class="btn quizbtn bonusbtn" id="bonusBtn" hidden></button>
     <button class="btn quizbtn" id="dailyQuizBtn" hidden></button>
-    <div class="tipcard" id="tipCard" hidden></div>
     <div hidden><img class="logo" alt=""><div class="hallWrap" id="hallWrap"></div></div>
   </section>
   <section class="gallery" id="gallery" hidden>
     <h2>${t('Gallery')}</h2>
+    <button class="btn quizbtn bonusbtn" id="bonusBtn" hidden></button>
     <div class="ggrid" id="ggrid"></div>
+    <div class="tipcard" id="tipCard" hidden></div>
   </section>
   <section class="gallery holidays" id="holidays" hidden></section>
   <nav class="tabbar" aria-label="${t('Menu')}">
@@ -355,6 +355,7 @@ try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(s&&s.best)save
 // Players who had the old boosters keep their counts under the new ones.
 if(V2){ Object.entries(INTRO_ALIAS).forEach(([nb,ob])=>{ if(save.inv[nb]==null&&save.inv[ob]!=null) save.inv[nb]=save.inv[ob]; });
   [['palette','refill'],['brush','free']].forEach(([nb,ob])=>{ if(save.inv[nb]==null&&save.inv[ob]!=null) save.inv[nb]=save.inv[ob]; }); }
+let respot=()=>{}; // redraws the selected part's highlight (set by the redesign)
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
 // Soft shading (GAME.shading, ColorBook): every filled part gets a light from the top left, drawn as an overlay of
 // its own shape (.shade, right after the part), so the part itself stays one flat target color. Faded parts get a
@@ -1391,20 +1392,32 @@ if(V2){
   // target color and a crisp outline. Parts are switched by tapping them on the picture.
   // Glow and outline sit right above the part in the drawing order, so things drawn in front of it (a bowl over a
   // plum) still cover them; the dim layer on top leaves a hole for the part minus those front shapes and the decor.
+  // Highlight on the selected part: 'aura' (default: a white die-cut border with a soft shadow and a pale halo in the
+  // part's color). The staging cheat cycles the others to compare (save.hl): dim (old dark spotlight), wash, halo, sticker.
+  const HL=['dim','wash','halo','sticker','aura'], hlStyle=()=>HL.includes(save.hl)?save.hl:'aura';
+  respot=()=>{ if(state&&state.sel&&!state.done[state.sel]) $('selLayer').innerHTML=spotlight(current()); };
   function spotlight(r){
-    scene.querySelectorAll('.spotUnder').forEach(e=>e.remove());
+    scene.querySelectorAll('.spotUnder,.spotBack').forEach(e=>e.remove());
+    const hl=hlStyle(); $('game').dataset.hl=hl;
     const shape=(o,col,extra)=>o.stroke?`<g fill="none" stroke="${col}" stroke-width="${o.stroke+extra}" stroke-linecap="round">${o.svg}</g>`:`<g fill="${col}" stroke="${col}" stroke-width="${1.6+extra}" stroke-linejoin="round">${o.svg}</g>`;
     const front=L.order.slice(L.order.indexOf(r.id)+1).map(id=>L.regions.find(x=>x.id===id)).filter(Boolean);
     const g=scene.querySelector(`.region[data-id="${r.id}"]`);
     if(g){
       const u=document.createElementNS('http://www.w3.org/2000/svg','g'); u.setAttribute('class','spotUnder'); u.setAttribute('pointer-events','none');
-      u.innerHTML=`<g class="spotGlow" filter="url(#spotF)" style="stroke:${hex(r.target)};stroke-width:${r.stroke?r.stroke+8:7}px">${r.svg}</g>`+
+      const glow=hl==='dim'?hex(r.target):'#fff';
+      u.innerHTML=(hl==='sticker'||hl==='aura'?'':`<g class="spotGlow" filter="url(#spotF)" style="stroke:${glow};stroke-width:${r.stroke?r.stroke+8:hl==='dim'?7:10}px">${r.svg}</g>`)+
         `<g class="selOutline${r.stroke?' thick':''}"${r.stroke?` style="stroke-width:${r.stroke+6}px"`:''}>${r.svg}</g>`;
       const sh=g.nextElementSibling; (sh&&sh.classList.contains('shade')?sh:g).after(u);
+      if(hl==='sticker'||hl==='aura'){ // a white die-cut border with a soft shadow, right under the part (aura: plus a pale halo in its color)
+        const b=document.createElementNS('http://www.w3.org/2000/svg','g'); b.setAttribute('class','spotBack'); b.setAttribute('pointer-events','none');
+        const tint=hex(r.target.map(v=>0.984*0.55+v*0.45));
+        b.innerHTML=(hl==='aura'?`<g class="spotAura" filter="url(#spotF)" style="stroke:${tint};fill:${tint};stroke-width:${r.stroke?r.stroke+18:18}px">${r.svg}</g>`:'')+
+          `<g filter="url(#spotS)" style="stroke-width:${r.stroke?r.stroke+9:9}px">${r.svg}</g>`; g.before(b); }
     }
     return `<defs><mask id="spotM" maskUnits="userSpaceOnUse" x="0" y="0" width="320" height="240"><rect width="320" height="240" fill="#fff"/>${shape(r,'#000',2)}`+
       `${front.map(o=>shape(o,'#fff',0)).join('')}<g class="occ">${L.decor||''}</g></mask>`+
-      `<filter id="spotF" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.6"/></filter></defs>`+
+      `<filter id="spotF" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.6"/></filter>`+
+      `<filter id="spotS" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#1d2233" flood-opacity=".35"/></filter></defs>`+
       `<rect class="spotDim" width="320" height="240" mask="url(#spotM)"/>`;
   }
   // Switching parts with paint in the bowl gives the paid drops back (the old screen dropped them).
@@ -1817,7 +1830,7 @@ if(V2){
     {key:'hChapter',el:'chapterCard',when:()=>chapterReady(),text:()=>t('<b>Chapter complete!</b> Pictures come in chapters of five, and each finished chapter pays coins and one booster of each kind. Tap the card to collect.')},
     {key:'hChest',el:'chestCard',when:()=>chestReady(),text:()=>t('<b>Your star chest is full!</b> Every star you earn goes in here, and a full chest opens with coins and boosters. Tap it to open.')},
     {key:'hDaily',el:'dailyPicBtn',text:()=>t('<b>Daily challenge.</b> Every day a new page from Grandma\'s dream journal: a strange picture you won\'t find in the book, with 3 hearts and no boosters. Play on days in a row to grow your streak and the reward.')},
-    {key:'hTip',el:'tipCard',text:()=>t('<b>Mixing tips.</b> A new one every day. Tap the arrow to read more.')}];
+    ];
   function homeCoach(){
     if($('home').hidden||!$('homeMain').offsetParent||!LEVELS.some(l=>save.best[l.id]!=null)) return;
     if(['introOverlay','settingsOverlay','buyOverlay','quizOverlay'].some(id=>$(id)&&!$(id).hidden)) return;
@@ -1835,15 +1848,18 @@ if(V2){
       tip.querySelector('button').onclick=()=>v2.homeTipDone();
     },reduced?0:350);
   }
-  // Home: the next picture as a hero card, the daily picture with its streak, and a mixing tip.
+  // Home: the next picture as a hero card, the season banner, the daily picture with its streak, chapter and chest.
+  const DAILY_DECO='<path class="moon" d="M300 10a16 16 0 1 0 12 26a13 13 0 1 1-12-26Z"/><g class="star"><path d="M236 16l2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/><path d="M268 50l1.5 3.5 3.5 1.5-3.5 1.5-1.5 3.5-1.5-3.5-3.5-1.5 3.5-1.5Z"/><circle cx="214" cy="40" r="1.4"/><circle cx="318" cy="60" r="1.2"/></g><path class="cloud" d="M226 88q0-12 14-10q6-10 18-4q12-2 12 10q8 2 6 10h-50q-6-2 0-6Z"/>';
   renderDailyPic=function(){
     const b=$('dailyPicBtn'), i=DAILY?dailyIndex():-1; b.hidden=i<0; if(i<0) return;
     const s=dailyStreakNext(), lv=LEVELS[i], done=dailyDone(), filled=Math.min(7,done?s:s-1);
     b.classList.toggle('done',done);
-    b.innerHTML=`<span class="dthumb">${thumbSVG(lv,done)}</span><span class="dbody"><span class="dtop"><b>${t('Daily challenge')}</b>`+
-      `<small>${done?t('Done · streak: {days}',{days:tn(s,'day')}):`<span class="dh">${HEART}${HEART}${HEART}</span> +${dailyReward(s)} <span class="coin"></span>`}</small></span>`+
-      `<span class="dname">${esc(T(lv))}</span>`+
-      `<span class="dbars" aria-label="${t('Streak: {days}',{days:tn(done?s:s-1,'day')})}">${[0,1,2,3,4,5,6].map(k=>`<i class="${k<filled?'on':''}"></i>`).join('')}</span></span>`;
+    // a banner like the season one: dreamy dawn gradient, moon and sparkles, today's dream picture, the streak
+    b.innerHTML=`<svg class="sdeco" viewBox="0 0 320 100" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">${DAILY_DECO}</svg><span class="sshine" aria-hidden="true"></span>`+
+      `<span class="scover">${thumbSVG(lv,done)}</span><span class="sbody"><span class="stag">${done?t('Done · streak: {days}',{days:tn(s,'day')}):`<span class="dh">${HEART}${HEART}${HEART}</span> +${dailyReward(s)} <span class="coin"></span>`}</span>`+
+      `<b>${t('Daily challenge')}</b><small>${esc(T(lv))}</small>`+
+      `<span class="dbars" aria-label="${t('Streak: {days}',{days:tn(done?s:s-1,'day')})}">${[0,1,2,3,4,5,6].map(k=>`<i class="${k<filled?'on':''}"></i>`).join('')}</span></span>`+
+      `<span class="sgo">${done?'✓':t('Play')}</span>`;
   };
 
   const TIPS=G.tips||[];
@@ -1954,14 +1970,14 @@ if(V2){
   $('offerNo').onclick=()=>{ $('offerOverlay').hidden=true; };
   $('offerOverlay').addEventListener('click',e=>{ if(e.target.id==='offerOverlay') $('offerOverlay').hidden=true; });
   const popAt=(el,colors)=>{ if(!el) return; const r=el.getBoundingClientRect(); burst(r.left+r.width/2,r.top+r.height/2,colors,24,{speed:6,shapes:['star','circle'],decay:.025,size:4}); };
-  // Empty booster: watch an ad for one, or buy it with coins; either way it is used right away.
+  // Empty booster: watch an ad for one, or buy it with coins; its counter goes up and the player uses it when ready.
   const _spend=spend;
   spend=function(b){
     if(!(state&&state.twist==='noboost')&&!(save.inv[b]>0)){ boosterOffer(b); return false; }
     return _spend(b);
   };
   function boosterOffer(b){
-    const B=BOOSTERS[b], ok=save.coins>=B.price, use=()=>{ renderActions(); popAt($(b+'Btn'),['#f4c542','#ffffff']); setTimeout(()=>$(b+'Btn').click(),250); };
+    const B=BOOSTERS[b], ok=save.coins>=B.price, use=()=>{ renderActions(); popAt($(b+'Btn'),['#f4c542','#ffffff']); restart($(b+'Btn').querySelector('.badge'),'bump'); };
     offerSheet({icon:icon(b),kick:t('Out of {name}',{name:B.name}),title:t('Get one more'),text:esc(B.text),buttons:[
       {cls:'primary adgo',html:`${AD_PLAY}${t('Watch an ad')}<em>${t('Free')}</em>`,go:()=>watchAd('booster_'+b,()=>{ save.inv[b]=(save.inv[b]||0)+1; persist(); toast(t('+1 {name}',{name:B.name})); use(); })},
       {cls:'',disabled:!ok,html:ok?`${t('Buy')} · ${B.price} <span class="coin"></span>`:t('{price} coins needed',{price:B.price}),go:()=>{ addCoins(-B.price); sfx('coin'); save.inv[b]=(save.inv[b]||0)+1; persist(); use(); }}]});
@@ -2001,7 +2017,7 @@ if(V2){
       $('nextLabel').textContent=t('Chapter {n}',{n:ci+1})+' · '+t(CHAPTERS[ci].name)+(TIERS[LEVELS[i].tier].label?' · '+TIERS[LEVELS[i].tier].label:'');
       // the card keeps showing a finished chapter until its reward is collected
       const rc=CHAPTERS.findIndex((c,k)=>chapterDone(k)&&!save.chapters[k]), cc=rc>=0?rc:ci, [ca,cz]=chapterRange(cc), cgot=LEVELS.slice(ca,cz).filter(l=>save.best[l.id]!=null).length;
-      $('chapterCard').innerHTML=`<small>${t('Chapter {n} of {all}',{n:cc+1,all:CHAPTERS.length})}</small><b>${esc(t(CHAPTERS[cc].name))}</b>`+
+      $('chapterCard').innerHTML=`<span class="pico">${RW_ICON.chapter}</span><small>${t('Chapter {n} of {all}',{n:cc+1,all:CHAPTERS.length})}</small><b>${esc(t(CHAPTERS[cc].name))}</b>`+
         `<span class="pdots">${LEVELS.slice(ca,cz).map((l,k)=>`<i class="${save.best[l.id]!=null?'on':ca+k===i?'cur':''}"></i>`).join('')}</span>`+
         `<small>${rc>=0?`<b class="ready">${t('Tap to collect')}</b>`:t('Finish it: +{coins} and a booster of each kind',{coins:tn(EC.chapterCoins,'coin')})}</small>`;
       $('chapterCard').setAttribute('aria-label',t('Chapter {n}: {name}, {done} of {all} pictures',{n:cc+1,name:t(CHAPTERS[cc].name),done:cgot,all:cz-ca}));
@@ -2009,12 +2025,13 @@ if(V2){
     $('chapterCard').hidden=!CHAPTERS; $('chestCard').hidden=!CHESTS;
     if(CHESTS){
       const st=totalStars(), next=(save.chests+1)*CHESTS.every, from=save.chests*CHESTS.every, pc=Math.max(0,Math.min(100,(st-from)/(next-from)*100));
-      $('chestCard').innerHTML=`<small>${t('Star chest')}</small><b>${STAR}${Math.min(st,next)} / ${next}</b><span class="bar"><i style="width:${pc}%"></i></span>`+
+      $('chestCard').innerHTML=`<span class="pico">${RW_ICON.chest}</span><small>${t('Star chest')}</small><b class="gold">${STAR}${Math.min(st,next)} / ${next}</b><span class="bar gold"><i style="width:${pc}%"></i></span>`+
         `<small>${st>=next?`<b class="ready">${t('Tap to open')}</b>`:t('+{coins} and {n} boosters',{coins:tn(CHESTS.coins,'coin'),n:CHESTS.boosters})}</small>`;
       $('chestCard').classList.toggle('ready',st>=next);
     }
     if(CHAPTERS) $('chapterCard').classList.toggle('ready',CHAPTERS.some((c,k)=>chapterDone(k)&&!save.chapters[k]));
     const nb=LEVELS.filter((l,k)=>buyable(k)).length, bb=$('bonusBtn'); bb.hidden=!nb;
+    const gt=document.querySelector('.tab[data-tab="gallery"]'); if(gt) gt.classList.toggle('hasnew',!!nb);
     if(nb) bb.innerHTML=icon('gallery')+`<span class="dlab"><b>${t('Bonus pages')}</b><small>${t('{n} ready to unlock with coins',{n:nb})}</small></span>`;
   }
   // ---------- Holidays tab and Home card ----------
@@ -2066,7 +2083,7 @@ if(V2){
     const b=$('seasonBtn'), on=seasonOn(); b.hidden=!on; if(!on) return;
     const ids=seasonPics(on), got=ids.filter(i=>save.best[LEVELS[i].id]!=null).length, next=ids.find(i=>save.best[LEVELS[i].id]==null), lv=LEVELS[next!=null?next:ids[0]];
     const now=new Date(), left=Math.round((seasonEnd(on)-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/864e5)+1;
-    b.className='btn quizbtn seasoncard '+({christmas:'xmas',thanksgiving:'tg',halloween:'hw'}[on]);
+    b.className='btn quizbtn evcard seasoncard '+({christmas:'xmas',thanksgiving:'tg',halloween:'hw'}[on]);
     b.innerHTML=`<svg class="sdeco" viewBox="0 0 320 100" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">${SEASON_DECO[on]||''}</svg><span class="sshine" aria-hidden="true"></span>`+
       `<span class="scover">${thumbSVG(lv,true)}</span><span class="sbody"><span class="stag">${left<=1?t('Last day!'):left<=31?t('{n} days left',{n:left}):t('until {date}',{date:seasonDate(seasonEnd(on))})}</span>`+
       `<b>${t('{season} pictures',{season:seasonName(on)})}</b>`+
@@ -2104,7 +2121,7 @@ if(CHEATS){
   let armed=false;
   const refresh=()=>{ persist(); renderCoins(true); if(state){ updateHud(); renderActions(); } else renderMenu(); };
   const open=()=>{ const g=!!state&&!state.finished; ['paint','solve','finish'].forEach(c=>$('cheatOverlay').querySelector(`[data-c="${c}"]`).disabled=!g);
-    if(L) sel.value=L.index; armed=false; $('cheatEvents').textContent=EVENTS.join('\n')||'No events yet'; $('cheatNew').textContent='New game: start over from picture 1'; $('cheatOverlay').hidden=false; };
+    if(L) sel.value=L.index; armed=false; $('cheatEvents').textContent=EVENTS.join('\n')||'No events yet'; $('cheatHl').textContent='Highlight: '+(save.hl||'aura'); $('cheatNew').textContent='New game: start over from picture 1'; $('cheatOverlay').hidden=false; };
   $('cheatBtn').onclick=open;
   // Sound test: play every effect in the old or the new set to compare them on a phone.
   const SND=[['drop','W','Drop White'],['drop','C','Drop Cyan'],['drop','M','Drop Magenta'],['drop','Y','Drop Yellow'],['drop','K','Drop Black'],
@@ -2139,6 +2156,8 @@ if(CHEATS){
     if(c==='newDay'){ if(save.daily) save.daily.last=dayKey(new Date(Date.now()-864e5)); refresh(); toast('Daily picture is open again, streak kept'); return; }
     if(c==='tutorials'){ save.tut={}; save.seen={}; persist(); toast('Tutorials and tip cards will show again'); return; }
     if(c==='jump'){ close(); start(+sel.value); return; }
+    if(c==='hl'){ const L5=['dim','wash','halo','sticker','aura'], v=L5[(L5.indexOf(save.hl||'aura')+1)%L5.length]; save.hl=v; persist();
+      $('cheatHl').textContent='Highlight: '+v; respot(); toast('Highlight: '+v); return; }
     if(c.startsWith('s-')){ const v=c.slice(2); if(v==='auto') delete save.forceSeason; else save.forceSeason=v; persist();
       if(!state) renderMenu(); toast(v==='auto'?'Season follows the date':'Season: '+v); return; }
     // Wipes this build's save (coins, stars, boosters, tutorials, progress) and opens picture 1, as a first-time player.

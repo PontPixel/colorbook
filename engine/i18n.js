@@ -323,3 +323,48 @@ ru:{'Advertisement':'Реклама','Ad':'Реклама','Close the ad and get
 });
 
 I18N.add({fr:{'New':'Nouveau'},ru:{'New':'Новое'}});
+I18N.add({
+fr:{'Empty · free':'Vider · gratuit','Drops':'Gouttes','So close.':'Presque.','3 hearts: a paint this part doesn\'t use costs one. Tuning the mix is free.':'3 cœurs : une peinture que cette partie n’utilise pas en coûte un. Ajuster le mélange est gratuit.','Your first Magic is on the house: no star lost.':'Votre première Magie est offerte : aucune étoile perdue.'},
+ru:{'Empty · free':'Вылить · бесплатно','Drops':'Капли','So close.':'Почти.','3 hearts: a paint this part doesn\'t use costs one. Tuning the mix is free.':'3 сердца: краска, которой нет в этой части, стоит одно. Подбирать смесь — бесплатно.','Your first Magic is on the house: no star lost.':'Первая Магия бесплатна: звезда не теряется.'}
+});
+I18N.add({
+fr:{'Holiday pictures mix like the later chapters. Take your time: emptying the bowl is free, and Hard ones are marked.':'Les images des fêtes se mélangent comme les chapitres avancés. Prenez votre temps : vider le bol est gratuit, et les difficiles sont signalées.',
+'Holiday pictures':'Images des fêtes','These mix like the later chapters, so the shades are closer. Each part starts with its easiest mix; Palette and Magic help, and emptying the bowl is free.':'Elles se mélangent comme les chapitres avancés : les teintes sont plus proches. Chaque image commence par son mélange le plus simple ; Palette et Magie aident, et vider le bol est gratuit.',
+'Later in your book':'Plus loin dans votre livre'},
+ru:{'Holiday pictures mix like the later chapters. Take your time: emptying the bowl is free, and Hard ones are marked.':'Праздничные картинки смешиваются как поздние главы. Не спешите: вылить миску можно бесплатно, а сложные отмечены.',
+'Holiday pictures':'Праздничные картинки','These mix like the later chapters, so the shades are closer. Each part starts with its easiest mix; Palette and Magic help, and emptying the bowl is free.':'Они смешиваются как поздние главы, оттенки ближе. Каждая картинка начинается с самой простой смеси; помогают Палитра и Магия, а вылить миску можно бесплатно.',
+'Later in your book':'Дальше в вашей книге'}
+});
+I18N.add({
+fr:{'Your Brush came back: its mix was never painted.':'Votre Pinceau est revenu : son mélange n’a jamais été peint.','Perfect mix! Every part at 3 stars.':'Mélange parfait ! Chaque partie à 3 étoiles.','Perfect':'Parfait'},
+ru:{'Your Brush came back: its mix was never painted.':'Кисть вернулась: её смесь так и не была нанесена.','Perfect mix! Every part at 3 stars.':'Идеальная смесь! Каждая часть на 3 звезды.','Perfect':'Идеально'}
+});
+I18N.add({
+fr:{'Your mix':'Votre mélange','The bowl is full. Take drops out with Undo.':'Le bol est plein. Retirez des gouttes avec Annuler.','These mix like the later chapters, so the shades are closer. Each picture starts with its easiest mix, and Palette and Magic help.':'Elles se mélangent comme les chapitres avancés : les teintes sont plus proches. Chaque image commence par son mélange le plus simple, et Palette et Magie aident.','Holiday pictures mix like the later chapters. Take your time: Hard ones are marked.':'Les images des fêtes se mélangent comme les chapitres avancés. Prenez votre temps : les difficiles sont signalées.'},
+ru:{'Your mix':'Ваша смесь','The bowl is full. Take drops out with Undo.':'Миска полна. Уберите капли с помощью «Отменить».','These mix like the later chapters, so the shades are closer. Each picture starts with its easiest mix, and Palette and Magic help.':'Они смешиваются как поздние главы, оттенки ближе. Каждая картинка начинается с самой простой смеси, помогают Палитра и Магия.','Holiday pictures mix like the later chapters. Take your time: Hard ones are marked.':'Праздничные картинки смешиваются как поздние главы. Не спешите: сложные отмечены.'}
+});
+I18N.add({
+fr:{'No boosters today. Tap a drop in the bowl to take it out: its paint stays used.':'Pas de bonus aujourd’hui. Touchez une goutte du bol pour la retirer : sa peinture reste utilisée.',
+'You have 3 hearts. A paint this color doesn\'t need costs one heart.':'Vous avez 3 cœurs. Une peinture dont cette couleur n’a pas besoin coûte un cœur.',
+'No boosters, and only a little spare paint. To fix a mix, tap a drop in the bowl to take it out. Its paint stays used.':'Pas de bonus, et peu de peinture en réserve. Pour corriger un mélange, touchez une goutte du bol pour la retirer. Sa peinture reste utilisée.',
+'{paint} taken out. Its paint stays used.':'{paint} retiré. Sa peinture reste utilisée.','The bowl is full. Tap a drop below to take it out.':'Le bol est plein. Touchez une goutte en dessous pour la retirer.',
+'{paint} isn\'t in this color. Tap it below to take it out.':'Il n’y a pas de {paint} dans cette couleur. Touchez-le en dessous pour le retirer.'},
+ru:{'No boosters today. Tap a drop in the bowl to take it out: its paint stays used.':'Сегодня без бустеров. Нажмите на каплю в миске, чтобы убрать её: краска остаётся потраченной.',
+'You have 3 hearts. A paint this color doesn\'t need costs one heart.':'У вас 3 сердца. Краска, которой нет в этом цвете, стоит одно сердце.',
+'No boosters, and only a little spare paint. To fix a mix, tap a drop in the bowl to take it out. Its paint stays used.':'Без бустеров и почти без запаса краски. Чтобы исправить смесь, нажмите на каплю в миске — она уберётся, а краска останется потраченной.',
+'{paint} taken out. Its paint stays used.':'{paint}: капля убрана, краска потрачена.','The bowl is full. Tap a drop below to take it out.':'Миска полна. Нажмите на каплю ниже, чтобы убрать её.',
+'{paint} isn\'t in this color. Tap it below to take it out.':'{paint} нет в этом цвете. Нажмите на неё ниже, чтобы убрать.'}
+});
+I18N.add({
+fr:{'You have 3 hearts. You lose one when you add a paint that doesn\'t belong in the color, like black in a pale yellow.':'Vous avez 3 cœurs. Vous en perdez un en ajoutant une peinture qui n’a pas sa place dans la couleur, comme du noir dans un jaune pâle.',
+'{paint} doesn\'t belong in this color. Tap it below to take it out.':'Le {paint} n’a pas sa place dans cette couleur. Touchez-le en dessous pour le retirer.'},
+ru:{'You have 3 hearts. You lose one when you add a paint that doesn\'t belong in the color, like black in a pale yellow.':'У вас 3 сердца. Одно теряется, если добавить краску, которой нет в этом цвете, например чёрную в бледно-жёлтый.',
+'{paint} doesn\'t belong in this color. Tap it below to take it out.':'{paint} не входит в этот цвет. Нажмите на неё ниже, чтобы убрать.'}
+});
+I18N.add({
+fr:{'Paint pot':'Pot de peinture','Not enough paint to finish':'Pas assez de peinture pour finir','The parts left need at least {need} drops and the pot has {have}. Top it up, or start the picture over.':'Les parties restantes demandent au moins {need} gouttes et le pot en a {have}. Remplissez-le, ou recommencez l’image.','+{n} paint':'+{n} peinture','paint':'peinture','Start the picture over':'Recommencer l’image',
+'Too light: add more color, or a touch of Black':'Trop clair : ajoutez de la couleur, ou une pointe de Noir','Too light: add more color':'Trop clair : ajoutez de la couleur','Too dark: add White':'Trop foncé : ajoutez du Blanc','Too dark: use less of the darker paint':'Trop foncé : moins de la peinture la plus foncée','Too strong: add a little White':'Trop vif : ajoutez un peu de Blanc','Too strong: add a touch of Black':'Trop vif : ajoutez une pointe de Noir','Too dull: add more of the main color':'Trop terne : ajoutez de la couleur principale'},
+ru:{'Paint pot':'Банка краски','Not enough paint to finish':'Краски не хватит до конца','The parts left need at least {need} drops and the pot has {have}. Top it up, or start the picture over.':'Оставшимся частям нужно минимум {need} капель, а в банке {have}. Пополните её или начните картинку заново.','+{n} paint':'+{n} краски','paint':'краски','Start the picture over':'Начать картинку заново',
+'Too light: add more color, or a touch of Black':'Слишком светло: добавьте цвета или каплю Чёрной','Too light: add more color':'Слишком светло: добавьте цвета','Too dark: add White':'Слишком темно: добавьте Белую','Too dark: use less of the darker paint':'Слишком темно: меньше тёмной краски','Too strong: add a little White':'Слишком ярко: добавьте немного Белой','Too strong: add a touch of Black':'Слишком ярко: добавьте каплю Чёрной','Too dull: add more of the main color':'Слишком блёкло: добавьте основного цвета'}
+});
+

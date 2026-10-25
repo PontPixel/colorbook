@@ -182,7 +182,7 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .overlay:not([hidden]) .card{animation:cardin .45s cubic-bezier(.2,1.4,.5,1)}
 @keyframes cardin{from{transform:translateY(40px) scale(.9);opacity:0}}
 .overlay.low{align-items:flex-end;background:rgba(20,24,40,.12);-webkit-backdrop-filter:none;backdrop-filter:none;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
-#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:6}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6} /* absolute in the fixed body: a fixed layer at the top edge makes iPhone Safari tint the status bar gray */
 /* ---------- Scenes ---------- */
 .iconbtn{appearance:none;width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;padding:0;box-shadow:0 2px 6px rgba(20,24,40,.06)}
 .iconbtn .ico{width:20px;height:20px}
@@ -949,7 +949,7 @@ body.v2 .coin.big{display:block;width:72px;height:72px;margin:0 auto;border-widt
 .wrap.v2 .mtip{position:absolute;left:8px;right:8px;bottom:8px;z-index:3;display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;border-radius:16px;background:var(--ink);color:var(--on-ink);box-shadow:0 10px 24px rgba(0,0,0,.28);font:600 13px/1.3 "Inter",system-ui,sans-serif}
 .wrap.v2 .mtip[hidden]{display:none}
 .mtip .mteq{display:flex;align-items:center;gap:3px;flex:none}.mtip .mteq i{width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 1.5px var(--on-ink)}.mtip .mteq b{font-size:12px;opacity:.7}
-.mtip .mttext{flex:1;min-width:0}.mtip .mttext small{display:block;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#f4c542}
+.mtip .mttext{flex:1;min-width:0}.mtip .mttext small{display:table;margin-bottom:3px;padding:1px 7px;border-radius:999px;background:#f4c542;color:#3a2a05;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em} /* a gold pill: readable on the dark bubble and on the light one in dark mode */
 .mtip .mtx{flex:none;width:28px;height:28px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:var(--on-ink);font:700 13px "Inter",system-ui,sans-serif;cursor:pointer}
 .mtip.mtin{animation:mtin .4s cubic-bezier(.2,1.3,.4,1) both}
 @keyframes mtin{0%{transform:translateY(16px);opacity:0}100%{transform:none;opacity:1}}
@@ -959,3 +959,44 @@ body.v2 .coin.big{display:block;width:72px;height:72px;margin:0 auto;border-widt
 .home.v2 #chapterCard .pdots i.on{background:linear-gradient(90deg,#f6cf4e,#e0a92a)}
 .home.v2 #chapterCard .pdots i.cur{background:var(--track);box-shadow:inset 0 0 0 1.5px #e0a92a}
 .gallery .bonusbtn .newtag{margin-left:8px;padding:2px 8px;border-radius:999px;background:#e0344b;color:#fff;font:800 11px "Inter",system-ui,sans-serif;font-style:normal;text-transform:uppercase;letter-spacing:.05em}
+/* drop counter label */
+.wrap.v2 .sw{position:relative}
+.counter small{font-size:11px;font-weight:700;opacity:.7;margin-right:2px}
+/* first picture: efficiency details and locked boosters stay in place but quiet */
+#game.calm .mxpace,#game.calm #paintNeed{opacity:.35}
+#game.calm .actions .btn.locked{opacity:.4}
+/* holidays: difficulty cue; chapter 1 reward: a peek at later pictures */
+.holidays .hcue{color:var(--ink);opacity:.8}
+.rwpeek{margin:-6px 0 18px;display:flex;flex-direction:column;gap:8px;animation:rwpop .45s cubic-bezier(.2,1.5,.4,1) .9s both}
+.rwpeek[hidden]{display:none}
+.rwpeek small{font:800 11px "Inter",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.rwpeek span{display:flex;gap:8px;justify-content:center}
+.rwpeek i{flex:1;max-width:96px;border-radius:10px;overflow:hidden;line-height:0;box-shadow:0 0 0 1.5px var(--line),0 4px 10px rgba(0,0,0,.15)}
+.rwpeek i svg{display:block;width:100%;height:auto}
+/* narrow phones: the tier lives in the progress line (not a pill), the title keeps its room */
+@media (max-width:420px){.wrap.v2 #tierPill{display:none!important}.gtitle small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+@media (min-width:421px){.gtitle small{font-size:12px}}
+@media (max-width:360px){.wrap.v2 .gamebar{gap:8px}.gtitle b{font-size:15px}.wrap.v2 .gamebar .pill.coins{padding:0 10px;font-size:14px}}
+/* short landscape phones: picture and mixing controls side by side, the picture stays in view */
+@media (orientation:landscape) and (max-height:500px) and (max-width:899px){
+  .wrap.v2 .board{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,52%);gap:12px;align-items:start}
+  .wrap.v2 .stage{position:sticky;top:0;max-width:none}
+}
+/* perfect mixes */
+.gcard small .perf{margin-left:6px;padding:1px 6px;border-radius:999px;background:linear-gradient(90deg,#f6cf4e,#e0a92a);color:#3a2a05;font:800 10px/1.5 "Inter",system-ui,sans-serif;font-style:normal;text-transform:uppercase;letter-spacing:.05em;vertical-align:1px}
+.perfmsg{color:#c08a12}
+.gtitle .ptier{display:none}
+@media (max-width:420px){.gtitle .ptier{display:inline;font-weight:800;color:var(--ink)}}
+/* iPhone Safari colors its top and bottom bars from fixed elements at the screen edges, even invisible ones:
+   the hidden toast is taken out of rendering, and the staging wrench tab isn't fixed (the body is, so it stays put) */
+.toast{visibility:hidden;transition:opacity .3s,transform .3s,visibility 0s .3s}
+.toast.show{visibility:visible;transition:opacity .3s,transform .3s,visibility 0s}
+.cheatBtn{position:absolute}
+/* daily: drop chips are tappable (take one drop out), marked with a small minus */
+#game.chipfix .dchip{cursor:pointer;position:relative;padding-right:22px}
+#game.chipfix .dchip::after{content:"−";position:absolute;right:7px;top:50%;transform:translateY(-52%);font:800 15px/1 "Inter",system-ui,sans-serif;opacity:.6}
+#game.chipfix .dchip:active{transform:scale(.94)}
+/* "+ Paint" on the paint bar when the pot can no longer finish the picture */
+.wrap.v2 .paintrow .paintplus{flex:none;margin-left:-4px;padding:6px 10px;border:0;border-radius:999px;background:var(--v2bad,#c62828);color:#fff;font:800 13px "Inter",system-ui,sans-serif;cursor:pointer;animation:sbpulse 1.6s ease-in-out infinite}
+.wrap.v2 .paintrow .paintplus[hidden]{display:none}
+

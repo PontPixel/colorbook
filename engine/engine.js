@@ -269,17 +269,17 @@ function v2Scenes(){ return `
         <div class="swatches">
           <div class="sw"><div class="chip target" id="targetChip"></div><small>${t('Target')}</small></div>
           <div class="mxmid"><div id="pctNum"></div><div class="msg" id="msg"></div><button class="btn primary brushok" id="brushOk" hidden>${t('Paint it')}</button></div>
-          <div class="sw"><button class="chip empty" id="mixChip" aria-label="${t('Your mix. Tap to pour out the bowl.')}"></button><small id="mixLab">${t('Mix')}</small></div>
+          <div class="sw"><button class="chip empty" id="mixChip" aria-label="${t('Your mix')}"></button><small id="mixLab">${t('Mix')}</small></div>
         </div>
         <div class="drops" id="drops"></div>
         <div id="meter" hidden><div class="bar"><i id="barFill"></i></div></div>
         <div class="hint" id="hint" hidden></div>
       </section>
-      <div class="paintrow" id="paintRow" title="${t('Paint left for this picture')}"><span class="plab"><span class="potico"></span><span><b>${t('Paint')}</b><small id="paintNeed"></small></span></span><div class="bar"><i id="paintFill"></i></div><b id="paintLeft"></b></div>
+      <div class="paintrow" id="paintRow" title="${t('Paint left for this picture')}"><span class="plab"><span class="potico"></span><span><b>${t('Paint')}</b><small id="paintNeed"></small></span></span><div class="bar"><i id="paintFill"></i></div><b id="paintLeft"></b><button class="paintplus" id="paintPlus" hidden>+ ${t('Paint')}</button></div>
       <div class="paints" id="paints"></div>
       <div class="coachTip" id="coachTip" hidden></div>
       <div class="actions">
-        <div class="noboost">${t('No boosters today: every drop counts.')}</div>
+        <div class="noboost">${t('No boosters today. Tap a drop in the bowl to take it out: its paint stays used.')}</div>
         <div class="boosters">
           <button class="btn boost" id="undoBtn"></button>
           <button class="btn boost" id="magicBtn"></button>
@@ -331,7 +331,7 @@ const BOOSTERS={
   hint:{name:t('Hint'),price:40,text:t('Shows the next paint to add for the part you are on. That part can earn at most 2 stars.')},
   pick:{name:t('Pick'),price:30,text:t('Tap it, then tap any drop in the bowl to remove just that color. The paint comes back.')},
   empty:{name:t('Empty'),price:15,text:t('Pours out the whole bowl and gives all its paint back.')}};
-// Redesign: Pick folds into Undo (tap a drop to take it out), pouring out is a free tap on the bowl, and Hint becomes
+// Redesign: Pick folds into Undo (tap a drop to take it out), there is no pouring out (only Undo takes drops back), and Hint becomes
 // Magic (does the step instead of showing it, so a screenshot gains nothing). Two paint boosters fill the freed slots.
 // They are introduced on the pictures that used to introduce Hint, Pick and Empty.
 if(V2){
@@ -453,7 +453,7 @@ function renderMenu(){
   if(ch){const cl=LEVELS.find(l=>l.id===ch.level);$('homeCh').textContent='🏆 '+t('{from} challenged you on {title}. Beat {score}★.',{from:ch.from,title:T(cl),score:ch.score});}
   const card=k=>{const l=LEVELS[k], bb=save.best[l.id], ok=unlocked(k), buy=buyable(k);
     const lab=ok?'':buy?', '+t('unlock for {coins}',{coins:tn(bonusPrice(l),'coin')}):l.bonus?', '+t('restore {title} first',{title:t(l.title)}):', '+t('locked');
-    return `<button class="gcard${l.bonus?' bonus':''}${buy?' buy':''}" data-i="${k}" ${ok||buy?'':'disabled'} aria-label="${esc(T(l))}${lab}">${thumbSVG(l,bb!=null,save.partial&&save.partial[l.id]&&save.partial[l.id].stars)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}<b>${l.bonus?'':(k+1)+'. '}${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${bb!=null?starRow(bb):buy?`${bonusPrice(l)} <span class="coin"></span>`:l.bonus?esc(t('Bonus')):''}</small></button>`;};
+    return `<button class="gcard${l.bonus?' bonus':''}${buy?' buy':''}" data-i="${k}" ${ok||buy?'':'disabled'} aria-label="${esc(T(l))}${lab}">${thumbSVG(l,bb!=null,save.partial&&save.partial[l.id]&&save.partial[l.id].stars)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}<b>${l.bonus?'':(k+1)+'. '}${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${bb!=null?starRow(bb)+(save.perfect&&save.perfect[l.id]?`<em class="perf">${t('Perfect')}</em>`:''):buy?`${bonusPrice(l)} <span class="coin"></span>`:l.bonus?esc(t('Bonus')):''}</small></button>`;};
   if(CHAPTERS) $('ggrid').innerHTML=CHAPTERS.map((c,ci)=>{const [a,z]=chapterRange(ci), ids=LEVELS.slice(a,z).map(l=>l.id);
       const got=ids.filter(id=>save.best[id]!=null).length, bonus=LEVELS.map((l,k)=>k).filter(k=>LEVELS[k].bonus&&ids.includes(LEVELS[k].base));
       return `<h3 class="gch"><span>${t('Chapter {n}',{n:ci+1})}</span>${esc(t(c.name))}<small>${got} / ${z-a}</small></h3>`+[...Array(z-a).keys()].map(x=>card(a+x)).join('')+bonus.map(card).join('');}).join('');
@@ -822,7 +822,7 @@ function addDrop(k,via){
     lessonDone();
   }
   if(state.paint<=0&&!(state.freeLeft>0)){outOfPaint();return false;}
-  if(state.drops.length>=12){renderMix([t('The bowl is full. Take drops out or empty it.'),'bad']);buzz(40);sfx('wrong');return false;}
+  if(state.drops.length>=12){renderMix([state.daily&&L.dream?t('The bowl is full. Tap a drop below to take it out.'):t('The bowl is full. Take drops out with Undo.'),'bad']);buzz(40);sfx('wrong');return false;}
   state.picking=false; state.hintMsg=null;
   const free=state.freeLeft>0; state.drops.push(k); state.fr.push(free); if(free) state.freeLeft--; else state.paint--;
   state.used[state.sel]=(state.used[state.sel]||0)+1; buzz(8); sfx('drop',k);
@@ -1345,7 +1345,15 @@ const THEME_KEY='pontpixel-theme', VIB_KEY='pontpixel-vibration';
 let theme='auto', vibOn=true; try{theme=localStorage.getItem(THEME_KEY)||'auto'; vibOn=localStorage.getItem(VIB_KEY)!=='off';}catch(e){}
 const canVibrate=typeof navigator.vibrate==='function';
 function buzz(p){ if(vibOn&&canVibrate){try{navigator.vibrate(p);}catch(e){}} }
-function applyTheme(){ if(theme==='auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme=theme; }
+function applyTheme(){ if(theme==='auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme=theme; syncBarColor(); }
+// iPhone Safari tints the status bar area from theme-color (or by sampling the top of the page): give it the page's
+// own background so it never falls back to gray, and follow theme changes.
+function syncBarColor(){
+  const bg=getComputedStyle(document.body).backgroundColor; document.documentElement.style.backgroundColor=bg;
+  let m=document.querySelector('meta[name="theme-color"]'); if(!m){ m=document.createElement('meta'); m.name='theme-color'; document.head.appendChild(m); }
+  m.content=bg;
+}
+try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>setTimeout(syncBarColor,0)); }catch(e){}
 function renderSettings(){
   document.querySelectorAll('#setTheme button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===theme));
   document.querySelectorAll('#setLang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===I18N.pref||(I18N.pref==='auto'&&b.dataset.v==='auto')));
@@ -1421,20 +1429,23 @@ if(V2){
       `<filter id="spotS" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#1d2233" flood-opacity=".35"/></filter></defs>`+
       `<rect class="spotDim" width="320" height="240" mask="url(#spotM)"/>`;
   }
-  // Switching parts with paint in the bowl gives the paid drops back (the old screen dropped them).
+  // Each part keeps its own bowl: switching away and back finds the mix where you left it. Nothing is refunded,
+  // so switching parts is not a free way to empty the bowl (only Undo takes drops back).
   const _select=select;
   select=function(id){
     if(!state) return;
     const prev=state.sel;
     const leaving=prev&&prev!==id&&!state.done[prev];
-    if(leaving&&state.drops.length){ state.paint+=state.fr.filter(x=>!x).length; state.used[prev]=Math.max(0,(state.used[prev]||0)-state.drops.length); }
-    if(leaving){ state.drops=[]; state.fr=[]; }
+    state.bowls=state.bowls||{};
+    const kept=leaving&&state.drops.length?{drops:state.drops.slice(),fr:state.fr.slice()}:null;
+    if(leaving){ if(kept) state.bowls[prev]=kept; else delete state.bowls[prev]; state.drops=[]; state.fr=[]; }
     const r=L.regions.find(x=>x.id===id); v2.pace=3; v2.over=false;
     if(r){ state.sel=id; v2.pace=paceOf(r); v2.over=(state.used[id]||0)>r.min; }
     // repaint the part we left only after the selection moved, or it keeps breathing (two parts looked selected)
-    if(leaving) paintRegion(prev,null);
+    if(leaving) paintRegion(prev,kept?hex(mix(kept.drops.reduce((c,k)=>(c[k]=(c[k]||0)+1,c),{}))):null);
     scene.querySelectorAll('.region.v2wait').forEach(g=>{ if(g.dataset.id!==id) g.classList.remove('v2wait'); });
     _select(id); state.brushOk=false; brushReady(false); $('mixTip').hidden=true; state.worse=state.worse||{};
+    const back=state.bowls[id]; if(back&&!state.done[id]){ state.drops=back.drops; state.fr=back.fr; delete state.bowls[id]; renderMix(); }
     if(r) $('selLayer').innerHTML=spotlight(r);
     $('targetChip').style.setProperty('--tc',hex(current().target));
     updateHud();
@@ -1443,13 +1454,19 @@ if(V2){
   // the biggest of the lightness, strength (chroma) and hue differences, with the hue named from the target.
   const HUE=[[25,'pink'],[50,'red'],[78,'orange'],[112,'yellow'],[170,'green'],[235,'teal'],[290,'blue'],[330,'violet'],[361,'pink']];
   function v2advice(m,tg,p){
-    if(p>=85) return t('So close');
+    const a=v2dir(m,tg);
+    return p>=85?t('So close.')+' '+a:a;
+  }
+  function v2dir(m,tg){
     const A=lab(m), B=lab(tg), dL=A[0]-B[0], cA=Math.hypot(A[1],A[2]), cB=Math.hypot(B[1],B[2]), dC=cA-cB;
     let dH=0;
     if(cA>8&&cB>8){ const d=Math.atan2(Math.sin(Math.atan2(B[2],B[1])-Math.atan2(A[2],A[1])),Math.cos(Math.atan2(B[2],B[1])-Math.atan2(A[2],A[1]))); dH=2*Math.sqrt(cA*cB)*Math.abs(Math.sin(d/2)); }
     if(dH>=Math.abs(dL)&&dH>=Math.abs(dC)){ const h=(Math.atan2(B[2],B[1])*180/Math.PI+360)%360; return t('Aim for a more {hue} tone',{hue:t(HUE.find(x=>h<x[0])[1])}); }
-    if(Math.abs(dL)>=Math.abs(dC)) return dL>0?t('Too light'):t('Too dark');
-    return dC>0?t('Too strong'):t('Too dull');
+    const has=k=>!L.paints||L.paints.includes(k);
+    if(Math.abs(dL)>=Math.abs(dC)) return dL>0?(has('K')?t('Too light: add more color, or a touch of Black'):t('Too light: add more color'))
+      :(has('W')?t('Too dark: add White'):t('Too dark: use less of the darker paint'));
+    if(dC>0) return B[0]>=50?(has('W')?t('Too strong: add a little White'):t('Too strong')):(has('K')?t('Too strong: add a touch of Black'):t('Too strong'));
+    return t('Too dull: add more of the main color');
   }
   // Magic's next step: of every single add or take-out, the one that leads to the smallest finished bowl
   // (fewest drops, so the best stars). A paint the recipe doesn't use always comes out first.
@@ -1469,7 +1486,7 @@ if(V2){
     const c=counts(), m=mix(c), p=m?matchPct(m,r.target):null;
     if(!state.drops.length) state.picking=false;
     const chip=$('mixChip'); chip.classList.toggle('empty',!m); chip.style.background=m?hex(m):'';
-    $('mixLab').textContent=state.drops.length&&!state.applying?t('Tap to pour out'):t('Mix');
+    $('mixLab').textContent=t('Mix');
     const ks=L.paints||PAINTS.map(x=>x.k);
     // drops in the bowl: a count and a minus on each paint, and a ring around the bowl split by paint
     wrapPaints();
@@ -1488,7 +1505,7 @@ if(V2){
     $('meter').setAttribute('aria-valuenow',p||0);
     if(!state.done[r.id]) paintRegion(r.id,m?hex(m):null);
     const used=state.used[r.id]||0, pace=paceOf(r), over=used>r.min;
-    const ct=$('counter'); ct.innerHTML=`<b>${used}</b><span>/ ${r.min}</span>${over?`<em>${t('over par')}</em>`:''}`;
+    const ct=$('counter'); ct.innerHTML=`<small>${t('Drops')}</small><b>${used}</b><span>/ ${r.min}</span>${over?`<em>${t('over par')}</em>`:''}`;
     ct.classList.toggle('over',over); ct.setAttribute('aria-label',t('{used} drops used, par {min}',{used,min:r.min}));
     if(over&&!v2.over) restart(ct,'shake'); v2.over=over;
     const ps=$('paceStars'); ps.innerHTML=[0,1,2].map(i=>`<span class="${i<pace?'on':''}">${STAR}</span>`).join('');
@@ -1505,7 +1522,8 @@ if(V2){
   const _updateHud=updateHud;
   updateHud=function(){
     _updateHud(); if(!state) return;
-    $('progress').textContent=t('{done} of {all} parts restored',{done:Object.keys(state.done).length,all:L.regions.length});
+    const tl=!state.daily&&TIERS[L.tier].label;
+    $('progress').innerHTML=(tl?`<span class="ptier">${esc(tl)} · </span>`:'')+esc(t('{done} of {all} parts restored',{done:Object.keys(state.done).length,all:L.regions.length}));
     $('paintLeft').textContent=tn(state.paint,'drop');
     // every change of the pot floats off the counter (−1 for a drop, +1 for a refund)
     if(v2.lastPaint!=null&&v2.lastL===L&&state.paint!==v2.lastPaint&&!reduced){
@@ -1520,8 +1538,23 @@ if(V2){
     const row=$('paintRow'); row.classList.toggle('short',!!short); row.classList.toggle('tight',!!tight);
     if(lv>(v2.paintLv||0)) restart(row,'pulse'); v2.paintLv=lv;
     $('paintNeed').textContent=undone.length?t('Rest needs {n}',{n:need}):'';
+    // Short means the picture can no longer be finished (par is the fewest drops a part can take): a "+ Paint" button
+    // offers a top-up (ad or coins) or a fresh start, and the sheet opens by itself the first time in a picture.
+    v2.need=need; $('paintPlus').hidden=!short||state.finished;
+    if(short&&!state.finished&&!state.shortSeen){ state.shortSeen=true; setTimeout(()=>{ if(state&&!state.finished&&!state.applying&&$('introOverlay').hidden&&$('endOverlay').hidden) paintOffer(); },900); }
     dimPaints();
   };
+  function paintOffer(){
+    if(!state||state.finished) return;
+    const gap=Math.max(0,(v2.need||0)-state.paint), add=Math.max(10,gap+3), price=25, ok=save.coins>=price;
+    const topUp=()=>{ state.paint+=add; updateHud(); restart($('paintRow'),'pulse'); toast(t('+{n} paint',{n:add})); };
+    offerSheet({icon:icon('pot'),kick:t('Paint pot'),title:t('Not enough paint to finish'),
+      text:t('The parts left need at least {need} drops and the pot has {have}. Top it up, or start the picture over.',{need:v2.need,have:state.paint}),
+      buttons:[{cls:'primary adgo',html:`${AD_PLAY}${t('Watch an ad')}<em>+${add}</em>`,go:()=>watchAd('paint',topUp)},
+        {cls:'',disabled:!ok,html:ok?`+${add} ${t('paint')} · ${price} <span class="coin"></span>`:t('{price} coins needed',{price}),go:()=>{ addCoins(-price); sfx('coin'); topUp(); }},
+        {cls:'',html:t('Start the picture over'),go:()=>$('retryBtn').click()}]});
+  }
+  $('paintPlus').onclick=()=>paintOffer();
   // Bubble that flies out of the bowl when Magic acts, lingers, then dissolves.
   function bubble(k,text){
     const r=$('mixChip').getBoundingClientRect(), b=document.createElement('div');
@@ -1589,6 +1622,14 @@ if(V2){
     el.hidden=false; restart(el,'mtin'); track('tip_shown',Object.assign(lvProps(),{part:r.id,tip:TIPS.indexOf(tp)}));
   }
   $('mixTip').addEventListener('click',e=>{ if(e.target.closest('.mtx')) $('mixTip').hidden=true; });
+  // Daily challenge (no boosters, no Undo): tapping a drop chip takes one drop of that paint out, so a mix can always be
+  // fixed. The paint is not refunded and the drop still counts toward the part's drops.
+  $('drops').addEventListener('click',e=>{
+    const ch=e.target.closest('.dchip'); if(!ch||!state||!state.daily||!L.dream||state.applying||state.finished||state.failed) return;
+    const k=ch.dataset.k, i=state.drops.lastIndexOf(k); if(i<0) return;
+    snap(k); state.drops.splice(i,1); state.fr.splice(i,1); state.hintMsg=null;
+    renderMix([t('{paint} taken out. Its paint stays used.',{paint:PN(k)}),'']); afterMixChange();
+  });
   // A drop that takes the mix further from the target gets called out right away.
   const _addDrop=addDrop;
   addDrop=function(k,via){
@@ -1597,7 +1638,7 @@ if(V2){
     const ok=_addDrop(k,via);
     if(ok&&state&&state.hearts&&r&&!state.forced){
       const after=state.drops.length?matchPct(mix(counts()),r.target):0;
-      if(!r.recipe[k]||(before!=null&&after<before&&!state.applying)) loseHeart();
+      if(!r.recipe[k]){ loseHeart(); if(state.hearts) setTimeout(()=>{ if(state&&!state.applying) renderMix([t('{paint} doesn\'t belong in this color. Tap it below to take it out.',{paint:PN(k)}),'bad']); },50); } // a dip while tuning is part of mixing; only a paint the part doesn't use costs a heart
     }
     if(ok&&via!=='magic'&&state&&!state.applying&&!state.forced&&r){
       const used=state.used[r.id]||0;
@@ -1622,20 +1663,14 @@ if(V2){
     if(!spend('undo')) return;
     removeAt(i,[t('Drop taken back. Paint refunded.'),'']);
   };
-  // Tapping the bowl pours it out for free and gives back the paid drops.
-  $('mixChip').addEventListener('click',()=>{
-    if(!state||state.applying||state.forced||state.lesson||state.finished||!state.drops.length||dragged) return;
-    const paid=state.fr.filter(x=>!x).length, n=state.drops.length;
-    pourOut(()=>{ state.drops=[]; state.fr=[]; state.hintMsg=null; state.paint+=paid; state.used[state.sel]-=n;
-      updateHud(); renderMix([t('Bowl poured out. Paint refunded.'),'']); });
-  });
   $('magicBtn').onclick=()=>{
     if(!state||state.applying||state.finished||state.forced||isLocked('magic')) return;
     const h=bestStep();
     if(h.done){toast(t('Your mix is already right.'));return;}
     if(!h.remove&&state.paint<=0&&!(state.freeLeft>0)){toast(t('The pot is empty.'));return;}
     if(!spend('magic')) return;
-    state.hinted[state.sel]=true; sfx('magic');
+    if(!save.tut.magicFree){ save.tut.magicFree=true; persist(); toast(t('Your first Magic is on the house: no star lost.')); } else state.hinted[state.sel]=true;
+    sfx('magic');
     if(h.remove){ bubble(h.k,t('Took out {paint}',{paint:PN(h.k)})); removeAt(state.drops.lastIndexOf(h.k)); }
     else{ bubble(h.k,'+1 '+PN(h.k)); addDrop(h.k,'magic'); }
   };
@@ -1673,6 +1708,8 @@ if(V2){
     const r=current(), paid=state.fr.filter(x=>!x).length;
     if(state.paint+paid<r.min){toast(t('Brush needs {drops} of paint.',{drops:tn(r.min,'drop')}));buzz(40);sfx('wrong');return;}
     if(!spend('brush')) return;
+    // until "Paint it" lands, the Brush is on loan: a reload or leaving the picture gives it back (refundBrush)
+    save.brushLoan={level:L.id,part:r.id}; persist();
     // the bowl empties (paid drops go back to the pot), then the recipe drops in, paint by paint
     state.paint+=paid; state.drops=[]; state.fr=[]; state.used[r.id]=0; state.hinted[r.id]=true;
     state.applying=true; state.brushing=true; sfx('magic');
@@ -1690,7 +1727,10 @@ if(V2){
         if(landed===seq.length) setTimeout(()=>{ if(state!==st) return; st.brushing=false; st.brushOk=true; if(g){ g.classList.remove('brushing'); restart(g,'brushed'); } sfx('magic'); brushReady(true); },350);
       },fly); },300+i*gap));
   };
-  $('brushOk').onclick=()=>{ if(!state||!state.brushOk) return; state.brushOk=false; brushReady(false); state.applying=false; apply(); };
+  $('brushOk').onclick=()=>{ if(!state||!state.brushOk) return; state.brushOk=false; brushReady(false); state.applying=false; delete save.brushLoan; apply(); };
+  // a Brush whose mix was never painted (page reloaded, picture left) goes back into the inventory
+  function refundBrush(){ if(!save.brushLoan) return; delete save.brushLoan; if(save.inv.brush!=null){ save.inv.brush++; } persist(); toast(t('Your Brush came back: its mix was never painted.')); }
+  setTimeout(refundBrush,0);
   // Entrance: the picture grows into place, then the controls rise in one after another.
   const enter=el=>{ if(reduced) return; el.classList.remove('entering'); void el.offsetWidth; el.classList.add('entering');
     clearTimeout(el._et); el._et=setTimeout(()=>el.classList.remove('entering'),1100); };
@@ -1704,7 +1744,7 @@ if(V2){
     persist();
   }
   const _apply=apply; apply=function(){ _apply(); savePartial();
-    if(save.tut.drag&&!save.tut.paint&&state&&!state.finished) setTimeout(paintTip,800); };
+    if(save.tut.drag&&!save.tut.paint&&state&&!state.finished&&L.index>=2&&L.index<MAIN) setTimeout(paintTip,800); };
   // One-time guided tip on the paint pot: what it is, what "Rest needs" means, why it matters.
   function paintTip(){
     if(save.tut.paint||!state||state.finished||state.forced||state.lesson||state.applying||!$('introOverlay').hidden||!$('endOverlay').hidden) return;
@@ -1739,6 +1779,9 @@ if(V2){
   }
   const _start=start;
   start=function(i,o){ v2.quiet=false; v2.paintLv=0; _start(i,o); resume(); $('gTitle').textContent=T(L); enter($('game'));
+    // the very first picture keeps every control in place but quiets the efficiency details and locked boosters
+    $('game').classList.toggle('calm',L.index===0&&!(state&&state.daily));
+    $('game').classList.toggle('chipfix',!!(state&&state.daily&&L.dream)); // daily: drop chips can be tapped to take a drop out
     state.hearts=state.daily&&L.dream?3:0; renderHearts(); $('game').classList.toggle('dreamday',!!(state.daily&&L.dream)); };
   // ---------- Daily challenge: a page from Grandma's dream journal ----------
   // One dream per day (same for everyone), 3 hearts, no boosters, tight paint. A drop of a paint the part doesn't
@@ -1765,7 +1808,8 @@ if(V2){
     $('rescueBtn').hidden=true; $('quizOfferBtn').hidden=true; $('shareBox').hidden=true;
     $('endOverlay').classList.remove('low'); $('retryBtn').textContent=t('Try again'); $('nextBtn').hidden=true; $('endOverlay').hidden=false;
   }
-  dailyIndex=function(){ if(!DREAMS.length) return -1; if(LEVELS.slice(0,MAIN).filter(l=>save.best[l.id]!=null).length<3) return -1; return DREAMS[dayHash('dream'+dayKey())%DREAMS.length]; };
+  // the daily shows up after chapter 1, once two-paint mixes and ratios have been taught
+  dailyIndex=function(){ if(!DREAMS.length) return -1; if(LEVELS.slice(0,MAIN).filter(l=>save.best[l.id]!=null).length<5) return -1; return DREAMS[dayHash('dream'+dayKey())%DREAMS.length]; };
   // Progress is kept now, so leaving needs no warning (except on the daily picture, which isn't kept).
   $('backBtn').onclick=()=>{ if(state&&state.daily&&!state.finished&&Object.keys(state.done).length) $('quitOverlay').hidden=false; else goHome(); };
   // "Start picture over" really starts over.
@@ -1782,7 +1826,7 @@ if(V2){
     const fresh=L.dream||L.season?[]:Object.keys(BOOSTERS).filter(b=>save.inv[b]==null&&introAt(b)>=0&&introAt(b)<=L.index);
     fresh.forEach(b=>save.inv[b]=FREE_BOOSTERS);
     const tip=!save.seen[L.id]&&L.tip;
-    const tierKey='tier-'+L.tier, tierNote=TIERS[L.tier].label&&!save.seen[tierKey];
+    const tierKey='tier-'+L.tier, tierNote=TIERS[L.tier].label&&!save.seen[tierKey]&&!state.daily; // the daily has no boosters: its own rules card says so
     if(tierNote) save.seen[tierKey]=true;
     const chal=save.challenge&&save.challenge.fresh?save.challenge:null;
     if(chal) chal.fresh=false;
@@ -1791,7 +1835,7 @@ if(V2){
     const cards=[];
     if(state.daily&&L.dream){ const s=dailyStreakNext(), page=DREAMS.indexOf(L.index)+1;
       cards.push({title:t('Daily challenge'),html:`<div class="dream"><small>${t('Grandma\'s dream journal · page {n}',{n:page})}</small><b>${esc(T(L))}</b><p>${esc(t(L.story))}</p></div>`+
-        `<ul class="drules"><li>${HEART}${t('3 hearts: a paint this part doesn\'t use, or a drop that takes the mix further away, costs one.')}</li><li>${icon('lock')}${t('No boosters, and only a little spare paint.')}</li>`+
+        `<ul class="drules"><li>${HEART}${t('You have 3 hearts. You lose one when you add a paint that doesn\'t belong in the color, like black in a pale yellow.')}</li><li>${icon('lock')}${t('No boosters, and only a little spare paint. To fix a mix, tap a drop in the bowl to take it out. Its paint stays used.')}</li>`+
         `<li>${icon('daily')}${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</li></ul>`}); }
     else if(state.daily){ const s=dailyStreakNext();
       cards.push({title:t('Daily picture'),html:`<div class="booster">${icon('daily')}<b>${t('Daily picture: {title}',{title:esc(T(L))})}</b><br>${twistText(state.twist,state.budget)} ${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</div>`}); }
@@ -1799,6 +1843,8 @@ if(V2){
       cards.push({title:t('{from} challenged you!',{from:chal.from}),html:`<div class="booster">🏆 ${t('Restore <b>{title}</b> with more than <b>{score}★</b>.',{title:esc(T(LEVELS[ci])),score:chal.score})}`+
         (n&&!unlocked(ci)?' '+t('First, finish the warm-up pictures to unlock it ({pics}).',{pics:tn(n,'picture')}):'')+'</div>'}); }
     if(tip) cards.push({title:t(tip.title),text:t(tip.text)});
+    if(L.season&&!save.seen['holiday-intro']){ save.seen['holiday-intro']=true; persist();
+      cards.push({title:t('Holiday pictures'),text:t('These mix like the later chapters, so the shades are closer. Each picture starts with its easiest mix, and Palette and Magic help.')}); }
     if(tierNote) cards.push({title:t('{tier} picture',{tier:TIERS[L.tier].label}),text:(L.tier==='nightmare'?t('Very little spare paint and colors that look almost the same.'):t('Less spare paint and closer shades than usual.'))+' '+t('Boosters help here. Rewards are ×{m}.',{m:TIERS[L.tier].mult})});
     fresh.forEach(b=>cards.push({title:t('New booster: {name}',{name:BOOSTERS[b].name}),
       html:`<div class="bdemo">${DEMO[b]||icon(b)}</div><p class="btext">${BOOSTERS[b].text}</p><p class="bfree">${t('You get {n} free. After that, {price} each.',{n:FREE_BOOSTERS,price:BOOSTERS[b].price+' <span class="coin"></span>'})}</p>`}));
@@ -1836,7 +1882,12 @@ if(V2){
     v2.quiet=true; // from here until the next picture, no more bursts (the result card stays calm)
   };
   const _burst=burst; burst=function(x,y,c,n,o){ if(v2.quiet) return; _burst(x,y,c,n,o); };
-  const _win=win; win=function(){ v2.quiet=true; if(save.partial) delete save.partial[L.id]; _win(); };
+  const _win=win; win=function(){ v2.quiet=true; if(save.partial) delete save.partial[L.id];
+    // every part at 3 stars: a perfect mix, kept per picture and shown in the Gallery
+    const perfect=!state.daily&&sumStars()===3*L.regions.length, fresh=perfect&&!(save.perfect&&save.perfect[L.id]);
+    if(perfect){ save.perfect=save.perfect||{}; save.perfect[L.id]=true; persist(); }
+    _win();
+    if(fresh) $('endText').insertAdjacentHTML('afterbegin',`<b class="perfmsg">${t('Perfect mix! Every part at 3 stars.')}</b><br>`); };
   // Lessons lift controls above the dim layer; a running entrance animation would trap them under it.
   const _startLesson=startLesson; startLesson=function(k){ $('game').classList.remove('entering'); return _startLesson(k); };
   const _forceUndo=forceUndo; forceUndo=function(k){ $('game').classList.remove('entering'); _forceUndo(k); };
@@ -1844,7 +1895,11 @@ if(V2){
   $('stamp').insertAdjacentHTML('afterend',`<div class="picHint" id="picHint" hidden>${t('Tap any faded part to paint it next')}</div>`);
   const _playHand=playHand; playHand=function(cfg){ _playHand(cfg); $('picHint').hidden=cfg.kind!=='tapPart'; };
   const _hideHand=hideHand; hideHand=function(){ _hideHand(); const h=$('picHint'); if(h) h.hidden=true; };
-  const _goHome=goHome; goHome=function(tab){ _goHome(tab); enter($('home')); clearTimeout(v2.ht); v2.ht=setTimeout(homeCoach,1250); };
+  // a pending or open Home note never follows you into a picture or another tab (tapping the lifted card counts as seen)
+  const dropHomeTip=()=>{ clearTimeout(v2.ht); if(v2.homeTipDone) v2.homeTipDone(); };
+  const _startH=start; start=function(i,o){ dropHomeTip(); refundBrush(); return _startH(i,o); };
+  const _showTabH=showTab; showTab=function(tb){ if(tb!=='home') dropHomeTip(); return _showTabH(tb); };
+  const _goHome=goHome; goHome=function(tab){ refundBrush(); _goHome(tab); enter($('home')); clearTimeout(v2.ht); v2.ht=setTimeout(homeCoach,1250); };
   // Home tutorials: the first time each card shows up (after a first picture is restored), one card per visit is
   // lifted above a dim layer with a short note on what it is and why it matters.
   document.body.insertAdjacentHTML('beforeend','<div class="htip" id="homeTip" role="dialog" hidden></div>');
@@ -1894,7 +1949,7 @@ if(V2){
     if(L.season) $('endText').insertAdjacentHTML('afterbegin',`<b class="fest">${t({halloween:'Happy Halloween!',thanksgiving:'Happy Thanksgiving!',christmas:'Merry Christmas!'}[L.season])}</b><br>`);
     v2.collect=chapterReady()||chestReady();
     const nb=$('nextBtn'); nb.textContent=v2.collect?t('Collect your reward'):t('Next picture'); if(v2.collect) nb.hidden=false; };
-  $('nextBtn').onclick=()=>{ if(v2.collect){ v2.collect=false; goHome(); return; } const n=nextAfter(L.index); if(n<0) goHome(); else start(n); };
+  $('nextBtn').onclick=()=>{ if(v2.collect){ v2.collect=false; goHome(); const got=claimRewards(); if(got.length){ sfx('fanfare'); buzz([30,60,30]); renderMenu(); rewardReveal(lastRewards); } return; } const n=nextAfter(L.index); if(n<0) goHome(); else start(n); };
   ['chapterCard','chestCard'].forEach(id=>{ $(id).setAttribute('role','button'); $(id).tabIndex=0; $(id).addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); $(id).click(); } }); });
   function infoSheet(title,html){
     v2.cards=[]; $('introTitle').textContent=title; $('introText').hidden=true; $('introBoosters').innerHTML=html; $('introBtn').textContent=t('Close');
@@ -1925,7 +1980,7 @@ if(V2){
   // one (coins count up, each booster with its icon); Collect closes it with confetti.
   document.body.insertAdjacentHTML('beforeend',`<div class="overlay rwOverlay" id="rwOverlay" hidden><div class="rwcard" role="dialog" aria-modal="true" aria-labelledby="rwTitle">
     <div class="rwrays" aria-hidden="true"></div><div class="rwicon" id="rwIcon" aria-hidden="true"></div><small class="rwkick" id="rwKick"></small><h2 id="rwTitle"></h2>
-    <div class="rwitems" id="rwItems"></div><button class="btn primary rwgo" id="rwGo">${t('Collect')}</button></div></div>`);
+    <div class="rwitems" id="rwItems"></div><div class="rwpeek" id="rwPeek" hidden></div><button class="btn primary rwgo" id="rwGo">${t('Collect')}</button></div></div>`);
   const RW_ICON={chapter:'<svg viewBox="0 0 64 64"><path d="M20 8h24v14a12 12 0 0 1-24 0Z" fill="#f4c542" stroke="#8a5a0b" stroke-width="2.5" stroke-linejoin="round"/><path d="M20 12H10q0 14 12 16M44 12h10q0 14-12 16" fill="none" stroke="#8a5a0b" stroke-width="2.5" stroke-linecap="round"/><path d="M28 34h8v10h-8Z" fill="#e0a92a" stroke="#8a5a0b" stroke-width="2.5"/><rect x="18" y="44" width="28" height="9" rx="2" fill="#f4c542" stroke="#8a5a0b" stroke-width="2.5"/><path d="M26 14q2 8 6 10" stroke="#fff6d0" stroke-width="3" stroke-linecap="round" fill="none"/></svg>',
     chest:'<svg viewBox="0 0 64 64"><path d="M8 28q0-16 24-16t24 16Z" fill="#c4692c" stroke="#5c2c0e" stroke-width="2.5" stroke-linejoin="round"/><rect x="8" y="28" width="48" height="26" rx="3" fill="#a9541f" stroke="#5c2c0e" stroke-width="2.5"/><path d="M8 34h48M20 13v41M44 13v41" stroke="#f4c542" stroke-width="4"/><rect x="27" y="29" width="10" height="12" rx="2" fill="#f4c542" stroke="#5c2c0e" stroke-width="2"/></svg>'};
   function rewardReveal(list){
@@ -1937,6 +1992,10 @@ if(V2){
     $('rwTitle').textContent=head.kind==='chapter'?head.name:t('Chest opened!');
     $('rwItems').innerHTML=`<div class="rwitem coins" style="--d:0"><span class="rwbig"><span class="coin"></span></span><b>+<span id="rwCoins">0</span></b><small>${t('Coins')}</small></div>`+
       Object.entries(bc).map(([b,n],i)=>`<div class="rwitem" style="--d:${i+1}"><span class="rwbig">${icon(b)}</span><b>+${n}</b><small>${esc(BOOSTERS[b].name)}</small></div>`).join('');
+    // after the first chapter, a peek at what the book holds later (a landscape, a scene, flowers)
+    const peek=head.kind==='chapter'&&head.n===1?['lighthouse','bakery','blossoms'].map(id=>LEVELS.find(l=>l.id===id)).filter(Boolean):[];
+    $('rwPeek').hidden=!peek.length;
+    if(peek.length) $('rwPeek').innerHTML=`<small>${t('Later in your book')}</small><span>${peek.map(l=>`<i>${thumbSVG(l,true)}</i>`).join('')}</span>`;
     const ov=$('rwOverlay'); ov.hidden=false; restart(ov.querySelector('.rwcard'),'rwin');
     const el=$('rwCoins'), t0=performance.now()+350, dur=reduced?0:800;
     const tick=now=>{ const k=dur?Math.max(0,Math.min(1,(now-t0)/dur)):1; el.textContent=Math.round(coins*(1-Math.pow(1-k,3))); if(k<1&&!ov.hidden) requestAnimationFrame(tick); else sfx('coin'); };
@@ -2058,7 +2117,7 @@ if(V2){
   function holCard(k){
     const l=LEVELS[k], b=save.best[l.id], ok=unlocked(k), pt=save.partial&&save.partial[l.id];
     return `<button class="gcard" data-i="${k}" ${ok?'':'disabled'} aria-label="${esc(T(l))}${ok?'':', '+t('locked')}">${thumbSVG(l,b!=null,pt&&pt.stars)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}`+
-      `<b>${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${b!=null?starRow(b):pt?t('{done} of {all} parts',{done:Object.keys(pt.stars).length,all:l.regions.length}):''}</small></button>`;
+      `<b>${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${b!=null?starRow(b)+(save.perfect&&save.perfect[l.id]?`<em class="perf">${t('Perfect')}</em>`:''):pt?t('{done} of {all} parts',{done:Object.keys(pt.stars).length,all:l.regions.length}):''}</small></button>`;
   }
   // Separate collections, each with its own card (dates, progress); a card opens that collection's pictures.
   const SEASONS=['halloween','thanksgiving','christmas'];
@@ -2073,6 +2132,7 @@ if(V2){
       const ids=seasonPics(view), got=ids.filter(i=>save.best[LEVELS[i].id]!=null).length;
       el.innerHTML=`<button class="holback" aria-label="${t('Back to Holidays')}">${icon('back')}${t('Holidays')}</button>`+
         `<h2>${t('{season} collection',{season:seasonName(view)})}</h2><p class="hsub">${seasonStatus(view)} · ${t('{done} of {all} restored',{done:got,all:ids.length})}</p>`+
+        `<p class="hsub hcue">${t('Holiday pictures mix like the later chapters. Take your time: Hard ones are marked.')}</p>`+
         (on===view?'':`<p class="hsub">${t('Outside its season, only the pictures you already started can be played.')}</p>`)+
         `<div class="ggrid">${ids.map(holCard).join('')}</div>`;
       return;

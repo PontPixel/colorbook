@@ -453,7 +453,7 @@ function renderMenu(){
   if(ch){const cl=LEVELS.find(l=>l.id===ch.level);$('homeCh').textContent='🏆 '+t('{from} challenged you on {title}. Beat {score}★.',{from:ch.from,title:T(cl),score:ch.score});}
   const card=k=>{const l=LEVELS[k], bb=save.best[l.id], ok=unlocked(k), buy=buyable(k);
     const lab=ok?'':buy?', '+t('unlock for {coins}',{coins:tn(bonusPrice(l),'coin')}):l.bonus?', '+t('restore {title} first',{title:t(l.title)}):', '+t('locked');
-    return `<button class="gcard${l.bonus?' bonus':''}${buy?' buy':''}" data-i="${k}" ${ok||buy?'':'disabled'} aria-label="${esc(T(l))}${lab}">${thumbSVG(l,bb!=null,save.partial&&save.partial[l.id]&&save.partial[l.id].stars)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}<b>${l.bonus?'':(k+1)+'. '}${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${bb!=null?starRow(bb):buy?`${bonusPrice(l)} <span class="coin"></span>`:l.bonus?esc(t('Bonus')):''}</small></button>`;};
+    return `<button class="gcard${l.bonus?' bonus':''}${buy?' buy':''}" data-i="${k}" ${ok||buy?'':'disabled'} aria-label="${esc(T(l))}${lab}">${thumbSVG(l,bb!=null,save.partial&&save.partial[l.id]&&save.partial[l.id].stars)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}<b>${l.bonus?'':(k+1)+'. '}${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${bb!=null?starRow(bb)+(save.perfect&&save.perfect[l.id]?`<em class="perf">${t('Perfect')}</em>`:''):buy?`${bonusPrice(l)} <span class="coin"></span>`:l.bonus?esc(t('Bonus')):''}</small></button>`;};
   if(CHAPTERS) $('ggrid').innerHTML=CHAPTERS.map((c,ci)=>{const [a,z]=chapterRange(ci), ids=LEVELS.slice(a,z).map(l=>l.id);
       const got=ids.filter(id=>save.best[id]!=null).length, bonus=LEVELS.map((l,k)=>k).filter(k=>LEVELS[k].bonus&&ids.includes(LEVELS[k].base));
       return `<h3 class="gch"><span>${t('Chapter {n}',{n:ci+1})}</span>${esc(t(c.name))}<small>${got} / ${z-a}</small></h3>`+[...Array(z-a).keys()].map(x=>card(a+x)).join('')+bonus.map(card).join('');}).join('');
@@ -1518,7 +1518,8 @@ if(V2){
   const _updateHud=updateHud;
   updateHud=function(){
     _updateHud(); if(!state) return;
-    $('progress').textContent=t('{done} of {all} parts restored',{done:Object.keys(state.done).length,all:L.regions.length});
+    const tl=!state.daily&&TIERS[L.tier].label;
+    $('progress').innerHTML=(tl?`<span class="ptier">${esc(tl)} · </span>`:'')+esc(t('{done} of {all} parts restored',{done:Object.keys(state.done).length,all:L.regions.length}));
     $('paintLeft').textContent=tn(state.paint,'drop');
     // every change of the pot floats off the counter (−1 for a drop, +1 for a refund)
     if(v2.lastPaint!=null&&v2.lastL===L&&state.paint!==v2.lastPaint&&!reduced){
@@ -1687,6 +1688,8 @@ if(V2){
     const r=current(), paid=state.fr.filter(x=>!x).length;
     if(state.paint+paid<r.min){toast(t('Brush needs {drops} of paint.',{drops:tn(r.min,'drop')}));buzz(40);sfx('wrong');return;}
     if(!spend('brush')) return;
+    // until "Paint it" lands, the Brush is on loan: a reload or leaving the picture gives it back (refundBrush)
+    save.brushLoan={level:L.id,part:r.id}; persist();
     // the bowl empties (paid drops go back to the pot), then the recipe drops in, paint by paint
     state.paint+=paid; state.drops=[]; state.fr=[]; state.used[r.id]=0; state.hinted[r.id]=true;
     state.applying=true; state.brushing=true; sfx('magic');
@@ -1704,7 +1707,10 @@ if(V2){
         if(landed===seq.length) setTimeout(()=>{ if(state!==st) return; st.brushing=false; st.brushOk=true; if(g){ g.classList.remove('brushing'); restart(g,'brushed'); } sfx('magic'); brushReady(true); },350);
       },fly); },300+i*gap));
   };
-  $('brushOk').onclick=()=>{ if(!state||!state.brushOk) return; state.brushOk=false; brushReady(false); state.applying=false; apply(); };
+  $('brushOk').onclick=()=>{ if(!state||!state.brushOk) return; state.brushOk=false; brushReady(false); state.applying=false; delete save.brushLoan; apply(); };
+  // a Brush whose mix was never painted (page reloaded, picture left) goes back into the inventory
+  function refundBrush(){ if(!save.brushLoan) return; delete save.brushLoan; if(save.inv.brush!=null){ save.inv.brush++; } persist(); toast(t('Your Brush came back: its mix was never painted.')); }
+  setTimeout(refundBrush,0);
   // Entrance: the picture grows into place, then the controls rise in one after another.
   const enter=el=>{ if(reduced) return; el.classList.remove('entering'); void el.offsetWidth; el.classList.add('entering');
     clearTimeout(el._et); el._et=setTimeout(()=>el.classList.remove('entering'),1100); };
@@ -1855,7 +1861,12 @@ if(V2){
     v2.quiet=true; // from here until the next picture, no more bursts (the result card stays calm)
   };
   const _burst=burst; burst=function(x,y,c,n,o){ if(v2.quiet) return; _burst(x,y,c,n,o); };
-  const _win=win; win=function(){ v2.quiet=true; if(save.partial) delete save.partial[L.id]; _win(); };
+  const _win=win; win=function(){ v2.quiet=true; if(save.partial) delete save.partial[L.id];
+    // every part at 3 stars: a perfect mix, kept per picture and shown in the Gallery
+    const perfect=!state.daily&&sumStars()===3*L.regions.length, fresh=perfect&&!(save.perfect&&save.perfect[L.id]);
+    if(perfect){ save.perfect=save.perfect||{}; save.perfect[L.id]=true; persist(); }
+    _win();
+    if(fresh) $('endText').insertAdjacentHTML('afterbegin',`<b class="perfmsg">${t('Perfect mix! Every part at 3 stars.')}</b><br>`); };
   // Lessons lift controls above the dim layer; a running entrance animation would trap them under it.
   const _startLesson=startLesson; startLesson=function(k){ $('game').classList.remove('entering'); return _startLesson(k); };
   const _forceUndo=forceUndo; forceUndo=function(k){ $('game').classList.remove('entering'); _forceUndo(k); };
@@ -1865,9 +1876,9 @@ if(V2){
   const _hideHand=hideHand; hideHand=function(){ _hideHand(); const h=$('picHint'); if(h) h.hidden=true; };
   // a pending or open Home note never follows you into a picture or another tab (tapping the lifted card counts as seen)
   const dropHomeTip=()=>{ clearTimeout(v2.ht); if(v2.homeTipDone) v2.homeTipDone(); };
-  const _startH=start; start=function(i,o){ dropHomeTip(); return _startH(i,o); };
+  const _startH=start; start=function(i,o){ dropHomeTip(); refundBrush(); return _startH(i,o); };
   const _showTabH=showTab; showTab=function(tb){ if(tb!=='home') dropHomeTip(); return _showTabH(tb); };
-  const _goHome=goHome; goHome=function(tab){ _goHome(tab); enter($('home')); clearTimeout(v2.ht); v2.ht=setTimeout(homeCoach,1250); };
+  const _goHome=goHome; goHome=function(tab){ refundBrush(); _goHome(tab); enter($('home')); clearTimeout(v2.ht); v2.ht=setTimeout(homeCoach,1250); };
   // Home tutorials: the first time each card shows up (after a first picture is restored), one card per visit is
   // lifted above a dim layer with a short note on what it is and why it matters.
   document.body.insertAdjacentHTML('beforeend','<div class="htip" id="homeTip" role="dialog" hidden></div>');
@@ -2085,7 +2096,7 @@ if(V2){
   function holCard(k){
     const l=LEVELS[k], b=save.best[l.id], ok=unlocked(k), pt=save.partial&&save.partial[l.id];
     return `<button class="gcard" data-i="${k}" ${ok?'':'disabled'} aria-label="${esc(T(l))}${ok?'':', '+t('locked')}">${thumbSVG(l,b!=null,pt&&pt.stars)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}`+
-      `<b>${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${b!=null?starRow(b):pt?t('{done} of {all} parts',{done:Object.keys(pt.stars).length,all:l.regions.length}):''}</small></button>`;
+      `<b>${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${b!=null?starRow(b)+(save.perfect&&save.perfect[l.id]?`<em class="perf">${t('Perfect')}</em>`:''):pt?t('{done} of {all} parts',{done:Object.keys(pt.stars).length,all:l.regions.length}):''}</small></button>`;
   }
   // Separate collections, each with its own card (dates, progress); a card opens that collection's pictures.
   const SEASONS=['halloween','thanksgiving','christmas'];

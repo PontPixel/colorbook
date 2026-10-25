@@ -335,4 +335,8 @@ ru:{'Holiday pictures mix like the later chapters. Take your time: emptying the 
 'Holiday pictures':'Праздничные картинки','These mix like the later chapters, so the shades are closer. Each part starts with its easiest mix; Palette and Magic help, and emptying the bowl is free.':'Они смешиваются как поздние главы, оттенки ближе. Каждая картинка начинается с самой простой смеси; помогают Палитра и Магия, а вылить миску можно бесплатно.',
 'Later in your book':'Дальше в вашей книге'}
 });
+I18N.add({
+fr:{'Your Brush came back: its mix was never painted.':'Votre Pinceau est revenu : son mélange n’a jamais été peint.','Perfect mix! Every part at 3 stars.':'Mélange parfait ! Chaque partie à 3 étoiles.','Perfect':'Parfait'},
+ru:{'Your Brush came back: its mix was never painted.':'Кисть вернулась: её смесь так и не была нанесена.','Perfect mix! Every part at 3 stars.':'Идеальная смесь! Каждая часть на 3 звезды.','Perfect':'Идеально'}
+});
 

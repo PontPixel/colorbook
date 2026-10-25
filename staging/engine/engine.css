@@ -975,4 +975,17 @@ body.v2 .coin.big{display:block;width:72px;height:72px;margin:0 auto;border-widt
 .rwpeek span{display:flex;gap:8px;justify-content:center}
 .rwpeek i{flex:1;max-width:96px;border-radius:10px;overflow:hidden;line-height:0;box-shadow:0 0 0 1.5px var(--line),0 4px 10px rgba(0,0,0,.15)}
 .rwpeek i svg{display:block;width:100%;height:auto}
-
+/* narrow phones: the tier lives in the progress line (not a pill), the title keeps its room */
+@media (max-width:420px){.wrap.v2 #tierPill{display:none!important}.gtitle small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+@media (min-width:421px){.gtitle small{font-size:12px}}
+@media (max-width:360px){.wrap.v2 .gamebar{gap:8px}.gtitle b{font-size:15px}.wrap.v2 .gamebar .pill.coins{padding:0 10px;font-size:14px}}
+/* short landscape phones: picture and mixing controls side by side, the picture stays in view */
+@media (orientation:landscape) and (max-height:500px) and (max-width:899px){
+  .wrap.v2 .board{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,52%);gap:12px;align-items:start}
+  .wrap.v2 .stage{position:sticky;top:0;max-width:none}
+}
+/* perfect mixes */
+.gcard small .perf{margin-left:6px;padding:1px 6px;border-radius:999px;background:linear-gradient(90deg,#f6cf4e,#e0a92a);color:#3a2a05;font:800 10px/1.5 "Inter",system-ui,sans-serif;font-style:normal;text-transform:uppercase;letter-spacing:.05em;vertical-align:1px}
+.perfmsg{color:#c08a12}
+.gtitle .ptier{display:none}
+@media (max-width:420px){.gtitle .ptier{display:inline;font-weight:800;color:var(--ink)}}

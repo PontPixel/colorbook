@@ -2129,7 +2129,7 @@ if(V2){
     }
     // the chapter's accent color, and one dot per part in the color it will be (done parts get a check)
     const ci=CHAPTERS?chapterOf(i):0; document.querySelector('.v2hero').style.setProperty('--chc',CH_COLORS[ci%CH_COLORS.length]);
-    // one dot per part in its color: a ring until the part is restored, then solid with a check
+    // one filled dot per part in its color; restored parts get a check and a ring
     $('heroSw').innerHTML=lv.regions.map(r=>`<i class="${pt&&pt.stars[r.id]!=null?'on':''}" style="--pc:${hex(r.target)}"></i>`).join('');
     renderProgress(i);
     $('homeStars').innerHTML=STAR+LEVELS.reduce((a,l)=>a+(save.best[l.id]||0),0);

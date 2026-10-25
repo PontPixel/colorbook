@@ -934,14 +934,14 @@ body.v2 .coin.big{display:block;width:72px;height:72px;margin:0 auto;border-widt
 
 #dailyPicBtn.evcard{padding:12px}
 .home.v2 #chestCard,.home.v2 #chapterCard{background:radial-gradient(120% 90% at 100% 0%,rgba(244,197,66,.22),rgba(244,197,66,0) 55%),var(--panel)}
-/* Hero card: the chapter's accent color (label, bar, a soft glow), a dot per part in its color (hollow until the part is
-   restored, then solid with a check), a livelier Play */
+/* Hero card: the chapter's accent color (label, bar, a soft glow), a filled dot per part in its color (a restored part
+   gets a check and a ring), a livelier Play */
 .home.v2 .v2hero{--chc:#e8505b;background:radial-gradient(140% 60% at 100% 0%,color-mix(in srgb,var(--chc) 24%,transparent),transparent 65%),var(--panel)}
 .home.v2 .v2hero .nextLabel{color:var(--chc)}
 .home.v2 .v2hero .bar i{background:var(--chc)}
-.heroSw{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.heroSw i{position:relative;width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 3px var(--pc),0 0 0 1px rgba(0,0,0,.14)}
-.heroSw i.on{background:var(--pc);opacity:1;box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.2),0 2px 5px -1px color-mix(in srgb,var(--pc) 70%,transparent)}
+.heroSw{display:flex;flex-wrap:wrap;gap:9px;margin:8px 0 2px 4px}
+.heroSw i{position:relative;width:18px;height:18px;border-radius:50%;background:var(--pc);box-shadow:inset 0 0 0 1px rgba(0,0,0,.16)}
+.heroSw i.on{box-shadow:inset 0 0 0 1px rgba(0,0,0,.16),0 0 0 2px var(--panel),0 0 0 3.5px var(--pc)}
 .heroSw i.on::after{content:"";position:absolute;left:6px;top:3px;width:4px;height:8px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg);filter:drop-shadow(0 0 1px rgba(0,0,0,.55))}
 .home.v2 .btn.play{position:relative;overflow:hidden;box-shadow:0 10px 20px -10px var(--chc)}
 .home.v2 .btn.play::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:28%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.28),rgba(255,255,255,0));animation:sshine 3.8s ease-in-out infinite;pointer-events:none}

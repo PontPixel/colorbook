@@ -371,4 +371,8 @@ I18N.add({
 fr:{'Auto paint':'Peinture auto','Paints a part as soon as the mix matches. Off: tap Paint it yourself.':'Peint une partie dès que le mélange correspond. Désactivé : touchez Peindre vous-même.','Tip':'Astuce','Painted at {p}%. To fine-tune to 100% first, turn off Auto paint and tap Paint it yourself.':'Peint à {p} %. Pour ajuster jusqu’à 100 % d’abord, désactivez la peinture auto et touchez Peindre vous-même.'},
 ru:{'Auto paint':'Автопокраска','Paints a part as soon as the mix matches. Off: tap Paint it yourself.':'Красит часть, как только смесь совпала. Выключено: нажимайте «Покрасить» сами.','Tip':'Совет','Painted at {p}%. To fine-tune to 100% first, turn off Auto paint and tap Paint it yourself.':'Покрашено на {p}%. Чтобы сначала довести до 100%, выключите автопокраску и нажимайте «Покрасить» сами.'}
 });
+I18N.add({
+fr:{'Watch an ad: get a heart back and keep painting':'Regarder une pub : récupérer un cœur et continuer','One heart back. Keep painting.':'Un cœur récupéré. Continuez à peindre.'},
+ru:{'Watch an ad: get a heart back and keep painting':'Реклама: вернуть сердце и продолжить','One heart back. Keep painting.':'Одно сердце вернулось. Продолжайте.'}
+});
 

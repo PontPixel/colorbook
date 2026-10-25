@@ -1834,6 +1834,9 @@ if(V2){
     $('endTitle').textContent=t('The dream faded'); $('endStars').textContent=''; sfx('fail');
     $('endText').innerHTML=t('You ran out of hearts. Dreams come back: try again, or wait for tomorrow\'s page.');
     $('rescueBtn').hidden=true; $('quizOfferBtn').hidden=true; $('shareBox').hidden=true;
+    // the one offer that fits: a heart back to keep painting (once per attempt), restored rays kept
+    const ab=$('adRescueBtn'); ab.dataset.mode='heart'; ab.hidden=!!state.heartAd; ab.className='btn adbtn primary';
+    ab.innerHTML=`${AD_PLAY}${t('Watch an ad: get a heart back and keep painting')}`; if(!state.heartAd) $('rescueBtn').before(ab);
     $('endOverlay').classList.remove('low'); $('retryBtn').textContent=t('Try again'); $('nextBtn').hidden=true; $('endOverlay').hidden=false;
   }
   // the daily shows up after chapter 1, once two-paint mixes and ratios have been taught
@@ -2097,10 +2100,13 @@ if(V2){
   // Out of paint: watch an ad to restart the part for free.
   const _outOfPaint=outOfPaint;
   outOfPaint=function(){ _outOfPaint(); if(!state||$('endOverlay').hidden) return; const r=current(), ab=$('adRescueBtn');
-    ab.hidden=false; ab.className='btn adbtn'+(save.coins<RESCUE_PRICE?' primary':''); ab.innerHTML=`${AD_PLAY}${t('Watch an ad: restart {part} free',{part:esc(N(r))})}`;
+    ab.dataset.mode='rescue'; ab.hidden=false; ab.className='btn adbtn'+(save.coins<RESCUE_PRICE?' primary':''); ab.innerHTML=`${AD_PLAY}${t('Watch an ad: restart {part} free',{part:esc(N(r))})}`;
     // short of coins: the ad comes first
     if(save.coins<RESCUE_PRICE) $('rescueBtn').before(ab); else $('rescueBtn').after(ab); };
-  $('adRescueBtn').onclick=()=>watchAd('rescue',()=>rescue(true));
+  $('adRescueBtn').onclick=()=>{
+    if($('adRescueBtn').dataset.mode==='heart') return watchAd('heart',()=>{ if(!state) return; state.heartAd=true; state.failed=false; state.hearts=1;
+      $('endOverlay').hidden=true; $('adRescueBtn').hidden=true; renderHearts(); renderMix([t('One heart back. Keep painting.'),'good']); });
+    watchAd('rescue',()=>rescue(true)); };
   const _win2=win; win=function(){ $('adRescueBtn').hidden=true; _win2(); };
   const _start2=start; start=function(i,o){ $("adRescueBtn").hidden=true; return _start2(i,o); };
   // A bonus page you can't afford yet: an ad for coins, then the sheet opens again.

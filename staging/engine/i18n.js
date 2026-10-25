@@ -355,4 +355,10 @@ ru:{'No boosters today. Tap a drop in the bowl to take it out: its paint stays u
 '{paint} taken out. Its paint stays used.':'{paint}: капля убрана, краска потрачена.','The bowl is full. Tap a drop below to take it out.':'Миска полна. Нажмите на каплю ниже, чтобы убрать её.',
 '{paint} isn\'t in this color. Tap it below to take it out.':'{paint} нет в этом цвете. Нажмите на неё ниже, чтобы убрать.'}
 });
+I18N.add({
+fr:{'You have 3 hearts. You lose one when you add a paint that doesn\'t belong in the color, like black in a pale yellow.':'Vous avez 3 cœurs. Vous en perdez un en ajoutant une peinture qui n’a pas sa place dans la couleur, comme du noir dans un jaune pâle.',
+'{paint} doesn\'t belong in this color. Tap it below to take it out.':'Le {paint} n’a pas sa place dans cette couleur. Touchez-le en dessous pour le retirer.'},
+ru:{'You have 3 hearts. You lose one when you add a paint that doesn\'t belong in the color, like black in a pale yellow.':'У вас 3 сердца. Одно теряется, если добавить краску, которой нет в этом цвете, например чёрную в бледно-жёлтый.',
+'{paint} doesn\'t belong in this color. Tap it below to take it out.':'{paint} не входит в этот цвет. Нажмите на неё ниже, чтобы убрать.'}
+});
 

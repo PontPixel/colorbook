@@ -1620,7 +1620,7 @@ if(V2){
     const ok=_addDrop(k,via);
     if(ok&&state&&state.hearts&&r&&!state.forced){
       const after=state.drops.length?matchPct(mix(counts()),r.target):0;
-      if(!r.recipe[k]){ loseHeart(); if(state.hearts) setTimeout(()=>{ if(state&&!state.applying) renderMix([t('{paint} isn\'t in this color. Tap it below to take it out.',{paint:PN(k)}),'bad']); },50); } // a dip while tuning is part of mixing; only a paint the part doesn't use costs a heart
+      if(!r.recipe[k]){ loseHeart(); if(state.hearts) setTimeout(()=>{ if(state&&!state.applying) renderMix([t('{paint} doesn\'t belong in this color. Tap it below to take it out.',{paint:PN(k)}),'bad']); },50); } // a dip while tuning is part of mixing; only a paint the part doesn't use costs a heart
     }
     if(ok&&via!=='magic'&&state&&!state.applying&&!state.forced&&r){
       const used=state.used[r.id]||0;
@@ -1817,7 +1817,7 @@ if(V2){
     const cards=[];
     if(state.daily&&L.dream){ const s=dailyStreakNext(), page=DREAMS.indexOf(L.index)+1;
       cards.push({title:t('Daily challenge'),html:`<div class="dream"><small>${t('Grandma\'s dream journal · page {n}',{n:page})}</small><b>${esc(T(L))}</b><p>${esc(t(L.story))}</p></div>`+
-        `<ul class="drules"><li>${HEART}${t('You have 3 hearts. A paint this color doesn\'t need costs one heart.')}</li><li>${icon('lock')}${t('No boosters, and only a little spare paint. To fix a mix, tap a drop in the bowl to take it out. Its paint stays used.')}</li>`+
+        `<ul class="drules"><li>${HEART}${t('You have 3 hearts. You lose one when you add a paint that doesn\'t belong in the color, like black in a pale yellow.')}</li><li>${icon('lock')}${t('No boosters, and only a little spare paint. To fix a mix, tap a drop in the bowl to take it out. Its paint stays used.')}</li>`+
         `<li>${icon('daily')}${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</li></ul>`}); }
     else if(state.daily){ const s=dailyStreakNext();
       cards.push({title:t('Daily picture'),html:`<div class="booster">${icon('daily')}<b>${t('Daily picture: {title}',{title:esc(T(L))})}</b><br>${twistText(state.twist,state.budget)} ${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</div>`}); }

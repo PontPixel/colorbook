@@ -176,6 +176,7 @@ document.body.insertAdjacentHTML('afterbegin',(V2?v2Scenes():`
       <div class="seg" id="setLang"><button data-v="auto">${t('Auto')}</button><button data-v="en">English</button><button data-v="fr">Français</button><button data-v="ru">Русский</button></div></div>
     <div class="setrow"><span>${t('Sound')}</span><button class="switch" id="setSound" role="switch" aria-checked="true" aria-label="${t('Sound')}"><i></i></button></div>
     <div class="setrow"><span>${t('Vibration')}</span><button class="switch" id="setVib" role="switch" aria-checked="true" aria-label="${t('Vibration')}"><i></i></button></div>
+    <div class="setrow" id="setAutoRow" hidden><span>${t('Auto paint')}<small class="setsub">${t('Paints a part as soon as the mix matches. Off: tap Paint it yourself.')}</small></span><button class="switch" id="setAuto" role="switch" aria-checked="true" aria-label="${t('Auto paint')}"><i></i></button></div>
     <p class="setnote" id="vibNote" hidden>${t("This browser can't vibrate (iPhone Safari doesn't support it).")}</p>
     <p class="setlinks"><a id="setPrivacy" target="_blank" rel="noopener">${t('Privacy policy')}</a><a id="setTerms" target="_blank" rel="noopener">${t('Terms of use')}</a></p>
     <button class="btn primary" id="settingsDone">${t('Done')}</button>
@@ -1444,7 +1445,7 @@ if(V2){
     // repaint the part we left only after the selection moved, or it keeps breathing (two parts looked selected)
     if(leaving) paintRegion(prev,kept?hex(mix(kept.drops.reduce((c,k)=>(c[k]=(c[k]||0)+1,c),{}))):null);
     scene.querySelectorAll('.region.v2wait').forEach(g=>{ if(g.dataset.id!==id) g.classList.remove('v2wait'); });
-    _select(id); state.brushOk=false; brushReady(false); $('mixTip').hidden=true; state.worse=state.worse||{};
+    _select(id); state.brushOk=false; state.manualOk=false; brushReady(false); if($('mixTip').dataset.kind!=='auto') $('mixTip').hidden=true; state.worse=state.worse||{};
     const back=state.bowls[id]; if(back&&!state.done[id]){ state.drops=back.drops; state.fr=back.fr; delete state.bowls[id]; renderMix(); }
     if(r) $('selLayer').innerHTML=spotlight(r);
     $('targetChip').style.setProperty('--tc',hex(current().target));
@@ -1618,10 +1619,11 @@ if(V2){
     state.tipped=state.tipped||{}; if(state.tipped[r.id]||state.done[r.id]) return;
     const tp=tipFor(r,over); if(!tp) return; state.tipped[r.id]=true;
     const sw=x=>`<i style="background:${hex(mix(x))}"></i>`, eq=tp.parts.map(sw).join('<b>+</b>')+'<b>=</b>'+sw(tp.out);
-    const el=$('mixTip'); el.innerHTML=`<span class="mteq" aria-hidden="true">${eq}</span><span class="mttext"><small>${t(tp.kind)}</small>${esc(t(tp.text))}</span><button class="mtx" aria-label="${t('Close')}">✕</button>`;
+    const el=$('mixTip'); el.dataset.kind='tip'; el.innerHTML=`<span class="mteq" aria-hidden="true">${eq}</span><span class="mttext"><small>${t(tp.kind)}</small>${esc(t(tp.text))}</span><button class="mtx" aria-label="${t('Close')}">✕</button>`;
     el.hidden=false; restart(el,'mtin'); track('tip_shown',Object.assign(lvProps(),{part:r.id,tip:TIPS.indexOf(tp)}));
   }
-  $('mixTip').addEventListener('click',e=>{ if(e.target.closest('.mtx')) $('mixTip').hidden=true; });
+  $('mixTip').addEventListener('click',e=>{ if(e.target.closest('.mtx')) $('mixTip').hidden=true;
+    if(e.target.closest('.mtgo')){ $('mixTip').hidden=true; renderSettings(); $('settingsOverlay').hidden=false; } });
   // Daily challenge (no boosters, no Undo): tapping a drop chip takes one drop of that paint out, so a mix can always be
   // fixed. The paint is not refunded and the drop still counts toward the part's drops.
   $('drops').addEventListener('click',e=>{
@@ -1727,7 +1729,32 @@ if(V2){
         if(landed===seq.length) setTimeout(()=>{ if(state!==st) return; st.brushing=false; st.brushOk=true; if(g){ g.classList.remove('brushing'); restart(g,'brushed'); } sfx('magic'); brushReady(true); },350);
       },fly); },300+i*gap));
   };
-  $('brushOk').onclick=()=>{ if(!state||!state.brushOk) return; state.brushOk=false; brushReady(false); state.applying=false; delete save.brushLoan; apply(); };
+  $('brushOk').onclick=()=>{
+    if(state&&state.manualOk){ state.manualOk=false; brushReady(false); apply(); return; } // Auto paint off: the player paints the match
+    if(!state||!state.brushOk) return; state.brushOk=false; brushReady(false); state.applying=false; delete save.brushLoan; apply(); };
+  // Auto paint (Settings, on by default): when off, a matching mix (95%+) shows "Paint it" instead of painting itself, so
+  // the player can keep tuning toward 100% first. Forced tutorial steps always paint by themselves.
+  const autoPaint=()=>save.autoPaint!==false;
+  $('setAutoRow').hidden=false;
+  const _renderSettings=renderSettings; renderSettings=function(){ _renderSettings(); $('setAuto').setAttribute('aria-checked',autoPaint()); };
+  $('setAuto').onclick=()=>{ save.autoPaint=!autoPaint(); save.tut.autoHint=true; persist(); renderSettings(); if(state&&!state.finished) afterMixChange(); };
+  const _afterMix=afterMixChange;
+  afterMixChange=function(){
+    if(state&&!state.finished&&!state.forced&&!state.lesson&&!state.brushing&&!state.brushOk&&!autoPaint()){
+      const m=mix(counts()), ok=!!m&&!state.done[state.sel]&&matchPct(m,current().target)>=95;
+      if(ok!==!!state.manualOk){ state.manualOk=ok; brushReady(ok); }
+      if(ok) return;
+    } else if(state&&state.manualOk){ state.manualOk=false; brushReady(false); }
+    _afterMix();
+  };
+  // One-time hint, after chapter 1: the first part that paints itself below 100% says Auto paint can be turned off.
+  function autoHint(p){
+    if(save.tut.autoHint||!autoPaint()||state.daily||L.index<5||p>=100) return;
+    save.tut.autoHint=true; persist();
+    setTimeout(()=>{ if(!state||state.finished) return; const el=$('mixTip'); el.dataset.kind='auto';
+      el.innerHTML=`<span class="mttext"><small>${t('Tip')}</small>${esc(t('Painted at {p}%. To fine-tune to 100% first, turn off Auto paint and tap Paint it yourself.',{p}))}</span><button class="btn mtgo">${t('Settings')}</button><button class="mtx" aria-label="${t('Close')}">✕</button>`;
+      el.hidden=false; restart(el,'mtin'); clearTimeout(v2.aht); v2.aht=setTimeout(()=>{ if(el.dataset.kind==='auto') el.hidden=true; },9000); },900);
+  }
   // a Brush whose mix was never painted (page reloaded, picture left) goes back into the inventory
   function refundBrush(){ if(!save.brushLoan) return; delete save.brushLoan; if(save.inv.brush!=null){ save.inv.brush++; } persist(); toast(t('Your Brush came back: its mix was never painted.')); }
   setTimeout(refundBrush,0);
@@ -1743,7 +1770,8 @@ if(V2){
       save.partial[L.id]={stars:pick(state.stars),used:pick(state.used),hinted:pick(state.hinted),rescued:pick(state.rescued),paint:state.paint,at:Date.now()}; }
     persist();
   }
-  const _apply=apply; apply=function(){ _apply(); savePartial();
+  const _apply=apply; apply=function(){ const r0=state&&current(), m0=r0&&mix(counts()), p0=m0?matchPct(m0,r0.target):0; _apply(); savePartial();
+    if(state&&r0&&state.done[r0.id]) autoHint(p0);
     if(save.tut.drag&&!save.tut.paint&&state&&!state.finished&&L.index>=2&&L.index<MAIN) setTimeout(paintTip,800); };
   // One-time guided tip on the paint pot: what it is, what "Rest needs" means, why it matters.
   function paintTip(){

@@ -999,4 +999,7 @@ body.v2 .coin.big{display:block;width:72px;height:72px;margin:0 auto;border-widt
 /* "+ Paint" on the paint bar when the pot can no longer finish the picture */
 .wrap.v2 .paintrow .paintplus{flex:none;margin-left:-4px;padding:6px 10px;border:0;border-radius:999px;background:var(--v2bad,#c62828);color:#fff;font:800 13px "Inter",system-ui,sans-serif;cursor:pointer;animation:sbpulse 1.6s ease-in-out infinite}
 .wrap.v2 .paintrow .paintplus[hidden]{display:none}
+/* Settings: a second line under a row's label; the tip bubble's Settings button */
+.setrow .setsub{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:3px;max-width:230px;line-height:1.3;text-transform:none;letter-spacing:0}
+.mtip .mtgo{flex:none;padding:6px 12px;min-height:0;border-radius:999px;font-size:13px;background:#f4c542;border-color:#f4c542;color:#3a2a05}
 

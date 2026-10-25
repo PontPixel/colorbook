@@ -220,6 +220,7 @@ function v2Scenes(){ return `
       <div class="v2info">
         <div class="nextLabel" id="nextLabel"></div>
         <div class="v2row"><div class="nextTitle" id="nextTitle"></div><span id="heroMeta"></span></div>
+        <div class="heroSw" id="heroSw" aria-hidden="true"></div>
         <div class="bar" aria-hidden="true"><i id="heroBar"></i></div>
       </div>
       <button class="btn play" id="playBtn">${t('Play')}</button>
@@ -235,7 +236,6 @@ function v2Scenes(){ return `
     <h2>${t('Gallery')}</h2>
     <button class="btn quizbtn bonusbtn" id="bonusBtn" hidden></button>
     <div class="ggrid" id="ggrid"></div>
-    <div class="tipcard" id="tipCard" hidden></div>
   </section>
   <section class="gallery holidays" id="holidays" hidden></section>
   <nav class="tabbar" aria-label="${t('Menu')}">
@@ -258,6 +258,7 @@ function v2Scenes(){ return `
       <div class="frame">
         <svg class="scene" id="scene" viewBox="0 0 320 240" aria-label="${t('Faded picture')}"></svg>
         <div class="stamp" id="stamp" hidden>${t('Restored')}</div>
+        <div class="mtip" id="mixTip" role="status" hidden></div>
       </div>
       <div class="credit" id="credit"></div>
       <div class="chbar" id="chBar" hidden></div>
@@ -1433,7 +1434,7 @@ if(V2){
     // repaint the part we left only after the selection moved, or it keeps breathing (two parts looked selected)
     if(leaving) paintRegion(prev,null);
     scene.querySelectorAll('.region.v2wait').forEach(g=>{ if(g.dataset.id!==id) g.classList.remove('v2wait'); });
-    _select(id); state.brushOk=false; brushReady(false);
+    _select(id); state.brushOk=false; brushReady(false); $('mixTip').hidden=true; state.worse=state.worse||{};
     if(r) $('selLayer').innerHTML=spotlight(r);
     $('targetChip').style.setProperty('--tc',hex(current().target));
     updateHud();
@@ -1571,6 +1572,23 @@ if(V2){
     state.drops.splice(i,1); state.fr.splice(i,1); state.picking=false; state.hintMsg=null;
     refundDrop(free); renderMix(msg); afterMixChange();
   }
+  // Mixing tips (GAME.tips) show up when they help: after two drops that took the mix further away, or a few drops
+  // over par, a bubble over the bottom of the picture shows the tip that fits this part's recipe (paints it uses);
+  // over par with nothing better, the "only the ratio counts" one. Once per part; it goes away on the next part.
+  const TIPS=(G.tips||[]).filter(x=>x.out);
+  function tipFor(r,over){
+    const rk=Object.keys(r.recipe).filter(k=>k!=='W'), fits=TIPS.filter(x=>Object.keys(x.out).every(k=>k==='W'?r.recipe.W:rk.includes(k)));
+    const chroma=fits.filter(x=>!x.out.W).sort((a,b)=>Object.keys(b.out).length-Object.keys(a.out).length);
+    return over?(fits.find(x=>x.out.W)||TIPS.find(x=>x.out.W)||chroma[0]):chroma[0]||null;
+  }
+  function mixTip(r,over){
+    state.tipped=state.tipped||{}; if(state.tipped[r.id]||state.done[r.id]) return;
+    const tp=tipFor(r,over); if(!tp) return; state.tipped[r.id]=true;
+    const sw=x=>`<i style="background:${hex(mix(x))}"></i>`, eq=tp.parts.map(sw).join('<b>+</b>')+'<b>=</b>'+sw(tp.out);
+    const el=$('mixTip'); el.innerHTML=`<span class="mteq" aria-hidden="true">${eq}</span><span class="mttext"><small>${t(tp.kind)}</small>${esc(t(tp.text))}</span><button class="mtx" aria-label="${t('Close')}">✕</button>`;
+    el.hidden=false; restart(el,'mtin'); track('tip_shown',Object.assign(lvProps(),{part:r.id,tip:TIPS.indexOf(tp)}));
+  }
+  $('mixTip').addEventListener('click',e=>{ if(e.target.closest('.mtx')) $('mixTip').hidden=true; });
   // A drop that takes the mix further from the target gets called out right away.
   const _addDrop=addDrop;
   addDrop=function(k,via){
@@ -1580,6 +1598,11 @@ if(V2){
     if(ok&&state&&state.hearts&&r&&!state.forced){
       const after=state.drops.length?matchPct(mix(counts()),r.target):0;
       if(!r.recipe[k]||(before!=null&&after<before&&!state.applying)) loseHeart();
+    }
+    if(ok&&via!=='magic'&&state&&!state.applying&&!state.forced&&r){
+      const used=state.used[r.id]||0;
+      if(before!=null&&matchPct(mix(counts()),r.target)<=before-3) state.worse[r.id]=(state.worse[r.id]||0)+1;
+      if(state.worse[r.id]>=2) mixTip(r); else if(used>=r.min+3) mixTip(r,true);
     }
     if(ok&&via!=='magic'&&before!=null&&state&&!state.applying&&!state.forced){
       const after=matchPct(mix(counts()),r.target);
@@ -1862,16 +1885,6 @@ if(V2){
       `<span class="sgo">${done?'✓':t('Play')}</span>`;
   };
 
-  const TIPS=G.tips||[];
-  v2.tip=TIPS.length?dayHash(dayKey())%TIPS.length:0;
-  function renderTip(){
-    const el=$('tipCard'); el.hidden=!TIPS.length; if(!TIPS.length) return;
-    const tp=TIPS[v2.tip%TIPS.length], sw=x=>`<i style="background:${hex(mix(x))}"></i>`;
-    const eq=tp.parts.map(sw).join(tp.out?'<b>+</b>':'')+(tp.out?'<b>=</b>'+sw(tp.out):'');
-    el.innerHTML=`<div class="tiphead"><small>${t(tp.kind)} · ${v2.tip%TIPS.length+1} / ${TIPS.length}</small><button class="tipnext" aria-label="${t('Next tip')}">${icon('back')}</button></div>`+
-      `<div class="tipeq" aria-hidden="true">${eq}</div><div class="tiptext">${esc(t(tp.text))}</div>`;
-  }
-  $('tipCard').addEventListener('click',e=>{ if(e.target.closest('.tipnext')){ v2.tip++; renderTip(); } });
   // Rewards wait on Home: the result card of the picture that finishes a chapter (or fills the chest) sends you
   // there with "Collect your reward", and the card pays out on a tap. Before that, the cards open their details.
   const chapterReady=()=>!!CHAPTERS&&CHAPTERS.some((c,k)=>chapterDone(k)&&!save.chapters[k]);
@@ -2094,6 +2107,7 @@ if(V2){
   $('seasonBtn').onclick=()=>{ v2.holView=seasonOn(); showTab('holidays'); };
   // the Holidays tab itself opens on the collections
   if(holTab) holTab.addEventListener('click',()=>{ if(v2.holView){ v2.holView=null; renderHolidays(); } });
+  const CH_COLORS=['#e8505b','#e8962a','#3fa65a','#3a7bd5','#e05a9a','#8e55cc','#d9682a','#c9a227'];
   const _renderMenu=renderMenu;
   renderMenu=function(){
     _renderMenu(); renderSeasonCard(); if(!$('holidays').hidden) renderHolidays();
@@ -2108,9 +2122,11 @@ if(V2){
       const doneMain=LEVELS.slice(0,MAIN).filter(l=>save.best[l.id]!=null).length;
       $('heroBar').style.width=(doneMain/MAIN*100)+'%';
     }
+    // the chapter's accent color, and one dot per part in the color it will be (done parts get a check)
+    const ci=CHAPTERS?chapterOf(i):0; document.querySelector('.v2hero').style.setProperty('--chc',CH_COLORS[ci%CH_COLORS.length]);
+    $('heroSw').innerHTML=lv.regions.map(r=>`<i class="${pt&&pt.stars[r.id]!=null?'on':''}" style="background:${hex(r.target)}"></i>`).join('');
     renderProgress(i);
     $('homeStars').innerHTML=STAR+LEVELS.reduce((a,l)=>a+(save.best[l.id]||0),0);
-    renderTip();
   };
 }
 

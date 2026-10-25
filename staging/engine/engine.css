@@ -795,13 +795,8 @@ body.v2{--grainEdge:rgba(35,40,58,.35)}
 .hcol.christmas .dbars i.on{background:#d1423a}.hcol.thanksgiving .dbars i.on{background:#e57d22}.hcol.halloween .dbars i.on{background:#f08a24}
 .holback{appearance:none;border:0;background:none;color:var(--muted);font:700 14px "Inter",system-ui,sans-serif;display:flex;align-items:center;gap:4px;padding:8px 0;cursor:pointer;min-height:44px}
 .holback .ico{width:18px;height:18px}
-/* Picture styles (flag, body.pic-*). Shade: a part's own shape over it, lit from the top left; fainter while faded */
-.shade{display:none;fill:url(#cbShade);stroke:none}
-body.pic-shade .shade{display:inline}
-/* Paper cut-out: parts lose the ink outline and cast a small shadow; grain over the play scene */
-body.pic-paper .part{stroke:none;filter:url(#cbCut)}
-.grain{display:none}
-body.pic-paper .grain{display:inline;filter:url(#cbGrain);opacity:.16;mix-blend-mode:multiply}
+/* Soft shading (GAME.shading): a part's own shape over it, lit from the top left; fainter while the part is faded */
+.shade{fill:url(#cbShade);stroke:none}
 [fill="#fbfbfc"]+.shade{fill:url(#cbShadeF)}
 /* Home season banner (right under Play while a season is live): themed gradient, animated decorations, colored cover */
 #seasonBtn.seasoncard{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;width:100%;min-height:104px;padding:12px 12px 12px 12px;border:0;border-radius:22px;text-align:left;flex:none;color:#fff;

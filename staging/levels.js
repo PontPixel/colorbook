@@ -827,7 +827,7 @@ Object.assign(STRINGS.fr,{'Rainbow':'Arc-en-ciel','Every band is a mix of two pa
 Object.assign(STRINGS.ru,{'Rainbow':'Радуга','Every band is a mix of two paints, except yellow.':'Каждая полоса — смесь двух красок, кроме жёлтой.','A rainbow':'Радуга',
  'Every band of the rainbow is a mix of two paints, except <b>Yellow</b>. More of one paint pulls the color toward it: more yellow turns red into orange.':'Каждая полоса радуги — смесь двух красок, кроме <b>жёлтой</b>. Чем больше одной краски, тем ближе к ней цвет: больше жёлтого превращает красный в оранжевый.',
  'Red band':'Красная полоса','Orange band':'Оранжевая полоса','Yellow band':'Жёлтая полоса','Green band':'Зелёная полоса','Blue band':'Синяя полоса','Violet band':'Фиолетовая полоса','Clouds':'Облака','Meadow':'Луг'});
-window.GAME={name:'ColorBook', saveKey:'paintMender', firstProper:'shelf', daily:DAILY, v2:true, tips:TIPS,
+window.GAME={name:'ColorBook', saveKey:'paintMender', firstProper:'shelf', daily:DAILY, v2:true, shading:true, tips:TIPS,
   economy:{coinsPerStar:1}, chapters:CHAPTERS, chests:{every:25,coins:30,boosters:2}, analytics:{ga4:''},
   logo:'img/logo-hero.jpg', shareLogo:'img/logo-card.jpg', levels:LEVELS, strings:STRINGS};
 })();

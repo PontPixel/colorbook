@@ -198,7 +198,6 @@ document.body.insertAdjacentHTML('afterbegin',(V2?v2Scenes():`
       <button class="btn" data-c="newDay">Daily: new day</button><button class="btn" data-c="tutorials">Replay tutorials</button>
       <button class="btn" data-c="s-halloween">Season: Halloween</button><button class="btn" data-c="s-thanksgiving">Season: Thanksgiving</button><button class="btn" data-c="s-christmas">Season: Christmas</button>
       <button class="btn" data-c="s-off">Season: none</button><button class="btn" data-c="s-auto">Season: by date</button>
-      <button class="btn" data-c="picStyle" id="cheatStyle">Style: flat</button><button class="btn" data-c="picAuto">Style: default</button>
     </div>
     <div class="cjump"><select id="cheatLevel" aria-label="Picture"></select><button class="btn primary" data-c="jump">Play</button></div>
     <div class="csnd"><div class="csndhead"><b>Sounds</b><div class="seg" id="sfxSet"><button data-v="v1">Old</button><button data-v="v2">New</button></div></div>
@@ -356,23 +355,15 @@ try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(s&&s.best)save
 if(V2){ Object.entries(INTRO_ALIAS).forEach(([nb,ob])=>{ if(save.inv[nb]==null&&save.inv[ob]!=null) save.inv[nb]=save.inv[ob]; });
   [['palette','refill'],['brush','free']].forEach(([nb,ob])=>{ if(save.inv[nb]==null&&save.inv[ob]!=null) save.inv[nb]=save.inv[ob]; }); }
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
-// Picture style (flag): 'flat' (default), 'shade' or 'paper'; GAME.picStyle sets it, staging defaults to 'shade',
-// the staging cheat sets save.picStyle. Parts always stay one flat target color; the styles only add on top:
-// - shade: a light from the top left, drawn as an overlay of the part's own shape (.shade, right after the part);
-//   faded parts get a lighter, pencil-like version (CSS picks it by fill).
-// - paper: no ink outline on parts, each casts a small drop shadow (#cbCut), paper grain over the play scene.
-const PIC_STYLES=['flat','shade','paper'];
-if(save.shading!=null&&save.picStyle==null){ save.picStyle=save.shading?'shade':'flat'; delete save.shading; }
-const picStyle=()=>PIC_STYLES.includes(save.picStyle)?save.picStyle:G.picStyle||(STAGING?'shade':'flat');
-const applyPicStyle=()=>PIC_STYLES.forEach(k=>document.body.classList.toggle('pic-'+k,picStyle()===k));
-document.body.insertAdjacentHTML('beforeend',`<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+// Soft shading (GAME.shading, ColorBook): every filled part gets a light from the top left, drawn as an overlay of
+// its own shape (.shade, right after the part), so the part itself stays one flat target color. Faded parts get a
+// lighter, pencil-like version (CSS picks it by fill). Line parts (`stroke`) get none.
+const SHADE=!!G.shading;
+if(SHADE) document.body.insertAdjacentHTML('beforeend',`<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <radialGradient id="cbShade" cx=".5" cy=".5" r=".75" fx=".3" fy=".25"><stop offset="0" stop-color="#fff" stop-opacity=".4"/><stop offset=".38" stop-color="#fff" stop-opacity="0"/><stop offset=".66" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></radialGradient>
 <radialGradient id="cbShadeF" cx=".5" cy=".5" r=".75" fx=".3" fy=".25"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/><stop offset=".66" stop-color="#4a5070" stop-opacity="0"/><stop offset="1" stop-color="#4a5070" stop-opacity=".12"/></radialGradient>
-<filter id="cbCut" filterUnits="userSpaceOnUse" x="-10" y="-10" width="340" height="260"><feDropShadow dx="1.2" dy="2.4" stdDeviation="1.6" flood-color="#3a2a14" flood-opacity=".4"/></filter>
-<filter id="cbGrain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="1 1"/></feComponentTransfer></filter>
 </defs></svg>`);
-applyPicStyle();
-const shadeEl=r=>r.stroke?'':`<g class="shade" data-for="${r.id}" pointer-events="none">${r.svg}</g>`;
+const shadeEl=r=>!SHADE||r.stroke?'':`<g class="shade" data-for="${r.id}" pointer-events="none">${r.svg}</g>`;
 const unlocked=i=>{const l=LEVELS[i];
   if(l.season) return seasonOpen(l);
   if(l.bonus) return save.best[l.id]!=null||!!save.unlockAll||!!save.bought[l.id];
@@ -439,7 +430,7 @@ function thumbSVG(lv,colored,part){
   const on=r=>colored||!!(part&&part[r.id]);
   const reg=r=>r.stroke
     ?`<g fill="none" stroke="${on(r)?hex(r.target):BLANK_STROKE}" stroke-width="${r.stroke}" stroke-linecap="round">${r.svg}</g>`
-    :`<g class="part" fill="${on(r)?hex(r.target):BLANK}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round">${r.svg}</g>${shadeEl(r)}`;
+    :`<g fill="${on(r)?hex(r.target):BLANK}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round">${r.svg}</g>${shadeEl(r)}`;
   return `<svg viewBox="0 0 320 240" aria-hidden="true">${lv.bg||''}${lv.order.map(id=>reg(byId[id])).join('')}${lv.decor}</svg>`;
 }
 // Next picture to play: first unfinished one, or the challenged one if it is unlocked.
@@ -590,13 +581,13 @@ $('introBtn').onclick=()=>{$('introOverlay').hidden=true; if(state) startHands()
 function regionEl(r){
   return r.stroke
     ? `<g class="region" data-id="${r.id}" fill="none" stroke="${BLANK_STROKE}" stroke-width="${r.stroke}" stroke-linecap="round">${r.svg}</g>`
-    : `<g class="region part" data-id="${r.id}" fill="${BLANK}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round">${r.svg}</g>${shadeEl(r)}`;
+    : `<g class="region" data-id="${r.id}" fill="${BLANK}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round">${r.svg}</g>${shadeEl(r)}`;
 }
 function buildScene(){
   const byId=Object.fromEntries(L.regions.map(r=>[r.id,r]));
   scene.innerHTML=`<g pointer-events="none">${L.bg||''}</g>`+L.order.map(id=>regionEl(byId[id])).join('')+L.decor+
     L.regions.filter(r=>r.crack).map(r=>`<path class="crack" data-for="${r.id}" d="${r.crack}"/>`).join('')+
-    '<rect class="grain" width="320" height="240" pointer-events="none"/><g id="selLayer"></g><g id="fxLayer" pointer-events="none"></g>';
+    '<g id="selLayer"></g><g id="fxLayer" pointer-events="none"></g>';
   scene.setAttribute('aria-label',t('Faded picture')+': '+T(L));
   scene.querySelectorAll('.region').forEach(g=>g.addEventListener('click',()=>{if(!state.done[g.dataset.id]&&!state.forced&&!state.lesson&&!state.applying){handDone('tapPart');select(g.dataset.id);}}));
 }
@@ -2034,7 +2025,7 @@ if(CHEATS){
   let armed=false;
   const refresh=()=>{ persist(); renderCoins(true); if(state){ updateHud(); renderActions(); } else renderMenu(); };
   const open=()=>{ const g=!!state&&!state.finished; ['paint','solve','finish'].forEach(c=>$('cheatOverlay').querySelector(`[data-c="${c}"]`).disabled=!g);
-    if(L) sel.value=L.index; armed=false; $('cheatEvents').textContent=EVENTS.join('\n')||'No events yet'; $('cheatStyle').textContent='Style: '+picStyle(); $('cheatNew').textContent='New game: start over from picture 1'; $('cheatOverlay').hidden=false; };
+    if(L) sel.value=L.index; armed=false; $('cheatEvents').textContent=EVENTS.join('\n')||'No events yet'; $('cheatNew').textContent='New game: start over from picture 1'; $('cheatOverlay').hidden=false; };
   $('cheatBtn').onclick=open;
   // Sound test: play every effect in the old or the new set to compare them on a phone.
   const SND=[['drop','W','Drop White'],['drop','C','Drop Cyan'],['drop','M','Drop Magenta'],['drop','Y','Drop Yellow'],['drop','K','Drop Black'],
@@ -2069,9 +2060,6 @@ if(CHEATS){
     if(c==='newDay'){ if(save.daily) save.daily.last=dayKey(new Date(Date.now()-864e5)); refresh(); toast('Daily picture is open again, streak kept'); return; }
     if(c==='tutorials'){ save.tut={}; save.seen={}; persist(); toast('Tutorials and tip cards will show again'); return; }
     if(c==='jump'){ close(); start(+sel.value); return; }
-    if(c==='picStyle'||c==='picAuto'){ // cycles flat → shade → paper
-      if(c==='picAuto') delete save.picStyle; else save.picStyle=PIC_STYLES[(PIC_STYLES.indexOf(picStyle())+1)%PIC_STYLES.length];
-      persist(); applyPicStyle(); $('cheatStyle').textContent='Style: '+picStyle(); toast('Picture style: '+picStyle()); return; }
     if(c.startsWith('s-')){ const v=c.slice(2); if(v==='auto') delete save.forceSeason; else save.forceSeason=v; persist();
       if(!state) renderMenu(); toast(v==='auto'?'Season follows the date':'Season: '+v); return; }
     // Wipes this build's save (coins, stars, boosters, tutorials, progress) and opens picture 1, as a first-time player.

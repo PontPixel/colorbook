@@ -298,3 +298,16 @@ ru:{'{season} collection':'Коллекция: {season}','Open until {date}':'О
 'Outside its season, only the pictures you already started can be played.':'Вне сезона можно играть только в уже начатые картинки.',
 'Holiday collections open in their season. Pictures you started stay playable.':'Праздничные коллекции открываются в свой сезон. Начатые картинки остаются доступны.'}
 });
+// Brush confirm and the Home season banner
+I18N.add({
+fr:{'Paint it':'Peindre','The brush is mixing…':'Le pinceau mélange…','Mixes the exact recipe for the part you are on, drop by drop, then you tap Paint it. It uses that paint from the pot, and the part earns at most 2 stars.':'Mélange la recette exacte de la partie en cours, goutte à goutte, puis touchez Peindre. La peinture vient du pot, et la partie gagne au plus 2 étoiles.',
+'{n} days left':'Encore {n} jours','Last day!':'Dernier jour !','View':'Voir'},
+ru:{'Paint it':'Покрасить','The brush is mixing…':'Кисть смешивает…','Mixes the exact recipe for the part you are on, drop by drop, then you tap Paint it. It uses that paint from the pot, and the part earns at most 2 stars.':'Смешивает точный рецепт для текущей части, капля за каплей, а потом вы нажимаете «Покрасить». Краска берётся из банки, и часть получает не больше 2 звёзд.',
+'{n} days left':'Осталось дней: {n}','Last day!':'Последний день!','View':'Смотреть'}
+});
+// Reward reveal
+I18N.add({
+fr:{'Collect':'Récupérer','Chapter {n} complete':'Chapitre {n} terminé','Star chest {n}':'Coffre à étoiles {n}','Chest opened!':'Coffre ouvert !','Coins':'Pièces'},
+ru:{'Collect':'Забрать','Chapter {n} complete':'Глава {n} пройдена','Star chest {n}':'Звёздный сундук {n}','Chest opened!':'Сундук открыт!','Coins':'Монеты'}
+});
+

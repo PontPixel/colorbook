@@ -224,10 +224,10 @@ function v2Scenes(){ return `
       </div>
       <button class="btn play" id="playBtn">${t('Play')}</button>
     </div>
+    <button class="btn quizbtn seasoncard" id="seasonBtn" hidden></button>
     <div class="chbar" id="homeCh" hidden></div>
     <div class="progcards" id="progCards" hidden><div class="pcard" id="chapterCard"></div><div class="pcard" id="chestCard"></div></div>
     <button class="btn quizbtn v2daily" id="dailyPicBtn" hidden></button>
-    <button class="btn quizbtn v2daily seasoncard" id="seasonBtn" hidden></button>
     <button class="btn quizbtn bonusbtn" id="bonusBtn" hidden></button>
     <button class="btn quizbtn" id="dailyQuizBtn" hidden></button>
     <div class="tipcard" id="tipCard" hidden></div>
@@ -267,7 +267,7 @@ function v2Scenes(){ return `
         <div class="mxhead"><b id="targetName"></b><div class="mxpace"><div class="counter" id="counter"></div><div class="pstars" id="paceStars"></div></div></div>
         <div class="swatches">
           <div class="sw"><div class="chip target" id="targetChip"></div><small>${t('Target')}</small></div>
-          <div class="mxmid"><div id="pctNum"></div><div class="msg" id="msg"></div></div>
+          <div class="mxmid"><div id="pctNum"></div><div class="msg" id="msg"></div><button class="btn primary brushok" id="brushOk" hidden>${t('Paint it')}</button></div>
           <div class="sw"><button class="chip empty" id="mixChip" aria-label="${t('Your mix. Tap to pour out the bowl.')}"></button><small id="mixLab">${t('Mix')}</small></div>
         </div>
         <div class="drops" id="drops"></div>
@@ -339,7 +339,7 @@ if(V2){
   Object.assign(BOOSTERS,{
     magic:{name:t('Magic'),price:40,text:t('Puts the next right drop in the bowl, or takes a wrong one out. That part can earn at most 2 stars.')},
     palette:{name:t('Palette'),price:25,text:t('Dims the paints this part does not use, until the part is painted. The part can still earn 3 stars.')},
-    brush:{name:t('Brush'),price:60,text:t('Paints the part you are on for you, with the exact recipe. It uses that paint from the pot, and the part earns at most 2 stars.')}});
+    brush:{name:t('Brush'),price:60,text:t('Mixes the exact recipe for the part you are on, drop by drop, then you tap Paint it. It uses that paint from the pot, and the part earns at most 2 stars.')}});
 }
 const INTRO_ALIAS=V2?{magic:'hint',palette:'pick',brush:'empty'}:{};
 // Economy: a game can override any of these with G.economy (ColorBook pays 1 coin per star so boosters keep their value).
@@ -495,16 +495,19 @@ function chapterOf(i){const l=LEVELS[i], k=l.bonus?LEVELS.findIndex(x=>x.id===l.
 const chapterDone=ci=>{const [a,z]=chapterRange(ci); return LEVELS.slice(a,z).every(l=>save.best[l.id]!=null);};
 const totalStars=()=>LEVELS.reduce((a,l)=>a+(save.best[l.id]||0),0);
 const unlockedBoosters=()=>Object.keys(BOOSTERS).filter(b=>save.inv[b]!=null);
-// Rewards earned since the last check: finished chapters and star chests. Paid out once, listed on the result card.
+// Rewards earned since the last check: finished chapters and star chests. Paid out once, listed on the result card
+// (lastRewards keeps them as data for the redesign's reward reveal).
+let lastRewards=[];
 function claimRewards(){
-  const out=[];
+  const out=[]; lastRewards=[];
   if(CHAPTERS) CHAPTERS.forEach((c,ci)=>{ if(save.chapters[ci]||!chapterDone(ci)) return; save.chapters[ci]=true;
     const bs=unlockedBoosters(); bs.forEach(b=>save.inv[b]++); addCoins(EC.chapterCoins);
+    lastRewards.push({kind:'chapter',n:ci+1,name:t(c.name),coins:EC.chapterCoins,boosters:bs});
     out.push(t('Chapter {n} complete: {name}! +{coins}',{n:ci+1,name:t(c.name),coins:tn(EC.chapterCoins,'coin')})+(bs.length?' '+t('and +1 of every booster.'):'.'));
     track('chapter_complete',{chapter:ci+1}); });
   if(CHESTS) while(Math.floor(totalStars()/CHESTS.every)>save.chests){ save.chests++;
     const bs=unlockedBoosters(), got=[]; for(let j=0;j<CHESTS.boosters&&bs.length;j++){const b=bs[Math.random()*bs.length|0]; save.inv[b]++; got.push(BOOSTERS[b].name);}
-    addCoins(CHESTS.coins);
+    addCoins(CHESTS.coins); lastRewards.push({kind:'chest',n:save.chests,coins:CHESTS.coins,boosters:got.map(nm=>Object.keys(BOOSTERS).find(b=>BOOSTERS[b].name===nm))});
     out.push(t('Star chest {n} opened: +{coins}',{n:save.chests,coins:tn(CHESTS.coins,'coin')})+(got.length?', '+got.join(', '):'')+'.');
     track('chest_open',{n:save.chests,stars:totalStars()}); }
   if(out.length) persist();
@@ -1425,7 +1428,7 @@ if(V2){
     // repaint the part we left only after the selection moved, or it keeps breathing (two parts looked selected)
     if(leaving) paintRegion(prev,null);
     scene.querySelectorAll('.region.v2wait').forEach(g=>{ if(g.dataset.id!==id) g.classList.remove('v2wait'); });
-    _select(id);
+    _select(id); state.brushOk=false; brushReady(false);
     if(r) $('selLayer').innerHTML=spotlight(r);
     $('targetChip').style.setProperty('--tc',hex(current().target));
     updateHud();
@@ -1621,18 +1624,45 @@ if(V2){
     state.palette[state.sel]=true; sfx('magic'); dimPaints(); renderActions();
     const n=Object.keys(current().recipe).length; toast(t('{part} uses {n} of the paints.',{part:N(current()),n}));
   };
-  // Brush: pours the exact recipe into the bowl (paid from the pot) and the part paints itself; 2 stars at most.
+  // Brush: the exact recipe flows into the bowl one drop at a time (each one flies from its paint as a glowing drop,
+  // paid from the pot) while the part fills in on the picture; then "Paint it" confirms. The part earns 2 stars at most.
+  function flyDrop(k){
+    if(reduced) return;
+    const from=$('paints').querySelector(`.paint[data-k="${k}"]`), to=$('mixChip'); if(!from) return;
+    const a=from.getBoundingClientRect(), b=to.getBoundingClientRect(), d=document.createElement('div');
+    d.className='bfly'; d.style.setProperty('--c',hex(PMAP[k].rgb)); d.style.left=(a.left+a.width/2-9)+'px'; d.style.top=(a.top+a.height/2-9)+'px';
+    document.body.appendChild(d);
+    const dx=b.left+b.width/2-a.left-a.width/2, dy=b.top+b.height/2-a.top-a.height/2;
+    d.animate([{transform:'translate(0,0) scale(.5)',opacity:0},{transform:`translate(${dx*.45}px,${dy*.45-70}px) scale(1.15)`,opacity:1,offset:.45},
+      {transform:`translate(${dx}px,${dy}px) scale(.55)`,opacity:.9}],{duration:520,easing:'cubic-bezier(.35,.6,.4,1)'}).onfinish=()=>{ d.remove(); restart(to,'brushpop'); };
+  }
+  function brushReady(on){
+    $('brushOk').hidden=!on; $('msg').hidden=on;
+    if(on) restart($('brushOk'),'brushin');
+  }
   $('brushBtn').onclick=()=>{
     if(!state||state.finished||state.applying||state.forced||state.lesson||isLocked('brush')) return;
     const r=current(), paid=state.fr.filter(x=>!x).length;
     if(state.paint+paid<r.min){toast(t('Brush needs {drops} of paint.',{drops:tn(r.min,'drop')}));buzz(40);sfx('wrong');return;}
     if(!spend('brush')) return;
-    state.paint+=paid-r.min; state.drops=[]; state.fr=[];
-    Object.entries(r.recipe).forEach(([k,n])=>{for(let j=0;j<n;j++){state.drops.push(k);state.fr.push(false);}});
-    state.used[r.id]=r.min; state.hinted[r.id]=true; sfx('magic');
-    const g=scene.querySelector(`.region[data-id="${r.id}"]`); if(g) restart(g,'brushed');
-    updateHud(); renderMix([t('Brushed!'),'good']); afterMixChange();
+    // the bowl empties (paid drops go back to the pot), then the recipe drops in, paint by paint
+    state.paint+=paid; state.drops=[]; state.fr=[]; state.used[r.id]=0; state.hinted[r.id]=true;
+    state.applying=true; state.brushing=true; sfx('magic');
+    const seq=[]; (L.paints||PAINTS.map(x=>x.k)).forEach(k=>{ for(let j=0;j<(r.recipe[k]||0);j++) seq.push(k); });
+    const st=state, msg=[t('The brush is mixing…'),'good'];
+    const g=scene.querySelector(`.region[data-id="${r.id}"]`); if(g) g.classList.add('brushing');
+    updateHud(); renderMix(msg);
+    // drops leave one after another (a new one takes off before the last lands) and count once they land
+    const gap=reduced?60:Math.max(240,Math.min(520,2400/seq.length)), fly=reduced?0:440;
+    let landed=0;
+    seq.forEach((k,i)=>setTimeout(()=>{ if(state!==st||st.finished||st.sel!==r.id) return; flyDrop(k);
+      setTimeout(()=>{ if(state!==st||st.sel!==r.id) return;
+        st.drops.push(k); st.fr.push(false); st.paint--; st.used[r.id]++; sfx('drop',k); buzz(8); landed++;
+        updateHud(); renderMix(landed<seq.length?msg:[t('Brushed!'),'good']);
+        if(landed===seq.length) setTimeout(()=>{ if(state!==st) return; st.brushing=false; st.brushOk=true; if(g){ g.classList.remove('brushing'); restart(g,'brushed'); } sfx('magic'); brushReady(true); },350);
+      },fly); },300+i*gap));
   };
+  $('brushOk').onclick=()=>{ if(!state||!state.brushOk) return; state.brushOk=false; brushReady(false); state.applying=false; apply(); };
   // Entrance: the picture grows into place, then the controls rise in one after another.
   const enter=el=>{ if(reduced) return; el.classList.remove('entering'); void el.offsetWidth; el.classList.add('entering');
     clearTimeout(el._et); el._et=setTimeout(()=>el.classList.remove('entering'),1100); };
@@ -1842,7 +1872,7 @@ if(V2){
   const _winR=win; win=function(){ v2.inWin=true; try{ _winR(); } finally{ v2.inWin=false; }
     if(L.season) $('endText').insertAdjacentHTML('afterbegin',`<b class="fest">${t({halloween:'Happy Halloween!',thanksgiving:'Happy Thanksgiving!',christmas:'Merry Christmas!'}[L.season])}</b><br>`);
     v2.collect=chapterReady()||chestReady();
-    if(v2.collect){ const nb=$('nextBtn'); nb.hidden=false; nb.textContent=t('Collect your reward'); } };
+    const nb=$('nextBtn'); nb.textContent=v2.collect?t('Collect your reward'):t('Next picture'); if(v2.collect) nb.hidden=false; };
   $('nextBtn').onclick=()=>{ if(v2.collect){ v2.collect=false; goHome(); return; } const n=nextAfter(L.index); if(n<0) goHome(); else start(n); };
   ['chapterCard','chestCard'].forEach(id=>{ $(id).setAttribute('role','button'); $(id).tabIndex=0; $(id).addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); $(id).click(); } }); });
   function infoSheet(title,html){
@@ -1868,12 +1898,32 @@ if(V2){
     if(v2.homeTipDone) v2.homeTipDone();
     if(!card.classList.contains('ready')){ if(card.id==='chapterCard') chapterInfo(); else chestInfo(); return; }
     const got=claimRewards(); if(!got.length) return;
-    sfx('fanfare'); buzz([30,60,30]);
-    const r=e.target.closest('.pcard').getBoundingClientRect(); burst(r.left+r.width/2,r.top+r.height/2,[INK,'#ffffff'],30,{speed:7,shapes:['star','circle'],decay:.02,size:5});
-    $('introTitle').textContent=t('Rewards'); $('introText').hidden=true;
-    $('introBoosters').innerHTML=got.map(x=>`<div class="booster">${esc(x)}</div>`).join(''); $('introBtn').textContent=t('Nice!');
-    $('introOverlay').hidden=false; renderMenu();
+    sfx('fanfare'); buzz([30,60,30]); renderMenu(); rewardReveal(lastRewards);
   });
+  // Reward reveal: a sunburst behind a trophy (chapter) or a chest, the chapter's name, then the rewards pop in one by
+  // one (coins count up, each booster with its icon); Collect closes it with confetti.
+  document.body.insertAdjacentHTML('beforeend',`<div class="overlay rwOverlay" id="rwOverlay" hidden><div class="rwcard" role="dialog" aria-modal="true" aria-labelledby="rwTitle">
+    <div class="rwrays" aria-hidden="true"></div><div class="rwicon" id="rwIcon" aria-hidden="true"></div><small class="rwkick" id="rwKick"></small><h2 id="rwTitle"></h2>
+    <div class="rwitems" id="rwItems"></div><button class="btn primary rwgo" id="rwGo">${t('Collect')}</button></div></div>`);
+  const RW_ICON={chapter:'<svg viewBox="0 0 64 64"><path d="M20 8h24v14a12 12 0 0 1-24 0Z" fill="#f4c542" stroke="#8a5a0b" stroke-width="2.5" stroke-linejoin="round"/><path d="M20 12H10q0 14 12 16M44 12h10q0 14-12 16" fill="none" stroke="#8a5a0b" stroke-width="2.5" stroke-linecap="round"/><path d="M28 34h8v10h-8Z" fill="#e0a92a" stroke="#8a5a0b" stroke-width="2.5"/><rect x="18" y="44" width="28" height="9" rx="2" fill="#f4c542" stroke="#8a5a0b" stroke-width="2.5"/><path d="M26 14q2 8 6 10" stroke="#fff6d0" stroke-width="3" stroke-linecap="round" fill="none"/></svg>',
+    chest:'<svg viewBox="0 0 64 64"><path d="M8 28q0-16 24-16t24 16Z" fill="#c4692c" stroke="#5c2c0e" stroke-width="2.5" stroke-linejoin="round"/><rect x="8" y="28" width="48" height="26" rx="3" fill="#a9541f" stroke="#5c2c0e" stroke-width="2.5"/><path d="M8 34h48M20 13v41M44 13v41" stroke="#f4c542" stroke-width="4"/><rect x="27" y="29" width="10" height="12" rx="2" fill="#f4c542" stroke="#5c2c0e" stroke-width="2"/></svg>'};
+  function rewardReveal(list){
+    if(!list.length) return;
+    const head=list[0], coins=list.reduce((a,x)=>a+x.coins,0), bc={};
+    list.forEach(x=>x.boosters.forEach(b=>{ if(b) bc[b]=(bc[b]||0)+1; }));
+    $('rwIcon').innerHTML=RW_ICON[head.kind];
+    $('rwKick').textContent=head.kind==='chapter'?t('Chapter {n} complete',{n:head.n}):t('Star chest {n}',{n:head.n});
+    $('rwTitle').textContent=head.kind==='chapter'?head.name:t('Chest opened!');
+    $('rwItems').innerHTML=`<div class="rwitem coins" style="--d:0"><span class="rwbig"><span class="coin"></span></span><b>+<span id="rwCoins">0</span></b><small>${t('Coins')}</small></div>`+
+      Object.entries(bc).map(([b,n],i)=>`<div class="rwitem" style="--d:${i+1}"><span class="rwbig">${icon(b)}</span><b>+${n}</b><small>${esc(BOOSTERS[b].name)}</small></div>`).join('');
+    const ov=$('rwOverlay'); ov.hidden=false; restart(ov.querySelector('.rwcard'),'rwin');
+    const el=$('rwCoins'), t0=performance.now()+350, dur=reduced?0:800;
+    const tick=now=>{ const k=dur?Math.max(0,Math.min(1,(now-t0)/dur)):1; el.textContent=Math.round(coins*(1-Math.pow(1-k,3))); if(k<1&&!ov.hidden) requestAnimationFrame(tick); else sfx('coin'); };
+    requestAnimationFrame(tick);
+    Object.keys(bc).forEach((b,i)=>setTimeout(()=>{ if(!ov.hidden) sfx('star'); },500+i*140));
+  }
+  $('rwGo').onclick=()=>{ const r=$('rwIcon').getBoundingClientRect(); $('rwOverlay').hidden=true;
+    burst(r.left+r.width/2,r.top+r.height/2,['#f4c542','#ffffff','#e0a92a'],40,{speed:8,shapes:['star','circle'],decay:.018,size:5}); sfx('coin'); renderCoins(true); };
   // Chapter progress (dots for its pictures) and the next star chest; a button for bonus pages ready to unlock.
   function renderProgress(i){
     $('progCards').hidden=!CHAPTERS&&!CHESTS;
@@ -1936,13 +1986,23 @@ if(V2){
     if(e.target.closest('.holback')){ v2.holView=null; renderHolidays(); return; }
     const col=e.target.closest('.hcol'); if(col){ v2.holView=col.dataset.s; renderHolidays(); $('holidays').scrollTop=0; return; }
     const c=e.target.closest('.gcard'); if(c&&!c.disabled) start(+c.dataset.i); });
+  // The live season's banner sits right under Play: a themed gradient with a few animated decorations, the next
+  // picture in color, days left and the collection's progress.
+  const SEASON_DECO={
+    halloween:'<circle class="moon" cx="292" cy="22" r="13"/><path class="bat b1" d="M236 14q8-8 14 0q3-5 6 0q6-8 14 0q-8 0-11 7q-5-3-8 0q-3-7-15-7Z"/><path class="bat b2" d="M262 44q6-6 10 0q2-4 4 0q4-6 10 0q-6 0-8 5q-3-2-6 0q-2-5-10-5Z"/><g class="star"><circle cx="196" cy="16" r="1.4"/><circle cx="270" cy="88" r="1.2"/><circle cx="314" cy="56" r="1.2"/></g>',
+    thanksgiving:'<ellipse class="leaf l1" cx="236" cy="22" rx="9" ry="4.5" transform="rotate(30 236 22)"/><ellipse class="leaf l2" cx="290" cy="40" rx="10" ry="5" transform="rotate(-25 290 40)"/><ellipse class="leaf l3" cx="262" cy="78" rx="8" ry="4" transform="rotate(60 262 78)"/><ellipse class="leaf l1" cx="314" cy="86" rx="7" ry="3.5" transform="rotate(10 314 86)"/>',
+    christmas:'<g class="flake f1"><path d="M240 14v20M230 24h20M233 17l14 14M247 17l-14 14"/></g><g class="flake f2"><path d="M292 44v16M284 52h16M286 46l12 12M298 46l-12 12"/></g><g class="flake f3"><path d="M262 80v12M256 86h12"/></g><g class="star"><circle cx="210" cy="20" r="1.4"/><circle cx="312" cy="20" r="1.4"/></g>'};
   function renderSeasonCard(){
     const b=$('seasonBtn'), on=seasonOn(); b.hidden=!on; if(!on) return;
     const ids=seasonPics(on), got=ids.filter(i=>save.best[LEVELS[i].id]!=null).length, next=ids.find(i=>save.best[LEVELS[i].id]==null), lv=LEVELS[next!=null?next:ids[0]];
-    b.classList.toggle('xmas',on==='christmas'); b.classList.toggle('tg',on==='thanksgiving'); b.classList.toggle('hw',on==='halloween');
-    b.innerHTML=`<span class="dthumb">${thumbSVG(lv,next==null)}</span><span class="dbody"><span class="dtop"><b>${t('{season} pictures',{season:seasonName(on)})}</b>`+
-      `<small>${t('until {date}',{date:seasonDate(seasonEnd(on))})}</small></span><span class="dname">${got===ids.length?t('All restored. Happy holidays!'):t('{done} of {all} restored',{done:got,all:ids.length})}</span>`+
-      `<span class="dbars">${ids.map(i=>`<i class="${save.best[LEVELS[i].id]!=null?'on':''}"></i>`).join('')}</span></span>`;
+    const now=new Date(), left=Math.round((seasonEnd(on)-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/864e5)+1;
+    b.className='btn quizbtn seasoncard '+({christmas:'xmas',thanksgiving:'tg',halloween:'hw'}[on]);
+    b.innerHTML=`<svg class="sdeco" viewBox="0 0 320 100" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">${SEASON_DECO[on]||''}</svg><span class="sshine" aria-hidden="true"></span>`+
+      `<span class="scover">${thumbSVG(lv,true)}</span><span class="sbody"><span class="stag">${left<=1?t('Last day!'):left<=31?t('{n} days left',{n:left}):t('until {date}',{date:seasonDate(seasonEnd(on))})}</span>`+
+      `<b>${t('{season} pictures',{season:seasonName(on)})}</b>`+
+      `<span class="dbars">${ids.map(i=>`<i class="${save.best[LEVELS[i].id]!=null?'on':''}"></i>`).join('')}</span>`+
+      `<small>${got===ids.length?t('All restored. Happy holidays!'):t('{done} of {all} restored',{done:got,all:ids.length})}</small></span>`+
+      `<span class="sgo">${got===ids.length?t('View'):t('Play')}</span>`;
   }
   $('seasonBtn').onclick=()=>{ v2.holView=seasonOn(); showTab('holidays'); };
   // the Holidays tab itself opens on the collections

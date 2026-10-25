@@ -992,3 +992,8 @@ body.v2 .coin.big{display:block;width:72px;height:72px;margin:0 auto;border-widt
 .toast{visibility:hidden;transition:opacity .3s,transform .3s,visibility 0s .3s}
 .toast.show{visibility:visible;transition:opacity .3s,transform .3s,visibility 0s}
 .cheatBtn{position:absolute}
+/* daily: drop chips are tappable (take one drop out), marked with a small minus */
+#game.chipfix .dchip{cursor:pointer;position:relative;padding-right:22px}
+#game.chipfix .dchip::after{content:"−";position:absolute;right:7px;top:50%;transform:translateY(-52%);font:800 15px/1 "Inter",system-ui,sans-serif;opacity:.6}
+#game.chipfix .dchip:active{transform:scale(.94)}
+

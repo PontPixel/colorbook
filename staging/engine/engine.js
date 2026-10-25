@@ -279,7 +279,7 @@ function v2Scenes(){ return `
       <div class="paints" id="paints"></div>
       <div class="coachTip" id="coachTip" hidden></div>
       <div class="actions">
-        <div class="noboost">${t('No boosters today: every drop counts.')}</div>
+        <div class="noboost">${t('No boosters today. Tap a drop in the bowl to take it out: its paint stays used.')}</div>
         <div class="boosters">
           <button class="btn boost" id="undoBtn"></button>
           <button class="btn boost" id="magicBtn"></button>
@@ -822,7 +822,7 @@ function addDrop(k,via){
     lessonDone();
   }
   if(state.paint<=0&&!(state.freeLeft>0)){outOfPaint();return false;}
-  if(state.drops.length>=12){renderMix([t('The bowl is full. Take drops out with Undo.'),'bad']);buzz(40);sfx('wrong');return false;}
+  if(state.drops.length>=12){renderMix([state.daily&&L.dream?t('The bowl is full. Tap a drop below to take it out.'):t('The bowl is full. Take drops out with Undo.'),'bad']);buzz(40);sfx('wrong');return false;}
   state.picking=false; state.hintMsg=null;
   const free=state.freeLeft>0; state.drops.push(k); state.fr.push(free); if(free) state.freeLeft--; else state.paint--;
   state.used[state.sel]=(state.used[state.sel]||0)+1; buzz(8); sfx('drop',k);
@@ -1604,6 +1604,14 @@ if(V2){
     el.hidden=false; restart(el,'mtin'); track('tip_shown',Object.assign(lvProps(),{part:r.id,tip:TIPS.indexOf(tp)}));
   }
   $('mixTip').addEventListener('click',e=>{ if(e.target.closest('.mtx')) $('mixTip').hidden=true; });
+  // Daily challenge (no boosters, no Undo): tapping a drop chip takes one drop of that paint out, so a mix can always be
+  // fixed. The paint is not refunded and the drop still counts toward the part's drops.
+  $('drops').addEventListener('click',e=>{
+    const ch=e.target.closest('.dchip'); if(!ch||!state||!state.daily||!L.dream||state.applying||state.finished||state.failed) return;
+    const k=ch.dataset.k, i=state.drops.lastIndexOf(k); if(i<0) return;
+    snap(k); state.drops.splice(i,1); state.fr.splice(i,1); state.hintMsg=null;
+    renderMix([t('{paint} taken out. Its paint stays used.',{paint:PN(k)}),'']); afterMixChange();
+  });
   // A drop that takes the mix further from the target gets called out right away.
   const _addDrop=addDrop;
   addDrop=function(k,via){
@@ -1612,7 +1620,7 @@ if(V2){
     const ok=_addDrop(k,via);
     if(ok&&state&&state.hearts&&r&&!state.forced){
       const after=state.drops.length?matchPct(mix(counts()),r.target):0;
-      if(!r.recipe[k]) loseHeart(); // a dip while tuning is part of mixing; only a paint the part doesn't use costs a heart
+      if(!r.recipe[k]){ loseHeart(); if(state.hearts) setTimeout(()=>{ if(state&&!state.applying) renderMix([t('{paint} isn\'t in this color. Tap it below to take it out.',{paint:PN(k)}),'bad']); },50); } // a dip while tuning is part of mixing; only a paint the part doesn't use costs a heart
     }
     if(ok&&via!=='magic'&&state&&!state.applying&&!state.forced&&r){
       const used=state.used[r.id]||0;
@@ -1755,6 +1763,7 @@ if(V2){
   start=function(i,o){ v2.quiet=false; v2.paintLv=0; _start(i,o); resume(); $('gTitle').textContent=T(L); enter($('game'));
     // the very first picture keeps every control in place but quiets the efficiency details and locked boosters
     $('game').classList.toggle('calm',L.index===0&&!(state&&state.daily));
+    $('game').classList.toggle('chipfix',!!(state&&state.daily&&L.dream)); // daily: drop chips can be tapped to take a drop out
     state.hearts=state.daily&&L.dream?3:0; renderHearts(); $('game').classList.toggle('dreamday',!!(state.daily&&L.dream)); };
   // ---------- Daily challenge: a page from Grandma's dream journal ----------
   // One dream per day (same for everyone), 3 hearts, no boosters, tight paint. A drop of a paint the part doesn't
@@ -1808,7 +1817,7 @@ if(V2){
     const cards=[];
     if(state.daily&&L.dream){ const s=dailyStreakNext(), page=DREAMS.indexOf(L.index)+1;
       cards.push({title:t('Daily challenge'),html:`<div class="dream"><small>${t('Grandma\'s dream journal · page {n}',{n:page})}</small><b>${esc(T(L))}</b><p>${esc(t(L.story))}</p></div>`+
-        `<ul class="drules"><li>${HEART}${t('3 hearts: a paint this part doesn\'t use costs one. Tuning the mix is free.')}</li><li>${icon('lock')}${t('No boosters, and only a little spare paint.')}</li>`+
+        `<ul class="drules"><li>${HEART}${t('You have 3 hearts. A paint this color doesn\'t need costs one heart.')}</li><li>${icon('lock')}${t('No boosters, and only a little spare paint. To fix a mix, tap a drop in the bowl to take it out. Its paint stays used.')}</li>`+
         `<li>${icon('daily')}${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</li></ul>`}); }
     else if(state.daily){ const s=dailyStreakNext();
       cards.push({title:t('Daily picture'),html:`<div class="booster">${icon('daily')}<b>${t('Daily picture: {title}',{title:esc(T(L))})}</b><br>${twistText(state.twist,state.budget)} ${dailyDone()?t('Today\'s reward is already yours. This one is for fun.'):t('Restore it for {coins}. Streak: {days}.',{coins:tn(dailyReward(s),'coin'),days:tn(s,'day')})}</div>`}); }

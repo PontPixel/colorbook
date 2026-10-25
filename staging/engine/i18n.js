@@ -343,4 +343,16 @@ I18N.add({
 fr:{'Your mix':'Votre mélange','The bowl is full. Take drops out with Undo.':'Le bol est plein. Retirez des gouttes avec Annuler.','These mix like the later chapters, so the shades are closer. Each picture starts with its easiest mix, and Palette and Magic help.':'Elles se mélangent comme les chapitres avancés : les teintes sont plus proches. Chaque image commence par son mélange le plus simple, et Palette et Magie aident.','Holiday pictures mix like the later chapters. Take your time: Hard ones are marked.':'Les images des fêtes se mélangent comme les chapitres avancés. Prenez votre temps : les difficiles sont signalées.'},
 ru:{'Your mix':'Ваша смесь','The bowl is full. Take drops out with Undo.':'Миска полна. Уберите капли с помощью «Отменить».','These mix like the later chapters, so the shades are closer. Each picture starts with its easiest mix, and Palette and Magic help.':'Они смешиваются как поздние главы, оттенки ближе. Каждая картинка начинается с самой простой смеси, помогают Палитра и Магия.','Holiday pictures mix like the later chapters. Take your time: Hard ones are marked.':'Праздничные картинки смешиваются как поздние главы. Не спешите: сложные отмечены.'}
 });
+I18N.add({
+fr:{'No boosters today. Tap a drop in the bowl to take it out: its paint stays used.':'Pas de bonus aujourd’hui. Touchez une goutte du bol pour la retirer : sa peinture reste utilisée.',
+'You have 3 hearts. A paint this color doesn\'t need costs one heart.':'Vous avez 3 cœurs. Une peinture dont cette couleur n’a pas besoin coûte un cœur.',
+'No boosters, and only a little spare paint. To fix a mix, tap a drop in the bowl to take it out. Its paint stays used.':'Pas de bonus, et peu de peinture en réserve. Pour corriger un mélange, touchez une goutte du bol pour la retirer. Sa peinture reste utilisée.',
+'{paint} taken out. Its paint stays used.':'{paint} retiré. Sa peinture reste utilisée.','The bowl is full. Tap a drop below to take it out.':'Le bol est plein. Touchez une goutte en dessous pour la retirer.',
+'{paint} isn\'t in this color. Tap it below to take it out.':'Il n’y a pas de {paint} dans cette couleur. Touchez-le en dessous pour le retirer.'},
+ru:{'No boosters today. Tap a drop in the bowl to take it out: its paint stays used.':'Сегодня без бустеров. Нажмите на каплю в миске, чтобы убрать её: краска остаётся потраченной.',
+'You have 3 hearts. A paint this color doesn\'t need costs one heart.':'У вас 3 сердца. Краска, которой нет в этом цвете, стоит одно сердце.',
+'No boosters, and only a little spare paint. To fix a mix, tap a drop in the bowl to take it out. Its paint stays used.':'Без бустеров и почти без запаса краски. Чтобы исправить смесь, нажмите на каплю в миске — она уберётся, а краска останется потраченной.',
+'{paint} taken out. Its paint stays used.':'{paint}: капля убрана, краска потрачена.','The bowl is full. Tap a drop below to take it out.':'Миска полна. Нажмите на каплю ниже, чтобы убрать её.',
+'{paint} isn\'t in this color. Tap it below to take it out.':'{paint} нет в этом цвете. Нажмите на неё ниже, чтобы убрать.'}
+});
 

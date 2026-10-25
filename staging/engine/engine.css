@@ -808,7 +808,12 @@ body.v2{--grainEdge:rgba(35,40,58,.35)}
 #seasonBtn .sdeco .moon{fill:#fbefb6;filter:drop-shadow(0 0 8px rgba(251,239,182,.7))}
 #seasonBtn .sdeco .bat{fill:#120b20;animation:sbat 3.2s ease-in-out infinite}#seasonBtn .sdeco .b2{animation-duration:2.6s;animation-delay:-1s}
 #seasonBtn .sdeco .star{fill:#fff;animation:stwinkle 2.4s ease-in-out infinite}
-#seasonBtn .sdeco .leaf{fill:#f2a13a;stroke:#5a2810;stroke-width:1;animation:sleaf 5s ease-in-out infinite}#seasonBtn .sdeco .l2{fill:#d9502c;animation-delay:-2s}#seasonBtn .sdeco .l3{fill:#f6d04a;animation-delay:-3.4s}
+#seasonBtn .sdeco .leaf{fill:#f2a13a;stroke:#5a2810;stroke-width:1;stroke-linejoin:round;animation:sleaf 5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}#seasonBtn .sdeco .leaf .stem{fill:none;stroke:#5a2810;stroke-width:1.4;stroke-linecap:round}
+#seasonBtn .sdeco .l2{fill:#d9502c;animation-delay:-2s;animation-duration:6s}#seasonBtn .sdeco .l3{fill:#f6d04a;animation-delay:-3.4s;animation-duration:4.4s}
+#seasonBtn .sdeco .wire{fill:none;stroke:rgba(255,255,255,.55);stroke-width:1.2}
+#seasonBtn .sdeco .bulb{animation:sbulb 1.8s ease-in-out infinite}#seasonBtn .sdeco .bulb.r{fill:#ff5a4e;filter:drop-shadow(0 0 4px #ff5a4e)}#seasonBtn .sdeco .bulb.g{fill:#5fe08a;filter:drop-shadow(0 0 4px #5fe08a);animation-delay:-.45s}
+#seasonBtn .sdeco .bulb.y{fill:#ffd84a;filter:drop-shadow(0 0 4px #ffd84a);animation-delay:-.9s}#seasonBtn .sdeco .bulb.b{fill:#6cb8ff;filter:drop-shadow(0 0 4px #6cb8ff);animation-delay:-1.35s}
+#seasonBtn .sdeco .snow{fill:#fff;opacity:.85;animation:ssnow 4s ease-in-out infinite}
 #seasonBtn .sdeco .flake{fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;opacity:.85;animation:sflake 6s linear infinite}#seasonBtn .sdeco .f2{animation-delay:-2s}#seasonBtn .sdeco .f3{animation-delay:-4s}
 #seasonBtn .sshine{position:absolute;top:0;bottom:0;left:-40%;width:30%;z-index:-1;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.18),rgba(255,255,255,0));animation:sshine 4.5s ease-in-out infinite;pointer-events:none}
 #seasonBtn .scover{width:92px;flex:none;border-radius:14px;overflow:hidden;line-height:0;box-shadow:0 0 0 2px rgba(255,255,255,.85),0 6px 14px rgba(0,0,0,.35);transform:rotate(-3deg)}
@@ -822,7 +827,9 @@ body.v2{--grainEdge:rgba(35,40,58,.35)}
 #seasonBtn:active{transform:scale(.98)}
 @keyframes sbat{0%,100%{transform:translate(0,0)}50%{transform:translate(-6px,4px)}}
 @keyframes stwinkle{0%,100%{opacity:.9}50%{opacity:.3}}
-@keyframes sleaf{0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(-4px,6px) rotate(12deg)}}
+@keyframes sleaf{0%,100%{transform:translate(0,0) rotate(-8deg)}50%{transform:translate(-5px,7px) rotate(18deg)}}
+@keyframes sbulb{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes ssnow{0%,100%{transform:translateY(-3px)}50%{transform:translateY(4px)}}
 @keyframes sflake{0%{transform:translateY(-6px)}50%{transform:translateY(4px)}100%{transform:translateY(-6px)}}
 @keyframes sshine{0%,55%{left:-40%}100%{left:130%}}
 /* Brush: glowing drops fly from each paint to the bowl, then "Paint it" confirms */
@@ -857,4 +864,34 @@ body.v2{--grainEdge:rgba(35,40,58,.35)}
 @keyframes rwpop{0%{transform:scale(.3) translateY(10px);opacity:0}100%{transform:none;opacity:1}}
 @keyframes rwbounce{0%{transform:scale(.2) rotate(-20deg);opacity:0}100%{transform:none;opacity:1}}
 @keyframes rwspin{to{transform:rotate(360deg)}}
+/* Gold coin and star (redesign): the top bar, prices and badges match the reward reveal */
+body.v2 .coin,.wrap.v2 .badge .coin,.wrap.v2 .coin{width:1.05em;height:1.05em;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b8 0,#f6cf4e 38%,#e0a92a 75%);border:1.5px solid #9a6a0e;box-shadow:inset 0 0 0 2px rgba(255,255,255,.0),inset 0 0 0 2.5px #f6cf4e,inset 0 0 0 3.6px rgba(154,106,14,.8);vertical-align:-3px}
+.wrap.v2 .badge .coin{width:10px;height:10px;border-width:1px;box-shadow:none}
+body.v2 .coin.big{display:block;width:72px;height:72px;margin:0 auto;border-width:3px;box-shadow:inset 0 0 0 6px #f6cf4e,inset 0 0 0 8px rgba(154,106,14,.8),0 6px 16px rgba(224,169,42,.45)}
+.v2 .pill svg{width:18px;height:18px;fill:#f4c542;stroke:#9a6a0e;stroke-width:1.4;stroke-linejoin:round;filter:drop-shadow(0 1px 1px rgba(154,106,14,.35))}
+.v2 .pill .coin{width:18px;height:18px}
+.v2 .pill.coins{cursor:pointer}
+/* Rewarded ad placeholders: the stand-in ad screen and the offer sheet */
+.adScreen{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;color:#fff;text-align:center;
+  background:linear-gradient(135deg,#141428,#2b1d4a 50%,#123a4a);background-size:200% 200%;animation:adbg 6s ease-in-out infinite}
+.adScreen[hidden]{display:none}
+.adtag{position:absolute;top:calc(14px + env(safe-area-inset-top));left:16px;padding:3px 9px;border-radius:6px;background:rgba(255,255,255,.18);font:800 12px "Inter",system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.adclose{position:absolute;top:calc(10px + env(safe-area-inset-top));right:14px;width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:#141428;font:800 18px "Inter",system-ui,sans-serif;cursor:pointer;animation:sbin .35s cubic-bezier(.2,1.4,.4,1) both}
+.admid{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:300px}
+.adring{position:relative;width:88px;height:88px}.adring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.adring circle{fill:none;stroke:rgba(255,255,255,.18);stroke-width:5}.adring .adprog{stroke:#f4c542;stroke-dasharray:176;stroke-dashoffset:176;stroke-linecap:round}
+.adring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 28px "Inter",system-ui,sans-serif}
+.adtitle{font:800 22px "Inter",system-ui,sans-serif}.admid small{font-size:14px;color:rgba(255,255,255,.75);line-height:1.4}
+.adbar{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.15)}.adbar i{display:block;height:100%;width:0;background:#f4c542}
+@keyframes adbg{50%{background-position:100% 100%}}
+.offerOverlay{z-index:9}
+.offercard{width:min(92vw,340px);padding:26px 20px 16px;border-radius:28px;background:var(--panel);color:var(--ink);text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.offericon{width:72px;height:72px;margin:0 auto 10px;border-radius:22px;background:var(--soft);display:flex;align-items:center;justify-content:center}
+.offericon .ico{width:38px;height:38px}.offericon:has(.coin){background:none}
+.offercard h2{margin:4px 0 6px;font:800 22px/1.2 "Inter",system-ui,sans-serif}.offercard p{margin:0 0 16px;font-size:14px;line-height:1.4;color:var(--muted)}
+.offerbtns{display:flex;flex-direction:column;gap:8px}.offerbtns .btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.adgo .ico,.adbtn .ico{width:16px;height:16px}
+.adgo em{font-style:normal;margin-left:4px;padding:2px 8px;border-radius:999px;background:#f4c542;color:#3a2a05;font-size:12px;font-weight:800}
+.offerno{width:100%;margin-top:6px;background:none;box-shadow:none;color:var(--muted)}
+.btn.adbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
 

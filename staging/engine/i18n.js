@@ -310,4 +310,15 @@ I18N.add({
 fr:{'Collect':'Récupérer','Chapter {n} complete':'Chapitre {n} terminé','Star chest {n}':'Coffre à étoiles {n}','Chest opened!':'Coffre ouvert !','Coins':'Pièces'},
 ru:{'Collect':'Забрать','Chapter {n} complete':'Глава {n} пройдена','Star chest {n}':'Звёздный сундук {n}','Chest opened!':'Сундук открыт!','Coins':'Монеты'}
 });
+// Rewarded ad placeholders
+I18N.add({
+fr:{'Advertisement':'Publicité','Ad':'Pub','Close the ad and get the reward':'Fermer la pub et recevoir la récompense','Ad placeholder':'Emplacement publicitaire','A short video ad will play here. The reward comes when it ends.':'Une courte vidéo publicitaire passera ici. La récompense arrive à la fin.',
+'Out of {name}':'Plus de {name}','Get one more':'En obtenir un de plus','Watch an ad':'Regarder une pub','Free':'Gratuit','Buy':'Acheter','{price} coins needed':'{price} pièces nécessaires','+1 {name}':'+1 {name}',
+'Get free coins':'Pièces gratuites','Watch a short ad for +{n} coins. {left} left today.':'Regardez une courte pub pour +{n} pièces. Encore {left} aujourd’hui.','That was all for today. Come back tomorrow for more.':'C’est tout pour aujourd’hui. Revenez demain.',
+'+{n} coins':'+{n} pièces','Watch an ad: restart {part} free':'Regarder une pub : recommencer {part} gratuitement','Watch an ad: +{n} coins':'Regarder une pub : +{n} pièces'},
+ru:{'Advertisement':'Реклама','Ad':'Реклама','Close the ad and get the reward':'Закрыть рекламу и получить награду','Ad placeholder':'Место для рекламы','A short video ad will play here. The reward comes when it ends.':'Здесь будет короткий рекламный ролик. Награда — после его окончания.',
+'Out of {name}':'{name}: закончились','Get one more':'Получить ещё','Watch an ad':'Смотреть рекламу','Free':'Бесплатно','Buy':'Купить','{price} coins needed':'Нужно монет: {price}','+1 {name}':'+1 {name}',
+'Get free coins':'Бесплатные монеты','Watch a short ad for +{n} coins. {left} left today.':'Посмотрите короткую рекламу и получите +{n} монет. Сегодня осталось: {left}.','That was all for today. Come back tomorrow for more.':'На сегодня всё. Возвращайтесь завтра.',
+'+{n} coins':'+{n} монет','Watch an ad: restart {part} free':'Реклама: начать «{part}» заново бесплатно','Watch an ad: +{n} coins':'Реклама: +{n} монет'}
+});
 

@@ -119,6 +119,7 @@ document.body.insertAdjacentHTML('afterbegin',(V2?v2Scenes():`
     </div>
     <button class="btn accent" id="quizOfferBtn" hidden></button>
     <button class="btn primary" id="rescueBtn" hidden></button>
+    <button class="btn adbtn" id="adRescueBtn" hidden></button>
     <div class="row">
       <button class="btn iconbtn" id="endHomeBtn" aria-label="${t('Menu')}"></button>
       <button class="btn" id="retryBtn">${t('Replay')}</button>
@@ -939,7 +940,7 @@ function nextAfter(i){
   return LEVELS.findIndex((l,k)=>k>i&&l.bonus&&unlocked(k)&&save.best[l.id]==null);
 }
 $('nextBtn').onclick=()=>{const n=nextAfter(L.index); if(n<0) goHome(); else start(n);};
-$('rescueBtn').onclick=rescue;
+$('rescueBtn').onclick=()=>rescue();
 $('shareBtn').onclick=share;
 
 function apply(){
@@ -1170,10 +1171,10 @@ function outOfPaint(){
   $('nextBtn').hidden=true;
   $('endOverlay').hidden=false;
 }
-// Pay coins to retry the current part: refund the paint spent on it, topped up so it is always winnable.
-function rescue(){
-  if(save.coins<RESCUE_PRICE) return;
-  addCoins(-RESCUE_PRICE);
+// Pay coins (or watch an ad: free) to retry the current part: refund the paint spent on it, topped up so it is always winnable.
+function rescue(free){
+  if(free!==true&&save.coins<RESCUE_PRICE) return;
+  if(free!==true) addCoins(-RESCUE_PRICE);
   const r=current(); track('rescue',Object.assign(lvProps(),{part:r.id}));
   state.paint=Math.max(state.paint+(state.used[r.id]||0),r.min+4);
   state.used[r.id]=0; state.rescued[r.id]=true;
@@ -1915,6 +1916,83 @@ if(V2){
   }
   $('rwGo').onclick=()=>{ const r=$('rwIcon').getBoundingClientRect(); $('rwOverlay').hidden=true;
     burst(r.left+r.width/2,r.top+r.height/2,['#f4c542','#ffffff','#e0a92a'],40,{speed:8,shapes:['star','circle'],decay:.018,size:5}); sfx('coin'); renderCoins(true); };
+
+  // ---------- Rewarded ads (placeholders: no ad network yet) ----------
+  // watchAd(placement, reward) shows a stand-in ad screen for AD.secs seconds, then a close button that gives the
+  // reward. Placements: an empty booster (+1 of it, then it is used), the coin pill (+AD.coins, AD.coinsPerDay a day),
+  // Out of paint (restart the part free) and a bonus page you can't afford yet (+AD.coins). Tracked as ad_start and
+  // ad_reward {placement}. An ad SDK replaces only the screen inside watchAd().
+  const AD=Object.assign({secs:5,coins:25,coinsPerDay:5},G.ads||{});
+  const adDay=()=>{ const k=dayKey(); if(!save.ads||save.ads.day!==k) save.ads={day:k,coins:0}; return save.ads; };
+  const AD_PLAY='<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" fill="currentColor" stroke="none"/></svg>';
+  document.body.insertAdjacentHTML('beforeend',`<div class="adScreen" id="adScreen" hidden role="dialog" aria-modal="true" aria-label="${t('Advertisement')}">
+    <span class="adtag">${t('Ad')}</span><button class="adclose" id="adClose" hidden aria-label="${t('Close the ad and get the reward')}">✕</button>
+    <div class="admid"><div class="adring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28"/><circle class="adprog" id="adProg" cx="32" cy="32" r="28"/></svg><b id="adSecs"></b></div>
+    <b class="adtitle">${t('Ad placeholder')}</b><small>${t('A short video ad will play here. The reward comes when it ends.')}</small></div>
+    <div class="adbar"><i id="adBar"></i></div></div>
+    <div class="overlay offerOverlay" id="offerOverlay" hidden><div class="offercard" role="dialog" aria-modal="true" aria-labelledby="offerTitle">
+    <div class="offericon" id="offerIcon" aria-hidden="true"></div><small class="rwkick" id="offerKick"></small><h2 id="offerTitle"></h2><p id="offerText"></p>
+    <div class="offerbtns" id="offerBtns"></div><button class="btn offerno" id="offerNo">${t('Not now')}</button></div></div>`);
+  let adReward=null;
+  function watchAd(placement,reward){
+    const el=$('adScreen'); el.hidden=false; $('adClose').hidden=true; adReward=null; track('ad_start',{placement});
+    const t0=performance.now(), dur=AD.secs*1000, done=()=>{ if(el.hidden||adReward) return; adReward=()=>{ track('ad_reward',{placement}); reward(); };
+      $('adClose').hidden=false; $('adSecs').textContent='✓'; $('adBar').style.width='100%'; $('adProg').style.strokeDashoffset=0; };
+    const tick=now=>{ if(el.hidden||adReward) return; const k=Math.min(1,(now-t0)/dur);
+      $('adSecs').textContent=Math.ceil(AD.secs*(1-k)); $('adBar').style.width=k*100+'%'; $('adProg').style.strokeDashoffset=176*(1-k);
+      if(k<1) requestAnimationFrame(tick); else done(); };
+    requestAnimationFrame(tick); setTimeout(done,dur+50);
+  }
+  $('adClose').onclick=()=>{ const f=adReward; adReward=null; $('adScreen').hidden=true; if(f) f(); };
+  // A small sheet with a choice: buttons [{html, cls, disabled, go}]
+  function offerSheet(o){
+    $('offerIcon').innerHTML=o.icon; $('offerKick').textContent=o.kick||''; $('offerTitle').textContent=o.title; $('offerText').innerHTML=o.text||'';
+    $('offerBtns').innerHTML=o.buttons.map((b,i)=>`<button class="btn ${b.cls||''}" data-i="${i}"${b.disabled?' disabled':''}>${b.html}</button>`).join('');
+    $('offerBtns').onclick=e=>{ const x=e.target.closest('button'); if(!x||x.disabled) return; $('offerOverlay').hidden=true; o.buttons[+x.dataset.i].go(); };
+    $('offerOverlay').hidden=false; restart($('offerOverlay').querySelector('.offercard'),'rwin');
+  }
+  $('offerNo').onclick=()=>{ $('offerOverlay').hidden=true; };
+  $('offerOverlay').addEventListener('click',e=>{ if(e.target.id==='offerOverlay') $('offerOverlay').hidden=true; });
+  const popAt=(el,colors)=>{ if(!el) return; const r=el.getBoundingClientRect(); burst(r.left+r.width/2,r.top+r.height/2,colors,24,{speed:6,shapes:['star','circle'],decay:.025,size:4}); };
+  // Empty booster: watch an ad for one, or buy it with coins; either way it is used right away.
+  const _spend=spend;
+  spend=function(b){
+    if(!(state&&state.twist==='noboost')&&!(save.inv[b]>0)){ boosterOffer(b); return false; }
+    return _spend(b);
+  };
+  function boosterOffer(b){
+    const B=BOOSTERS[b], ok=save.coins>=B.price, use=()=>{ renderActions(); popAt($(b+'Btn'),['#f4c542','#ffffff']); setTimeout(()=>$(b+'Btn').click(),250); };
+    offerSheet({icon:icon(b),kick:t('Out of {name}',{name:B.name}),title:t('Get one more'),text:esc(B.text),buttons:[
+      {cls:'primary adgo',html:`${AD_PLAY}${t('Watch an ad')}<em>${t('Free')}</em>`,go:()=>watchAd('booster_'+b,()=>{ save.inv[b]=(save.inv[b]||0)+1; persist(); toast(t('+1 {name}',{name:B.name})); use(); })},
+      {cls:'',disabled:!ok,html:ok?`${t('Buy')} · ${B.price} <span class="coin"></span>`:t('{price} coins needed',{price:B.price}),go:()=>{ addCoins(-B.price); sfx('coin'); save.inv[b]=(save.inv[b]||0)+1; persist(); use(); }}]});
+  }
+  // Empty boosters show a plus instead of a price: tapping opens the choice above.
+  const _renderActions=renderActions;
+  renderActions=function(){ _renderActions(); if(!state) return; document.querySelectorAll('.actions .badge.buy').forEach(e=>e.textContent='+'); };
+  // Coins: the coin pill offers a few ads a day.
+  function coinOffer(after){
+    const left=AD.coinsPerDay-adDay().coins;
+    offerSheet({icon:'<span class="coin big"></span>',kick:t('Coins'),title:t('Get free coins'),
+      text:left>0?t('Watch a short ad for +{n} coins. {left} left today.',{n:AD.coins,left}):t('That was all for today. Come back tomorrow for more.'),
+      buttons:left>0?[{cls:'primary adgo',html:`${AD_PLAY}${t('Watch an ad')}<em>+${AD.coins}</em>`,go:()=>watchAd('coins',()=>{ adDay().coins++; addCoins(AD.coins); sfx('coin');
+        popAt(document.querySelector('.pill.coins:not([hidden])'),['#f4c542','#ffffff']); toast(t('+{n} coins',{n:AD.coins})); if(after) after(); })}]:[]});
+  }
+  document.querySelectorAll('.pill.coins').forEach(p=>{ p.setAttribute('role','button'); p.tabIndex=0; p.addEventListener('click',()=>coinOffer()); });
+  // Out of paint: watch an ad to restart the part for free.
+  const _outOfPaint=outOfPaint;
+  outOfPaint=function(){ _outOfPaint(); if(!state||$('endOverlay').hidden) return; const r=current(), ab=$('adRescueBtn');
+    ab.hidden=false; ab.className='btn adbtn'+(save.coins<RESCUE_PRICE?' primary':''); ab.innerHTML=`${AD_PLAY}${t('Watch an ad: restart {part} free',{part:esc(N(r))})}`;
+    // short of coins: the ad comes first
+    if(save.coins<RESCUE_PRICE) $('rescueBtn').before(ab); else $('rescueBtn').after(ab); };
+  $('adRescueBtn').onclick=()=>watchAd('rescue',()=>rescue(true));
+  const _win2=win; win=function(){ $('adRescueBtn').hidden=true; _win2(); };
+  const _start2=start; start=function(i,o){ $("adRescueBtn").hidden=true; return _start2(i,o); };
+  // A bonus page you can't afford yet: an ad for coins, then the sheet opens again.
+  const _openBuy=openBuy;
+  openBuy=function(i){ _openBuy(i); const l=LEVELS[i], left=AD.coinsPerDay-adDay().coins; let ab=$('buyAd');
+    if(!ab){ $('buyOk').parentElement.insertAdjacentHTML('beforebegin',`<button class="btn adbtn" id="buyAd" hidden></button>`); ab=$('buyAd');
+      ab.onclick=()=>{ const k=buyIdx; $('buyOverlay').hidden=true; watchAd('bonus_coins',()=>{ adDay().coins++; addCoins(AD.coins); sfx('coin'); toast(t('+{n} coins',{n:AD.coins})); openBuy(k); }); }; }
+    ab.hidden=save.coins>=bonusPrice(l)||left<=0; ab.innerHTML=`${AD_PLAY}${t('Watch an ad: +{n} coins',{n:AD.coins})}`; };
   // Chapter progress (dots for its pictures) and the next star chest; a button for bonus pages ready to unlock.
   function renderProgress(i){
     $('progCards').hidden=!CHAPTERS&&!CHESTS;
@@ -1981,8 +2059,9 @@ if(V2){
   // picture in color, days left and the collection's progress.
   const SEASON_DECO={
     halloween:'<circle class="moon" cx="292" cy="22" r="13"/><path class="bat b1" d="M236 14q8-8 14 0q3-5 6 0q6-8 14 0q-8 0-11 7q-5-3-8 0q-3-7-15-7Z"/><path class="bat b2" d="M262 44q6-6 10 0q2-4 4 0q4-6 10 0q-6 0-8 5q-3-2-6 0q-2-5-10-5Z"/><g class="star"><circle cx="196" cy="16" r="1.4"/><circle cx="270" cy="88" r="1.2"/><circle cx="314" cy="56" r="1.2"/></g>',
-    thanksgiving:'<ellipse class="leaf l1" cx="236" cy="22" rx="9" ry="4.5" transform="rotate(30 236 22)"/><ellipse class="leaf l2" cx="290" cy="40" rx="10" ry="5" transform="rotate(-25 290 40)"/><ellipse class="leaf l3" cx="262" cy="78" rx="8" ry="4" transform="rotate(60 262 78)"/><ellipse class="leaf l1" cx="314" cy="86" rx="7" ry="3.5" transform="rotate(10 314 86)"/>',
-    christmas:'<g class="flake f1"><path d="M240 14v20M230 24h20M233 17l14 14M247 17l-14 14"/></g><g class="flake f2"><path d="M292 44v16M284 52h16M286 46l12 12M298 46l-12 12"/></g><g class="flake f3"><path d="M262 80v12M256 86h12"/></g><g class="star"><circle cx="210" cy="20" r="1.4"/><circle cx="312" cy="20" r="1.4"/></g>'};
+    thanksgiving:'<g transform="translate(212 16) rotate(-20) scale(1)"><g class="leaf l1"><path d="M0 -11L3 -4 9 -7 7 0 11 2 4 4 5 10 0 7-5 10-4 4-11 2-7 0-9-7-3-4Z"/><path class="stem" d="M0 7v7"/></g></g><g transform="translate(256 30) rotate(25) scale(1.25)"><g class="leaf l2"><path d="M0 -11L3 -4 9 -7 7 0 11 2 4 4 5 10 0 7-5 10-4 4-11 2-7 0-9-7-3-4Z"/><path class="stem" d="M0 7v7"/></g></g><g transform="translate(300 14) rotate(-40) scale(1.05)"><g class="leaf l3"><path d="M0 -11L3 -4 9 -7 7 0 11 2 4 4 5 10 0 7-5 10-4 4-11 2-7 0-9-7-3-4Z"/><path class="stem" d="M0 7v7"/></g></g><g transform="translate(312 52) rotate(15) scale(0.8)"><g class="leaf l1"><path d="M0 -11L3 -4 9 -7 7 0 11 2 4 4 5 10 0 7-5 10-4 4-11 2-7 0-9-7-3-4Z"/><path class="stem" d="M0 7v7"/></g></g><g transform="translate(236 58) rotate(60) scale(0.7)"><g class="leaf l3"><path d="M0 -11L3 -4 9 -7 7 0 11 2 4 4 5 10 0 7-5 10-4 4-11 2-7 0-9-7-3-4Z"/><path class="stem" d="M0 7v7"/></g></g><g class="star"><circle cx="190" cy="40" r="1.2"/><circle cx="280" cy="72" r="1.2"/></g>',
+    christmas:'<path class="wire" d="M160 4Q200 26 250 8T330 10"/><circle class="bulb r" cx="170" cy="13" r="3.6"/><circle class="bulb g" cx="190" cy="20" r="3.6"/><circle class="bulb y" cx="210" cy="23" r="3.6"/><circle class="bulb b" cx="230" cy="20" r="3.6"/><circle class="bulb r" cx="250" cy="14" r="3.6"/><circle class="bulb g" cx="270" cy="17" r="3.6"/><circle class="bulb y" cx="290" cy="23" r="3.6"/><circle class="bulb b" cx="310" cy="20" r="3.6"/><g class="flake f1"><path d="M246 38v16M238 46h16M240 40l12 12M252 40l-12 12"/></g><g class="flake f2"><path d="M300 46v12M294 52h12M296 48l8 8M304 48l-8 8"/></g><g class="snow"><circle cx="200" cy="40" r="1.6"/><circle cx="222" cy="64" r="1.3"/><circle cx="276" cy="36" r="1.5"/><circle cx="316" cy="78" r="1.3"/><circle cx="186" cy="74" r="1.2"/></g>'
+  };
   function renderSeasonCard(){
     const b=$('seasonBtn'), on=seasonOn(); b.hidden=!on; if(!on) return;
     const ids=seasonPics(on), got=ids.filter(i=>save.best[LEVELS[i].id]!=null).length, next=ids.find(i=>save.best[LEVELS[i].id]==null), lv=LEVELS[next!=null?next:ids[0]];

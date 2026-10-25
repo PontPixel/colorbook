@@ -275,7 +275,7 @@ function v2Scenes(){ return `
         <div id="meter" hidden><div class="bar"><i id="barFill"></i></div></div>
         <div class="hint" id="hint" hidden></div>
       </section>
-      <div class="paintrow" id="paintRow" title="${t('Paint left for this picture')}"><span class="plab"><span class="potico"></span><span><b>${t('Paint')}</b><small id="paintNeed"></small></span></span><div class="bar"><i id="paintFill"></i></div><b id="paintLeft"></b></div>
+      <div class="paintrow" id="paintRow" title="${t('Paint left for this picture')}"><span class="plab"><span class="potico"></span><span><b>${t('Paint')}</b><small id="paintNeed"></small></span></span><div class="bar"><i id="paintFill"></i></div><b id="paintLeft"></b><button class="paintplus" id="paintPlus" hidden>+ ${t('Paint')}</button></div>
       <div class="paints" id="paints"></div>
       <div class="coachTip" id="coachTip" hidden></div>
       <div class="actions">
@@ -1462,8 +1462,11 @@ if(V2){
     let dH=0;
     if(cA>8&&cB>8){ const d=Math.atan2(Math.sin(Math.atan2(B[2],B[1])-Math.atan2(A[2],A[1])),Math.cos(Math.atan2(B[2],B[1])-Math.atan2(A[2],A[1]))); dH=2*Math.sqrt(cA*cB)*Math.abs(Math.sin(d/2)); }
     if(dH>=Math.abs(dL)&&dH>=Math.abs(dC)){ const h=(Math.atan2(B[2],B[1])*180/Math.PI+360)%360; return t('Aim for a more {hue} tone',{hue:t(HUE.find(x=>h<x[0])[1])}); }
-    if(Math.abs(dL)>=Math.abs(dC)) return dL>0?t('Too light'):t('Too dark');
-    return dC>0?t('Too strong'):t('Too dull');
+    const has=k=>!L.paints||L.paints.includes(k);
+    if(Math.abs(dL)>=Math.abs(dC)) return dL>0?(has('K')?t('Too light: add more color, or a touch of Black'):t('Too light: add more color'))
+      :(has('W')?t('Too dark: add White'):t('Too dark: use less of the darker paint'));
+    if(dC>0) return B[0]>=50?(has('W')?t('Too strong: add a little White'):t('Too strong')):(has('K')?t('Too strong: add a touch of Black'):t('Too strong'));
+    return t('Too dull: add more of the main color');
   }
   // Magic's next step: of every single add or take-out, the one that leads to the smallest finished bowl
   // (fewest drops, so the best stars). A paint the recipe doesn't use always comes out first.
@@ -1535,8 +1538,23 @@ if(V2){
     const row=$('paintRow'); row.classList.toggle('short',!!short); row.classList.toggle('tight',!!tight);
     if(lv>(v2.paintLv||0)) restart(row,'pulse'); v2.paintLv=lv;
     $('paintNeed').textContent=undone.length?t('Rest needs {n}',{n:need}):'';
+    // Short means the picture can no longer be finished (par is the fewest drops a part can take): a "+ Paint" button
+    // offers a top-up (ad or coins) or a fresh start, and the sheet opens by itself the first time in a picture.
+    v2.need=need; $('paintPlus').hidden=!short||state.finished;
+    if(short&&!state.finished&&!state.shortSeen){ state.shortSeen=true; setTimeout(()=>{ if(state&&!state.finished&&!state.applying&&$('introOverlay').hidden&&$('endOverlay').hidden) paintOffer(); },900); }
     dimPaints();
   };
+  function paintOffer(){
+    if(!state||state.finished) return;
+    const gap=Math.max(0,(v2.need||0)-state.paint), add=Math.max(10,gap+3), price=25, ok=save.coins>=price;
+    const topUp=()=>{ state.paint+=add; updateHud(); restart($('paintRow'),'pulse'); toast(t('+{n} paint',{n:add})); };
+    offerSheet({icon:icon('pot'),kick:t('Paint pot'),title:t('Not enough paint to finish'),
+      text:t('The parts left need at least {need} drops and the pot has {have}. Top it up, or start the picture over.',{need:v2.need,have:state.paint}),
+      buttons:[{cls:'primary adgo',html:`${AD_PLAY}${t('Watch an ad')}<em>+${add}</em>`,go:()=>watchAd('paint',topUp)},
+        {cls:'',disabled:!ok,html:ok?`+${add} ${t('paint')} · ${price} <span class="coin"></span>`:t('{price} coins needed',{price}),go:()=>{ addCoins(-price); sfx('coin'); topUp(); }},
+        {cls:'',html:t('Start the picture over'),go:()=>$('retryBtn').click()}]});
+  }
+  $('paintPlus').onclick=()=>paintOffer();
   // Bubble that flies out of the bowl when Magic acts, lingers, then dissolves.
   function bubble(k,text){
     const r=$('mixChip').getBoundingClientRect(), b=document.createElement('div');

@@ -996,4 +996,7 @@ body.v2 .coin.big{display:block;width:72px;height:72px;margin:0 auto;border-widt
 #game.chipfix .dchip{cursor:pointer;position:relative;padding-right:22px}
 #game.chipfix .dchip::after{content:"−";position:absolute;right:7px;top:50%;transform:translateY(-52%);font:800 15px/1 "Inter",system-ui,sans-serif;opacity:.6}
 #game.chipfix .dchip:active{transform:scale(.94)}
+/* "+ Paint" on the paint bar when the pot can no longer finish the picture */
+.wrap.v2 .paintrow .paintplus{flex:none;margin-left:-4px;padding:6px 10px;border:0;border-radius:999px;background:var(--v2bad,#c62828);color:#fff;font:800 13px "Inter",system-ui,sans-serif;cursor:pointer;animation:sbpulse 1.6s ease-in-out infinite}
+.wrap.v2 .paintrow .paintplus[hidden]{display:none}
 

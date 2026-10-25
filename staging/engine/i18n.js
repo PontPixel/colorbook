@@ -339,4 +339,8 @@ I18N.add({
 fr:{'Your Brush came back: its mix was never painted.':'Votre Pinceau est revenu : son mélange n’a jamais été peint.','Perfect mix! Every part at 3 stars.':'Mélange parfait ! Chaque partie à 3 étoiles.','Perfect':'Parfait'},
 ru:{'Your Brush came back: its mix was never painted.':'Кисть вернулась: её смесь так и не была нанесена.','Perfect mix! Every part at 3 stars.':'Идеальная смесь! Каждая часть на 3 звезды.','Perfect':'Идеально'}
 });
+I18N.add({
+fr:{'Your mix':'Votre mélange','The bowl is full. Take drops out with Undo.':'Le bol est plein. Retirez des gouttes avec Annuler.','These mix like the later chapters, so the shades are closer. Each picture starts with its easiest mix, and Palette and Magic help.':'Elles se mélangent comme les chapitres avancés : les teintes sont plus proches. Chaque image commence par son mélange le plus simple, et Palette et Magie aident.','Holiday pictures mix like the later chapters. Take your time: Hard ones are marked.':'Les images des fêtes se mélangent comme les chapitres avancés. Prenez votre temps : les difficiles sont signalées.'},
+ru:{'Your mix':'Ваша смесь','The bowl is full. Take drops out with Undo.':'Миска полна. Уберите капли с помощью «Отменить».','These mix like the later chapters, so the shades are closer. Each picture starts with its easiest mix, and Palette and Magic help.':'Они смешиваются как поздние главы, оттенки ближе. Каждая картинка начинается с самой простой смеси, помогают Палитра и Магия.','Holiday pictures mix like the later chapters. Take your time: Hard ones are marked.':'Праздничные картинки смешиваются как поздние главы. Не спешите: сложные отмечены.'}
+});
 

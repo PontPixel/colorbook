@@ -269,7 +269,7 @@ function v2Scenes(){ return `
         <div class="swatches">
           <div class="sw"><div class="chip target" id="targetChip"></div><small>${t('Target')}</small></div>
           <div class="mxmid"><div id="pctNum"></div><div class="msg" id="msg"></div><button class="btn primary brushok" id="brushOk" hidden>${t('Paint it')}</button></div>
-          <div class="sw"><button class="chip empty" id="mixChip" aria-label="${t('Your mix. Tap to pour out the bowl.')}"></button><span class="pourtag" id="pourTag" aria-hidden="true" hidden>${t('Empty · free')}</span><small id="mixLab">${t('Mix')}</small></div>
+          <div class="sw"><button class="chip empty" id="mixChip" aria-label="${t('Your mix')}"></button><small id="mixLab">${t('Mix')}</small></div>
         </div>
         <div class="drops" id="drops"></div>
         <div id="meter" hidden><div class="bar"><i id="barFill"></i></div></div>
@@ -331,7 +331,7 @@ const BOOSTERS={
   hint:{name:t('Hint'),price:40,text:t('Shows the next paint to add for the part you are on. That part can earn at most 2 stars.')},
   pick:{name:t('Pick'),price:30,text:t('Tap it, then tap any drop in the bowl to remove just that color. The paint comes back.')},
   empty:{name:t('Empty'),price:15,text:t('Pours out the whole bowl and gives all its paint back.')}};
-// Redesign: Pick folds into Undo (tap a drop to take it out), pouring out is a free tap on the bowl, and Hint becomes
+// Redesign: Pick folds into Undo (tap a drop to take it out), there is no pouring out (only Undo takes drops back), and Hint becomes
 // Magic (does the step instead of showing it, so a screenshot gains nothing). Two paint boosters fill the freed slots.
 // They are introduced on the pictures that used to introduce Hint, Pick and Empty.
 if(V2){
@@ -822,7 +822,7 @@ function addDrop(k,via){
     lessonDone();
   }
   if(state.paint<=0&&!(state.freeLeft>0)){outOfPaint();return false;}
-  if(state.drops.length>=12){renderMix([t('The bowl is full. Take drops out or empty it.'),'bad']);buzz(40);sfx('wrong');return false;}
+  if(state.drops.length>=12){renderMix([t('The bowl is full. Take drops out with Undo.'),'bad']);buzz(40);sfx('wrong');return false;}
   state.picking=false; state.hintMsg=null;
   const free=state.freeLeft>0; state.drops.push(k); state.fr.push(free); if(free) state.freeLeft--; else state.paint--;
   state.used[state.sel]=(state.used[state.sel]||0)+1; buzz(8); sfx('drop',k);
@@ -1429,20 +1429,23 @@ if(V2){
       `<filter id="spotS" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#1d2233" flood-opacity=".35"/></filter></defs>`+
       `<rect class="spotDim" width="320" height="240" mask="url(#spotM)"/>`;
   }
-  // Switching parts with paint in the bowl gives the paid drops back (the old screen dropped them).
+  // Each part keeps its own bowl: switching away and back finds the mix where you left it. Nothing is refunded,
+  // so switching parts is not a free way to empty the bowl (only Undo takes drops back).
   const _select=select;
   select=function(id){
     if(!state) return;
     const prev=state.sel;
     const leaving=prev&&prev!==id&&!state.done[prev];
-    if(leaving&&state.drops.length){ state.paint+=state.fr.filter(x=>!x).length; state.used[prev]=Math.max(0,(state.used[prev]||0)-state.drops.length); }
-    if(leaving){ state.drops=[]; state.fr=[]; }
+    state.bowls=state.bowls||{};
+    const kept=leaving&&state.drops.length?{drops:state.drops.slice(),fr:state.fr.slice()}:null;
+    if(leaving){ if(kept) state.bowls[prev]=kept; else delete state.bowls[prev]; state.drops=[]; state.fr=[]; }
     const r=L.regions.find(x=>x.id===id); v2.pace=3; v2.over=false;
     if(r){ state.sel=id; v2.pace=paceOf(r); v2.over=(state.used[id]||0)>r.min; }
     // repaint the part we left only after the selection moved, or it keeps breathing (two parts looked selected)
-    if(leaving) paintRegion(prev,null);
+    if(leaving) paintRegion(prev,kept?hex(mix(kept.drops.reduce((c,k)=>(c[k]=(c[k]||0)+1,c),{}))):null);
     scene.querySelectorAll('.region.v2wait').forEach(g=>{ if(g.dataset.id!==id) g.classList.remove('v2wait'); });
     _select(id); state.brushOk=false; brushReady(false); $('mixTip').hidden=true; state.worse=state.worse||{};
+    const back=state.bowls[id]; if(back&&!state.done[id]){ state.drops=back.drops; state.fr=back.fr; delete state.bowls[id]; renderMix(); }
     if(r) $('selLayer').innerHTML=spotlight(r);
     $('targetChip').style.setProperty('--tc',hex(current().target));
     updateHud();
@@ -1481,8 +1484,6 @@ if(V2){
     if(!state.drops.length) state.picking=false;
     const chip=$('mixChip'); chip.classList.toggle('empty',!m); chip.style.background=m?hex(m):'';
     $('mixLab').textContent=t('Mix');
-    // emptying the bowl is free and gives the paint back: say so on the bowl itself whenever there is something in it
-    $('pourTag').hidden=!(state.drops.length&&!state.applying&&!state.brushing&&!state.brushOk);
     const ks=L.paints||PAINTS.map(x=>x.k);
     // drops in the bowl: a count and a minus on each paint, and a ring around the bowl split by paint
     wrapPaints();
@@ -1636,13 +1637,6 @@ if(V2){
     if(!spend('undo')) return;
     removeAt(i,[t('Drop taken back. Paint refunded.'),'']);
   };
-  // Tapping the bowl pours it out for free and gives back the paid drops.
-  $('mixChip').addEventListener('click',()=>{
-    if(!state||state.applying||state.forced||state.lesson||state.finished||!state.drops.length||dragged) return;
-    const paid=state.fr.filter(x=>!x).length, n=state.drops.length;
-    pourOut(()=>{ state.drops=[]; state.fr=[]; state.hintMsg=null; state.paint+=paid; state.used[state.sel]-=n;
-      updateHud(); renderMix([t('Bowl poured out. Paint refunded.'),'']); });
-  });
   $('magicBtn').onclick=()=>{
     if(!state||state.applying||state.finished||state.forced||isLocked('magic')) return;
     const h=bestStep();
@@ -1823,7 +1817,7 @@ if(V2){
         (n&&!unlocked(ci)?' '+t('First, finish the warm-up pictures to unlock it ({pics}).',{pics:tn(n,'picture')}):'')+'</div>'}); }
     if(tip) cards.push({title:t(tip.title),text:t(tip.text)});
     if(L.season&&!save.seen['holiday-intro']){ save.seen['holiday-intro']=true; persist();
-      cards.push({title:t('Holiday pictures'),text:t('These mix like the later chapters, so the shades are closer. Each part starts with its easiest mix; Palette and Magic help, and emptying the bowl is free.')}); }
+      cards.push({title:t('Holiday pictures'),text:t('These mix like the later chapters, so the shades are closer. Each picture starts with its easiest mix, and Palette and Magic help.')}); }
     if(tierNote) cards.push({title:t('{tier} picture',{tier:TIERS[L.tier].label}),text:(L.tier==='nightmare'?t('Very little spare paint and colors that look almost the same.'):t('Less spare paint and closer shades than usual.'))+' '+t('Boosters help here. Rewards are ×{m}.',{m:TIERS[L.tier].mult})});
     fresh.forEach(b=>cards.push({title:t('New booster: {name}',{name:BOOSTERS[b].name}),
       html:`<div class="bdemo">${DEMO[b]||icon(b)}</div><p class="btext">${BOOSTERS[b].text}</p><p class="bfree">${t('You get {n} free. After that, {price} each.',{n:FREE_BOOSTERS,price:BOOSTERS[b].price+' <span class="coin"></span>'})}</p>`}));
@@ -2111,7 +2105,7 @@ if(V2){
       const ids=seasonPics(view), got=ids.filter(i=>save.best[LEVELS[i].id]!=null).length;
       el.innerHTML=`<button class="holback" aria-label="${t('Back to Holidays')}">${icon('back')}${t('Holidays')}</button>`+
         `<h2>${t('{season} collection',{season:seasonName(view)})}</h2><p class="hsub">${seasonStatus(view)} · ${t('{done} of {all} restored',{done:got,all:ids.length})}</p>`+
-        `<p class="hsub hcue">${t('Holiday pictures mix like the later chapters. Take your time: emptying the bowl is free, and Hard ones are marked.')}</p>`+
+        `<p class="hsub hcue">${t('Holiday pictures mix like the later chapters. Take your time: Hard ones are marked.')}</p>`+
         (on===view?'':`<p class="hsub">${t('Outside its season, only the pictures you already started can be played.')}</p>`)+
         `<div class="ggrid">${ids.map(holCard).join('')}</div>`;
       return;

@@ -989,3 +989,8 @@ body.v2 .coin.big{display:block;width:72px;height:72px;margin:0 auto;border-widt
 .perfmsg{color:#c08a12}
 .gtitle .ptier{display:none}
 @media (max-width:420px){.gtitle .ptier{display:inline;font-weight:800;color:var(--ink)}}
+/* iPhone Safari colors its top and bottom bars from fixed elements at the screen edges, even invisible ones:
+   the hidden toast is taken out of rendering, and the staging wrench tab isn't fixed (the body is, so it stays put) */
+.toast{visibility:hidden;transition:opacity .3s,transform .3s,visibility 0s .3s}
+.toast.show{visibility:visible;transition:opacity .3s,transform .3s,visibility 0s}
+.cheatBtn{position:absolute}

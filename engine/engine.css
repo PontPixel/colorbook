@@ -365,3 +365,597 @@ svg.scene{display:block;width:100%;height:auto;border-radius:15px}
 .hallPlaque .s{font-size:12px;color:var(--muted);margin-top:2px}
 .hallMode .btn.play{margin-top:2px;padding:14px}
 .hallMode .btn.play:disabled{opacity:.45}
+
+/* ---------- Redesigned screens (GAME.v2, ColorBook) ---------- */
+/* Warm paper ground; the UI stays black and white except gold stars and the amber "off target" warning. */
+body.v2{--wall:#f3f1ec;--line:#e2ded5;--soft:#ebe7df;--track:#e4e0d7;--muted:#626775;--chip-a:#ebe7df;--chip-b:#ddd8ce;
+  --v2warn:#b35500;--v2warn-bg:#ffe6c2;--v2warn-ink:#7a3d00;--v2gold:#f2b705;--v2gold-edge:#c98f00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.v2{--wall:#121317;--line:#2d3039;--soft:#262932;--track:#2a2d36;--muted:#9da2b3;--chip-a:#2a2d36;--chip-b:#1f2229;
+  --v2warn:#ffad4d;--v2warn-bg:#4a3112;--v2warn-ink:#ffc979}}
+:root[data-theme="dark"] body.v2{--wall:#121317;--line:#2d3039;--soft:#262932;--track:#2a2d36;--muted:#9da2b3;--chip-a:#2a2d36;--chip-b:#1f2229;
+  --v2warn:#ffad4d;--v2warn-bg:#4a3112;--v2warn-ink:#ffc979}
+.v2 .iconbtn{width:44px;height:44px;border:0;box-shadow:var(--shadow)}
+.v2 .pill{border:0;box-shadow:var(--shadow);padding:0 12px;height:36px;display:flex;align-items:center;gap:6px;font-size:15px}
+.v2 .pill svg{width:16px;height:16px;fill:currentColor}
+/* Home */
+.home.v2 .topl{display:flex;gap:8px}
+.home.v2 .homeMain{align-items:stretch;text-align:left;gap:12px;padding-top:2px}
+.home.v2 .homeMain::before,.home.v2 .homeMain::after{display:none}
+.home.v2 .homeMain>*{width:100%;max-width:520px;align-self:center}
+.v2hero{background:var(--panel);border-radius:24px;box-shadow:var(--shadow);padding:10px 10px 12px;display:flex;flex-direction:column;gap:10px;flex:none}
+.home.v2 .v2hero .nextPic{width:100%;min-width:0;padding:0;border-radius:14px;box-shadow:none;border:1px solid var(--line);overflow:hidden;background:#fbfbfc}
+.home.v2 .v2hero .nextPic svg{border-radius:0}
+.v2info{padding:0 6px;display:flex;flex-direction:column;gap:2px}
+.home.v2 .nextLabel{margin:0;font-size:11px}
+.v2row{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.home.v2 .nextTitle{font-size:24px;text-wrap:balance}
+#heroMeta{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.v2hero .bar{height:6px;margin-top:6px}.v2hero .bar i{background:var(--ink);transition:width .6s}
+.home.v2 .btn.play{width:100%;margin:0;padding:14px;font-size:18px;box-shadow:none}
+#dailyPicBtn.v2daily{display:flex;align-items:center;gap:12px;width:100%;padding:10px 14px 10px 10px;border-radius:20px;border:0;box-shadow:var(--shadow);text-align:left;flex:none}
+.v2daily .dthumb{width:60px;flex:none;border-radius:10px;overflow:hidden;border:1px solid var(--line);line-height:0}
+.v2daily .dthumb svg{display:block;width:100%;height:auto}
+.v2daily .dbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.v2daily .dtop{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.v2daily .dtop b{font-size:15px}.v2daily .dtop small{font-size:12px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:4px}
+.v2daily .dbars{display:flex;gap:5px}.v2daily .dbars i{flex:1;height:6px;border-radius:3px;background:var(--track)}.v2daily .dbars i.on{background:var(--ink)}
+.tipcard{background:var(--panel);border-radius:20px;box-shadow:var(--shadow);padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;flex:none}
+.tiphead{display:flex;justify-content:space-between;align-items:center;height:28px}
+.tiphead small{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tipnext{appearance:none;border:0;background:none;width:44px;height:44px;margin:-8px -10px -8px 0;border-radius:22px;display:grid;place-items:center;color:var(--muted);cursor:pointer}
+.tipnext .ico{transform:rotate(180deg)}
+.tipeq{display:flex;align-items:center;gap:6px}.tipeq i{width:28px;height:28px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}.tipeq b{font-size:15px;color:var(--muted)}
+.tiptext{font-size:14px;line-height:1.4}
+/* Game */
+.wrap.v2 .gamebar{gap:10px}
+.gtitle{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.gtitle b{font:800 17px/1.2 "Inter",system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtitle small{font-size:12px;font-weight:600;color:var(--muted)}
+.wrap.v2 .board{gap:10px}
+.wrap.v2 .stage{max-width:max(240px,calc((100dvh - 490px) * 4 / 3));gap:8px}
+.wrap.v2 .ctrl{display:flex;flex-direction:column;gap:10px}
+.wrap.v2 .frame{padding:0;overflow:hidden;border-radius:18px;background:#fbfbfc}
+.wrap.v2 svg.scene{border-radius:0}
+.wrap.v2 .region.sel{animation:none}
+.wrap.v2 .region.v2wait{animation:v2breathe 1.8s ease-in-out infinite}
+@keyframes v2breathe{50%{fill:var(--tint,#dfe3ea)}}
+/* Spotlight on the selected part (see spotlight() in engine.js) */
+.wrap.v2 .spotDim{fill:#1d2233;opacity:.18;pointer-events:none;animation:spotIn .35s ease both}
+.wrap.v2 .spotGlow{fill:none;stroke-linejoin:round;stroke-linecap:round;opacity:.9;pointer-events:none;animation:spotIn .35s ease both,spotGlow 1.8s .35s ease-in-out infinite}
+.wrap.v2 .selOutline{pointer-events:none;animation:spotIn .25s ease both}
+@keyframes spotIn{from{opacity:0}}
+/* decor inside the dim mask counts as "in front": painted white, keeping shapes that are only strokes */
+#spotM .occ *{fill:#fff!important;stroke:#fff!important}
+#spotM .occ [fill=none],#spotM .occ [fill=none] *{fill:none!important}
+@keyframes spotGlow{50%{opacity:.4}}
+.wrap.v2 .selOutline{stroke-dasharray:none;animation:none;stroke-width:2.4}
+.parts{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:6px 8px;margin:0 -8px;flex:none}
+.parts::-webkit-scrollbar{display:none}
+.pchip{appearance:none;border:0;padding:0;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.14);transition:opacity .3s,box-shadow .2s}
+.pchip.done{opacity:.4;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);cursor:default}
+.pchip.sel{box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 0 0 3px var(--wall),0 0 0 5.5px var(--ink)}
+.pchip .ico{width:18px;height:18px;stroke-width:3}
+.wrap.v2 .mixer{padding:12px 14px;gap:10px}
+.mxhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mxhead #targetName{font:800 16px "Inter",system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.mxpace{display:flex;align-items:center;gap:8px;flex:none}
+.counter{display:flex;align-items:baseline;gap:4px;height:34px;padding:0 12px;border-radius:17px;background:var(--soft);font-variant-numeric:tabular-nums;transition:background .3s,color .3s}
+.counter b{font:800 22px/34px "Inter",system-ui,sans-serif}.counter span{font-size:13px;font-weight:700;opacity:.75}
+.counter em{font-style:normal;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-left:2px}
+.counter.over{background:var(--v2warn-bg);color:var(--v2warn-ink)}
+.pstars{display:flex;gap:2px}.pstars span{display:block;width:22px;height:22px}
+.pstars svg,.starFall svg{display:block;width:22px;height:22px;stroke-width:1.8;stroke-linejoin:round}
+.pstars svg{fill:none;stroke:var(--muted);opacity:.55}.pstars span.on svg{fill:var(--v2gold);stroke:var(--v2gold-edge);opacity:1}
+.wrap.v2 .swatches{grid-template-columns:92px minmax(0,1fr) 92px;align-items:center;gap:8px}
+.wrap.v2 .sw{gap:6px}
+.wrap.v2 .sw small{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.wrap.v2 .chip{width:84px;max-width:none;border:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.wrap.v2 #targetChip{box-shadow:inset 0 0 0 1px rgba(0,0,0,.1),0 0 0 3px var(--panel),0 0 0 5px var(--tc,var(--line))}
+.wrap.v2 #mixChip{appearance:none;padding:0;cursor:pointer}
+.wrap.v2 #mixChip.empty{box-shadow:inset 0 0 0 2px var(--track)}
+.wrap.v2 .chip.dropping{transform:scale(1.1);box-shadow:0 0 0 3px var(--ink)}
+.mxmid{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;text-align:center}
+#pctNum{font:800 36px/1.05 "Inter",system-ui,sans-serif;letter-spacing:-.03em;min-height:38px;font-variant-numeric:tabular-nums;transition:color .3s}
+#pctNum.worse{color:var(--v2warn);animation:v2shake .45s ease}
+.wrap.v2 .msg{font-size:13px;font-weight:700;min-height:18px}
+.wrap.v2 .msg.bad{color:var(--v2warn)}
+.wrap.v2 .drops{flex-wrap:nowrap;overflow:hidden;gap:6px;justify-content:flex-start;align-items:center;border-top:1px solid var(--line);padding-top:10px;height:42px;min-height:42px}
+.wrap.v2 .drops em{font-size:13px;font-weight:600}
+.dchip{appearance:none;border:0;flex:none;height:32px;padding:0 9px 0 5px;border-radius:16px;display:flex;align-items:center;gap:4px;background:var(--soft);color:var(--ink);font:800 13px "Inter",system-ui,sans-serif;cursor:pointer}
+.dchip i{display:block;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.22)}
+.dchip.fall{animation:dropfall .5s ease-in forwards}
+.paintrow{display:flex;align-items:center;gap:10px;padding:0 4px}
+.paintrow>span{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.paintrow .bar{height:8px}.paintrow .bar i{background:var(--ink)!important}
+.paintrow b{font:800 14px "Inter",system-ui,sans-serif;min-width:64px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.wrap.v2 .paints{border:0;padding:0}
+.wrap.v2 .paint .blob{max-width:58px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.12)}
+.wrap.v2 .boosters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding-top:6px}
+.wrap.v2 .boosters .btn.boost{flex:none;height:60px;border-radius:16px;background:var(--panel);box-shadow:var(--shadow);gap:4px;font:700 13px "Inter",system-ui,sans-serif;color:var(--ink)}
+.wrap.v2 .btn.boost .ico,.wrap.v2 .btn.locked .ico{width:22px;height:22px;padding:0;background:none;box-shadow:none;border-radius:0;color:inherit}
+.wrap.v2 .btn.boost.on{background:var(--ink);color:var(--on-ink)}
+.wrap.v2 .btn.boost.locked{background:var(--soft);box-shadow:none;color:var(--muted)}
+.wrap.v2 .btn.boost:disabled{opacity:.5}
+.wrap.v2 .badge{top:-6px;left:auto;right:-4px;min-width:22px;height:22px;justify-content:center;background:var(--ink);color:var(--on-ink);border:0;box-shadow:0 0 0 2px var(--wall);font:800 11px/22px "Inter",system-ui,sans-serif;padding:0 6px}
+.wrap.v2 .badge.buy{background:var(--ink);color:var(--on-ink)}
+.wrap.v2 .badge .coin{background:var(--ink);border-color:var(--on-ink);box-shadow:inset 0 0 0 1.2px var(--ink),inset 0 0 0 2.1px var(--on-ink)}
+.wrap.v2 .actions .btn.coach{z-index:5;animation:v2ring 1.1s ease-out infinite}
+.wrap.v2 .actions .btn.coach .ico{animation:none}
+@keyframes v2ring{0%{box-shadow:0 0 0 0 rgba(31,35,48,.55)}100%{box-shadow:0 0 0 16px rgba(31,35,48,0)}}
+.counter.shake{animation:v2shake .45s ease}
+@keyframes v2shake{20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}
+/* Effects layered over the page: Magic bubble, removal dust, falling star */
+.mbubble{position:fixed;z-index:7;pointer-events:none;display:flex;align-items:center;gap:8px;padding:9px 14px 9px 10px;border-radius:18px;background:var(--ink);color:var(--on-ink);font:700 14px "Inter",system-ui,sans-serif;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:v2bubble 1.85s cubic-bezier(.2,.9,.3,1) both;transform-origin:50% 100%}
+.mbubble i{display:block;width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 2px var(--on-ink)}
+@keyframes v2bubble{0%{opacity:0;transform:translateY(40px) scale(.5)}14%{opacity:1;transform:translateY(0) scale(1.06)}22%{transform:translateY(-2px) scale(1)}72%{opacity:1;filter:none;transform:translateY(-8px)}100%{opacity:0;filter:blur(6px);transform:translateY(-30px) scale(1.08)}}
+.dustLayer{position:fixed;z-index:7;width:22px;height:22px;pointer-events:none}
+.dustLayer span{position:absolute;width:3px;height:3px;border-radius:1px;opacity:0;animation:v2dust 1.5s cubic-bezier(.15,.55,.25,1) both}
+@keyframes v2dust{0%{opacity:1;transform:none}60%{opacity:.7}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.25)}}
+.ghostChip{position:fixed;z-index:6;pointer-events:none;animation:v2snap 1.2s ease-in both}
+@keyframes v2snap{0%{clip-path:inset(0 0 0 0)}100%{opacity:0;filter:blur(2px);transform:translateX(10px);clip-path:inset(0 0 0 100%)}}
+.starFall{position:fixed;z-index:7;pointer-events:none;width:22px;height:22px;animation:v2starfall .85s cubic-bezier(.3,0,.6,1) both}
+.starFall svg{fill:var(--v2gold);stroke:var(--v2gold-edge)}
+@keyframes v2starfall{18%{transform:scale(1.45) rotate(-12deg)}100%{transform:translate(10px,34px) rotate(160deg) scale(.4);opacity:0}}
+/* Entrances: the picture grows into place, then the controls rise in one after another */
+.wrap.v2.entering .gamebar{animation:v2down .4s cubic-bezier(.2,.9,.3,1) both}
+.wrap.v2.entering .frame{animation:v2zoom .55s cubic-bezier(.2,.9,.25,1) both;transform-origin:50% 0}
+.wrap.v2.entering .parts{animation:v2up .45s .12s cubic-bezier(.2,.9,.3,1) both}
+.wrap.v2.entering .mixer{animation:v2up .45s .18s cubic-bezier(.2,.9,.3,1) both}
+.wrap.v2.entering .paintrow{animation:v2up .45s .24s cubic-bezier(.2,.9,.3,1) both}
+.wrap.v2.entering .paints{animation:v2up .45s .3s cubic-bezier(.2,.9,.3,1) both}
+.wrap.v2.entering .actions{animation:v2up .45s .36s cubic-bezier(.2,.9,.3,1) both}
+.home.v2.entering .v2hero{animation:v2up .45s cubic-bezier(.2,.9,.3,1) both}
+.home.v2.entering #dailyPicBtn{animation:v2up .45s .1s cubic-bezier(.2,.9,.3,1) both}
+.home.v2.entering .tipcard{animation:v2up .45s .16s cubic-bezier(.2,.9,.3,1) both}
+@keyframes v2zoom{from{transform:translateY(18px) scale(.93);opacity:.6}}
+@keyframes v2down{from{transform:translateY(-16px);opacity:0}}
+@keyframes v2up{from{transform:translateY(28px);opacity:0}}
+@media (min-width:900px) and (orientation:landscape){
+  .wrap.v2 .board{grid-template-columns:minmax(0,1fr) 400px}
+  .wrap.v2 .stage{max-width:calc((100vh - 170px) * 4 / 3)}
+  .wrap.v2 .ctrl{position:sticky;top:0}
+  body.coaching .wrap.v2 .ctrl{position:static}
+}
+
+/* ---------- Cheat menu (staging only) ---------- */
+.cheatBtn{position:fixed;left:50%;top:0;transform:translateX(-50%);z-index:4;width:56px;height:26px;border:0;border-radius:0 0 12px 12px;background:var(--ink);color:var(--on-ink);opacity:.8;display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow)}
+.cheatBtn .ico{width:16px;height:16px}
+#cheatOverlay{z-index:8}
+.card.cheats{gap:10px;max-width:400px;max-height:calc(100dvh - 32px);overflow-y:auto}
+.cheats p{font-size:13px}
+.cgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.cgrid .btn{padding:10px 8px;font-size:13px}
+.cjump{display:flex;gap:8px}
+.cjump select{flex:1;min-width:0;font:600 14px "Inter",system-ui,sans-serif;border:1px solid var(--line);border-radius:99px;padding:9px 12px;background:var(--panel);color:var(--ink)}
+.csnd{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.csndhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.csndhead .seg{flex:none}.csndhead .seg button{padding:6px 14px}
+.cgrid.c3{grid-template-columns:repeat(3,minmax(0,1fr))}.cgrid.c3 .btn{padding:9px 4px;font-size:12px}
+
+/* Chapters, star chests and bonus pages (ColorBook) */
+.ggrid .gch{grid-column:1/-1;display:flex;align-items:baseline;gap:8px;margin:14px 2px 0;font-size:17px}
+.ggrid .gch:first-child{margin-top:0}
+.ggrid .gch span{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ggrid .gch small{margin-left:auto;font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.gcard.bonus b{font-size:13px}
+.gcard.buy small{display:flex;align-items:center;gap:4px;color:var(--ink);font-weight:700;letter-spacing:0}
+.gcard.buy>svg{opacity:.55;filter:grayscale(1)}
+.progcards{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:none}
+.pcard{background:var(--panel);border-radius:20px;box-shadow:var(--shadow);padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.pcard[hidden]{display:none}
+.pcard small{font-size:12px;font-weight:600;color:var(--muted);line-height:1.3}
+.pcard b{font-size:15px;display:flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.pcard b svg{width:15px;height:15px;fill:currentColor}
+.pcard .pdots{display:flex;gap:5px}.pcard .pdots i{flex:1;height:6px;border-radius:3px;background:var(--track)}
+.pcard .pdots i.on{background:var(--ink)}.pcard .pdots i.cur{background:var(--muted2)}
+.pcard .bar{display:block;height:6px;border-radius:3px;background:var(--track);overflow:hidden}.pcard .bar i{display:block;height:100%;background:var(--ink);border-radius:3px}
+#bonusBtn.bonusbtn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:20px;border:0;box-shadow:var(--shadow);text-align:left;flex:none}
+#bonusBtn .ico{width:22px;height:22px}
+.buyImg{border-radius:12px;overflow:hidden;border:1px solid var(--line);line-height:0;margin-bottom:6px}.buyImg svg{display:block;width:100%;height:auto}
+.cheats .cev{text-align:left;font-size:12px}.cheats .cev pre{max-height:160px;overflow:auto;white-space:pre-wrap;font-size:11px;margin:6px 0 0}
+.pcard.ready{cursor:pointer;box-shadow:0 0 0 2px var(--ink),var(--shadow)}
+.pcard .ready{color:var(--ink);font-weight:800}
+/* Phones: the picture gets the width; the mixer, paints and boosters get compact so it all still fits one screen.
+   Picture width = (screen height − 405px) × 4/3, so a 390×690 iPhone in Safari shows it at full width.
+   Below 760px of height the Target/Mix captions go (the ring and the live mix on the picture say the same). */
+@media (max-width:899px), (orientation:portrait){
+  .wrap.v2 .stage{max-width:max(260px,calc((100dvh - 405px) * 4 / 3));gap:6px}
+  .wrap.v2 .board{gap:8px}
+  .wrap.v2 .ctrl{gap:8px}
+  .wrap.v2 .parts{padding:4px 8px;gap:7px}
+  .wrap.v2 .pchip{width:36px;height:36px}
+  .wrap.v2 .pchip.sel{box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 0 0 2.5px var(--wall),0 0 0 4.5px var(--ink)}
+  .wrap.v2 .pchip .ico{width:15px;height:15px}
+  .wrap.v2 .mixer{padding:10px 12px;gap:8px}
+  .wrap.v2 .mxhead #targetName{font-size:15px}
+  .wrap.v2 .counter{height:30px;padding:0 10px}.wrap.v2 .counter b{font-size:19px;line-height:30px}
+  .wrap.v2 .pstars span,.wrap.v2 .pstars svg{width:18px;height:18px}
+  .wrap.v2 .swatches{grid-template-columns:70px minmax(0,1fr) 70px;gap:6px}
+  .wrap.v2 .sw{gap:4px}
+  .wrap.v2 .chip{width:58px}
+  .wrap.v2 #pctNum{font-size:30px;min-height:32px}
+  .wrap.v2 .drops{height:34px;min-height:34px;padding-top:7px}
+  .wrap.v2 .dchip{height:28px}.wrap.v2 .dchip i{width:19px;height:19px}
+  .wrap.v2 .paint{gap:3px;font-size:11px}
+  .wrap.v2 .paint .blob{max-width:46px}
+  .wrap.v2 .boosters{padding-top:4px;gap:7px}
+  .wrap.v2 .boosters .btn.boost{height:48px;font-size:12px;gap:2px;border-radius:14px}
+  .wrap.v2 .btn.boost .ico,.wrap.v2 .btn.locked .ico{width:19px;height:19px}
+}
+@media (max-height:759px) and ((max-width:899px) or (orientation:portrait)){.wrap.v2 .sw small{display:none}}
+
+/* ---------- Playtest round 2 ---------- */
+body.v2{--v2bad:#c62828;--v2bad-bg:#fde2df}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.v2{--v2bad:#ff7a6e;--v2bad-bg:#4a1c19}}
+:root[data-theme="dark"] body.v2{--v2bad:#ff7a6e;--v2bad-bg:#4a1c19}
+/* full frame: a drawn border all round the picture, corners included */
+.wrap.v2 .frame::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 2px var(--paper-ink);pointer-events:none;z-index:1}
+.wrap.v2 .stamp{z-index:2}
+/* cracks read as clutter on the redesigned screen */
+.wrap.v2 .crack{display:none}
+/* paint pot: its own panel, with what the rest of the picture needs and a warning when it runs short */
+.wrap.v2 .paintrow{background:var(--panel);border-radius:16px;box-shadow:var(--shadow);padding:8px 14px 8px 10px;gap:12px;transition:background .3s}
+.paintrow .plab{display:flex;align-items:center;gap:8px;flex:none}
+.paintrow .potico{display:grid;place-items:center}.paintrow .plab .ico{width:22px;height:22px;color:var(--ink)}
+.paintrow .plab>span{display:flex;flex-direction:column;line-height:1.15}
+.paintrow .plab b{font:800 12px "Inter",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--ink)}
+.paintrow .plab small{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+.wrap.v2 .paintrow>span:first-child{color:var(--ink)}
+.wrap.v2 #paintLeft{font-size:18px;min-width:72px}
+.paintrow.tight{background:var(--v2warn-bg)}
+.paintrow.tight #paintLeft,.paintrow.tight .plab .ico,.paintrow.tight .plab small{color:var(--v2warn-ink)}
+.wrap.v2 .paintrow.tight .bar i{background:var(--v2warn)!important}
+.paintrow.short{background:var(--v2bad-bg)}
+.paintrow.short #paintLeft,.paintrow.short .plab .ico,.paintrow.short .plab small,.paintrow.short .plab b{color:var(--v2bad)}
+.wrap.v2 .paintrow.short .bar i{background:var(--v2bad)!important}
+.paintrow.pulse{animation:v2pulse .7s ease 2}
+@keyframes v2pulse{50%{transform:scale(1.03)}}
+/* Palette booster: paints the part doesn't use step back */
+.wrap.v2 .paint.dim{opacity:.22;filter:grayscale(.7)}
+.wrap.v2 .paint{transition:opacity .35s,filter .35s}
+.region.brushed{animation:v2brushed .7s ease}
+@keyframes v2brushed{40%{filter:brightness(1.35)}}
+/* result card: gold stars, as on the play screen */
+body.v2 .card .stars span{color:var(--v2gold);text-shadow:0 2px 0 var(--v2gold-edge)}
+body.v2 .card .stars span.off{color:var(--line);text-shadow:none}
+/* start-of-picture cards, one at a time */
+body.v2 .overlay .card.swap{animation:cardin .4s cubic-bezier(.2,1.4,.5,1)}
+body.v2 .card .btext{color:var(--ink);font-size:15px}
+body.v2 .card .bfree{font-size:13px}
+/* booster demos: a short loop showing what the booster does */
+.bdemo{height:96px;border-radius:16px;background:var(--wall);display:grid;place-items:center;overflow:hidden}
+.dm{position:relative;width:140px;height:80px}
+.dmbowl{position:absolute;left:50%;bottom:6px;width:58px;height:58px;margin-left:-29px;border-radius:50%;background:#ee86be;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.dmdrop{position:absolute;left:50%;width:16px;height:16px;margin-left:-8px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#212126;box-shadow:0 0 0 2px var(--wall)}
+.dm-undo .dmbowl{animation:dmUndoBowl 2.6s infinite}
+.dm-undo .dmdrop{top:30px;animation:dmUndo 2.6s infinite}
+@keyframes dmUndo{0%,20%{top:30px;opacity:1}55%{top:-10px;opacity:1}70%,100%{top:-24px;opacity:0}}
+@keyframes dmUndoBowl{0%,30%{background:#8b4a6a}55%,100%{background:#ee86be}}
+.dm-magic .dmbowl{animation:dmMagicBowl 2.6s infinite}
+.dm-magic .dmdrop{background:#ffe60d;top:-20px;animation:dmMagic 2.6s infinite}
+.dm-magic .dmwand{position:absolute;right:6px;top:0;width:30px;height:30px;color:var(--ink);animation:dmWand 2.6s infinite}
+.dm-magic .dmwand .ico{width:30px;height:30px}
+@keyframes dmMagic{0%,25%{top:-20px;opacity:0}35%{opacity:1}60%{top:34px;opacity:1}68%,100%{top:40px;opacity:0}}
+@keyframes dmMagicBowl{0%,60%{background:#e31285}70%,100%{background:#ed2e24}}
+@keyframes dmWand{0%,15%{transform:rotate(0)}25%{transform:rotate(-25deg)}35%,100%{transform:rotate(0)}}
+.dm-palette{display:flex;align-items:center;justify-content:center;gap:10px}
+.dm-palette i{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.dm-palette i.fade{animation:dmFade 2.6s infinite}
+.dm-palette i.keep{animation:dmKeep 2.6s infinite}
+@keyframes dmFade{0%,25%{opacity:1;filter:none}45%,85%{opacity:.18;filter:grayscale(.7)}100%{opacity:1}}
+@keyframes dmKeep{0%,25%{transform:none}45%,85%{transform:scale(1.25)}100%{transform:none}}
+.dm-brush svg{width:120px;height:80px;display:block;margin:0 auto}
+.dmshape{fill:#fbfbfc}.dmline{fill:none;stroke:var(--paper-ink);stroke-width:2.5;stroke-linejoin:round}
+.dmfill{fill:#ed567d;animation:dmFill 2.6s infinite}
+@keyframes dmFill{0%,15%{clip-path:inset(0 100% 0 0)}65%,90%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 100% 0 0)}}
+.dmbrush{position:absolute;top:8px;left:12px;width:30px;height:30px;color:var(--ink);animation:dmBrush 2.6s infinite}
+.dmbrush .ico{width:30px;height:30px}
+@keyframes dmBrush{0%,15%{transform:translateX(0)}65%{transform:translateX(86px)}90%{transform:translateX(86px);opacity:1}100%{transform:translateX(0);opacity:0}}
+.wrap.v2 .paintrow .plab>span{align-items:flex-start}
+.wrap.v2 .paintrow .plab small{text-transform:none;letter-spacing:0}
+/* ---------- Playtest round 3 ---------- */
+/* paint pot: change floats off the counter */
+.wrap.v2 .paintrow{position:relative}
+.pfloat{position:absolute;right:16px;top:2px;font:800 15px "Inter",system-ui,sans-serif;color:var(--v2warn);pointer-events:none;animation:v2float .9s ease-out both}
+.pfloat.up{color:var(--ink)}
+@keyframes v2float{0%{opacity:0;transform:translateY(8px)}20%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
+/* paint pot tip: the panel is lifted above the dim layer */
+.wrap.v2 .paintrow.coach{position:relative;z-index:5;box-shadow:0 0 0 3px var(--ink),var(--shadow)}
+.coachTip .coachOk{margin-top:10px;width:100%;padding:11px}
+.cheats #cheatNew{width:100%}
+.dustLayer{width:auto;height:auto}
+/* ---------- Playtest round 4 ---------- */
+/* Back on the dark card. The target ring is the ink color (light in dark mode, dark in light mode), so black,
+   gray or olive targets always stand out as the goal; the empty bowl is a dashed outline, never a dark disc. */
+.wrap.v2 #targetChip{box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),0 0 0 3px var(--panel),0 0 0 5.5px var(--ink)}
+.wrap.v2 #mixChip.empty{background:transparent;box-shadow:none;border:2px dashed var(--muted)}
+.wrap.v2 #mixLab{white-space:normal;text-align:center;max-width:92px;line-height:1.2}
+/* The bowl shows what's in it: a ring around the mix split by paint, in proportion */
+.wrap.v2 #mixChip::before{content:"";position:absolute;inset:-8px;border-radius:50%;background:var(--ring,none);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4.5px));pointer-events:none}
+/* Drops live on the paints: each paint shows how many drops of it are in the bowl, with a minus to take one out */
+.wrap.v2 .drops{display:none}
+.wrap.v2 .pwrap{position:relative;display:flex;justify-content:center}
+.wrap.v2 .pcount{position:absolute;top:-4px;right:calc(50% - 38px);min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;border-radius:11px;background:var(--ink);color:var(--on-ink);
+  font:800 12px/22px "Inter",system-ui,sans-serif;text-align:center;box-shadow:0 0 0 2px var(--wall);pointer-events:none;animation:v2pop .25s cubic-bezier(.2,1.6,.4,1)}
+.wrap.v2 .pminus{position:absolute;top:-8px;left:calc(50% - 44px);width:32px;height:32px;border:0;border-radius:50%;background:none;padding:0;cursor:pointer;display:grid;place-items:center}
+.wrap.v2 .pminus i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--panel);color:var(--ink);box-shadow:0 0 0 2px var(--wall),0 1px 4px rgba(0,0,0,.25);font:800 16px/1 "Inter",system-ui,sans-serif}
+.wrap.v2 .pminus[hidden]{display:none}
+@keyframes v2pop{from{transform:scale(.4)}}
+/* Home tutorials */
+.hlift{position:relative;z-index:5;box-shadow:0 0 0 3px var(--ink),var(--shadow)!important}
+.htip{position:fixed;left:16px;right:16px;z-index:6;max-width:480px;margin:0 auto;background:var(--panel);color:var(--ink);border-radius:16px;padding:14px 16px;box-shadow:0 12px 40px rgba(0,0,0,.35);font-size:14px;line-height:1.45;display:flex;flex-direction:column;gap:10px;animation:cardin .35s cubic-bezier(.2,1.4,.5,1)}
+.htip .btn{padding:11px}
+/* Undo demo: the Undo button takes back the last drop, then a minus takes out one paint */
+.dm-undo2{display:flex;align-items:center;justify-content:center;gap:14px;width:240px}
+.dm-undo2 .ubtn{width:40px;height:40px;border-radius:12px;background:var(--panel);display:grid;place-items:center;box-shadow:var(--shadow);animation:uBtn 5s infinite}
+.dm-undo2 .ubtn .ico{width:22px;height:22px}
+.dm-undo2 .up{position:relative;width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.dm-undo2 .up b{position:absolute;top:-8px;right:-8px;min-width:18px;height:18px;border-radius:9px;background:var(--ink);color:var(--on-ink);font:800 11px/18px "Inter",system-ui,sans-serif;text-align:center}
+.dm-undo2 .up em{position:absolute;top:-9px;left:-9px;width:18px;height:18px;border-radius:50%;background:var(--panel);color:var(--ink);font:800 13px/18px "Inter",system-ui,sans-serif;text-align:center;font-style:normal;box-shadow:0 1px 3px rgba(0,0,0,.3);animation:uMinus 5s infinite}
+.dm-undo2 .up-y b{animation:uLast 5s infinite}
+.dm-undo2 .up-m b{animation:uPick 5s infinite}
+.dm-undo2 .ucap{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:11px;font-weight:700;color:var(--muted);opacity:0}
+.dm-undo2{position:relative;height:80px}
+.dm-undo2 .ucap-a{animation:uCapA 5s infinite}.dm-undo2 .ucap-b{animation:uCapB 5s infinite}
+@keyframes uBtn{0%,8%{transform:none}14%{transform:scale(.88);background:var(--ink);color:var(--on-ink)}22%,100%{transform:none}}
+@keyframes uLast{0%,14%{opacity:1;transform:none}26%,92%{opacity:0;transform:translateY(-14px)}100%{opacity:1;transform:none}}
+@keyframes uMinus{0%,50%{transform:none}58%{transform:scale(.8);background:var(--ink);color:var(--on-ink)}66%,100%{transform:none}}
+@keyframes uPick{0%,58%{opacity:1;transform:none}70%,92%{opacity:0;transform:translate(10px,-10px)}100%{opacity:1;transform:none}}
+@keyframes uCapA{0%,5%{opacity:0}10%,40%{opacity:1}46%,100%{opacity:0}}
+@keyframes uCapB{0%,48%{opacity:0}54%,88%{opacity:1}94%,100%{opacity:0}}
+.pcount.bump{animation:v2pop .25s cubic-bezier(.2,1.6,.4,1)}
+.wrap.v2 .pwrap{min-width:0}
+.wrap.v2 .pwrap>.paint{width:100%}
+/* "Tap another part" label over the picture while the hand shows it */
+.picHint{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:2;background:var(--ink);color:var(--on-ink);border-radius:99px;padding:7px 14px;font:700 13px "Inter",system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.25);pointer-events:none;animation:cardin .35s cubic-bezier(.2,1.4,.5,1)}
+.wrap.v2 #mixChip::before{inset:-7px}
+/* Chapter and chest cards are tappable: details before they are ready, the reward once they are */
+.home.v2 .pcard{cursor:pointer;position:relative}
+.home.v2 .pcard:not(.ready)::after{content:"›";position:absolute;right:12px;top:8px;font:700 18px "Inter",system-ui,sans-serif;color:var(--muted)}
+.home.v2 .pcard:active{transform:scale(.98)}
+.clist{display:flex;flex-direction:column;gap:6px;text-align:left}
+.crow{appearance:none;border:0;background:var(--wall);border-radius:12px;padding:6px;display:flex;align-items:center;gap:10px;color:var(--ink);font:inherit;cursor:pointer;text-align:left}
+.crow:disabled{cursor:default;opacity:.5}
+.crow .cth{width:56px;flex:none;border-radius:8px;overflow:hidden;line-height:0;border:1px solid var(--line)}
+.crow .cth svg{display:block;width:100%;height:auto}
+.crow .cnm{display:flex;flex-direction:column;gap:2px;min-width:0}
+.crow .cnm b{font-size:14px}.crow .cnm small{font-size:12px;color:var(--muted)}
+.crow .cnm small span{color:var(--v2gold)}.crow .cnm small span.off{color:var(--line)}
+.cnote{font-size:13px}
+.chestinfo{display:flex;flex-direction:column;gap:10px;text-align:left}
+.chestinfo>b{display:flex;align-items:center;gap:6px;font:800 22px "Inter",system-ui,sans-serif}
+.chestinfo>b svg{width:22px;height:22px;fill:var(--v2gold)}
+.chestinfo .bar{height:8px}.chestinfo .bar i{background:var(--v2gold)}
+.chestinfo p{font-size:14px;margin:0}
+/* the drops row is back (display only); the paints no longer carry counts */
+.wrap.v2 .drops{display:flex}
+.wrap.v2 .pcount{display:none!important}
+.wrap.v2 .dchip{cursor:default}
+/* ---------- Daily challenge (dream journal) ---------- */
+body.v2{--heart:#ff4d63}
+.gamebar:has(.hearts:not([hidden])) .tier{display:none!important}
+.hearts{display:flex;gap:2px;flex:none}
+.hearts span{width:22px;height:22px;display:block}
+.hearts svg{width:22px;height:22px;display:block;fill:none;stroke:var(--muted);stroke-width:1.8;opacity:.5}
+.hearts span.on svg{fill:var(--heart);stroke:var(--heart);opacity:1}
+.heartBreak{position:fixed;z-index:7;width:22px;height:22px;pointer-events:none}
+.heartBreak svg{position:absolute;inset:0;width:22px;height:22px;fill:var(--heart)}
+.heartBreak svg:first-child{clip-path:inset(0 50% 0 0);animation:hbL .85s ease-in both}
+.heartBreak svg:last-child{clip-path:inset(0 0 0 50%);animation:hbR .85s ease-in both}
+@keyframes hbL{20%{transform:scale(1.3)}100%{transform:translate(-10px,26px) rotate(-30deg);opacity:0}}
+@keyframes hbR{20%{transform:scale(1.3)}100%{transform:translate(10px,26px) rotate(30deg);opacity:0}}
+.v2daily .dh{display:inline-flex;gap:1px}.v2daily .dh svg{width:12px;height:12px;fill:var(--heart)}
+.v2daily .dname{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:-4px}
+.card .dream{background:var(--wall);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;text-align:left}
+.card .dream small{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.card .dream b{font:800 18px/1.2 "Inter",system-ui,sans-serif;color:var(--ink)}
+.card .dream p{font-size:14px;font-style:italic;color:var(--ink)}
+.card .drules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;text-align:left;font-size:14px}
+.card .drules li{display:flex;gap:10px;align-items:flex-start;color:var(--ink)}
+.card .drules svg{width:18px;height:18px;flex:none;margin-top:1px}
+.card .drules li:first-child svg{fill:var(--heart);stroke:none}
+.noboost{display:none}
+.wrap.v2.dreamday .boosters{display:none}
+.wrap.v2.dreamday .noboost{display:block;text-align:center;font-size:13px;font-weight:700;color:var(--muted);padding:14px 0}
+/* the emptied chip leaves quietly while its paint blows away as dust */
+.chipFade{position:fixed;z-index:6;pointer-events:none;animation:v2chipfade .4s ease-out both}
+@keyframes v2chipfade{to{opacity:0;transform:scale(.85)}}
+/* Dust grains get a hairline edge in the opposite tone, so black dust reads on the dark card and white dust on the
+   light one, like every other paint */
+body.v2{--grainEdge:rgba(35,40,58,.35)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.v2{--grainEdge:rgba(255,255,255,.55)}}
+:root[data-theme="dark"] body.v2{--grainEdge:rgba(255,255,255,.55)}
+.dustLayer span{box-shadow:0 0 0 .6px var(--grainEdge)}
+/* ---------- Holidays tab (seasonal pictures) ---------- */
+.holidays .hsub{margin:-2px 0 4px;font-size:14px;color:var(--muted)}
+.hteaser{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;background:var(--panel);border-radius:20px;box-shadow:var(--shadow);padding:22px 18px;margin:6px 0 10px}
+.hteaser .ico{width:34px;height:34px;color:var(--ink)}
+.hteaser b{font-size:16px}.hteaser small{font-size:13px;color:var(--muted)}
+.holidays .ggrid{margin-bottom:8px}
+.card .fest{font-size:16px;color:var(--ink)}
+.tabbar .tab{padding:6px 18px}
+.holidays .gch{display:flex;align-items:baseline;gap:8px;margin:16px 2px 8px;font-size:17px}
+.holidays .gch span{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.holidays .gch small{margin-left:auto;font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+/* Holidays: two separate collections */
+.hcols{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.hcol{appearance:none;border:0;display:flex;align-items:center;gap:14px;width:100%;padding:12px;border-radius:20px;background:var(--panel);box-shadow:var(--shadow);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.hcol:active{transform:scale(.98)}
+.hcol.live.christmas{box-shadow:inset 0 0 0 2px #2e7a4c,var(--shadow)}
+.hcol.live.thanksgiving{box-shadow:inset 0 0 0 2px #e57d22,var(--shadow)}
+.hcol.live.halloween{box-shadow:inset 0 0 0 2px #7b45b8,var(--shadow)}
+.hcol .hcov{width:112px;flex:none;border-radius:12px;overflow:hidden;line-height:0;border:1px solid var(--line)}
+.hcol .hcov svg{display:block;width:100%;height:auto}
+.hcol .hinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.hcol .hinfo b{font:800 16px/1.2 "Inter",system-ui,sans-serif}
+.hcol .hinfo small{font-size:12px;font-weight:600;color:var(--muted)}
+.hcol .hinfo em{font-style:normal;font-weight:800;color:var(--ink);text-transform:uppercase;letter-spacing:.05em}
+.hcol .dbars{display:flex;gap:4px}.hcol .dbars i{flex:1;height:6px;border-radius:3px;background:var(--track)}
+.hcol.christmas .dbars i.on{background:#d1423a}.hcol.thanksgiving .dbars i.on{background:#e57d22}.hcol.halloween .dbars i.on{background:#f08a24}
+.holback{appearance:none;border:0;background:none;color:var(--muted);font:700 14px "Inter",system-ui,sans-serif;display:flex;align-items:center;gap:4px;padding:8px 0;cursor:pointer;min-height:44px}
+.holback .ico{width:18px;height:18px}
+/* Soft shading (GAME.shading): a part's own shape over it, lit from the top left; fainter while the part is faded */
+.shade{fill:url(#cbShade);stroke:none}
+[fill="#fbfbfc"]+.shade{fill:url(#cbShadeF)}
+/* Home season banner (right under Play while a season is live): themed gradient, animated decorations, colored cover */
+.btn.quizbtn.evcard{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;width:100%;min-height:104px;padding:12px 12px 12px 12px;border:0;border-radius:22px;text-align:left;flex:none;color:#fff;
+  background:var(--sbg);box-shadow:0 10px 26px -10px var(--sglow),var(--shadow);isolation:isolate}
+.evcard.daily{--sbg:radial-gradient(120% 140% at 100% 0%,#ff8fb1 0%,rgba(255,143,177,0) 50%),linear-gradient(135deg,#17224d 0%,#2f3f8f 55%,#5a4fcf 100%);--sglow:#4a52c8;--sacc:#ffd36b}
+.evcard.hw{--sbg:radial-gradient(120% 140% at 100% 0%,#f08a24 0%,rgba(240,138,36,0) 46%),linear-gradient(135deg,#25163f 0%,#4a2878 60%,#6b3296 100%);--sglow:#7b45b8;--sacc:#f6a53a}
+.evcard.tg{--sbg:radial-gradient(120% 140% at 100% 0%,#f2c14e 0%,rgba(242,193,78,0) 46%),linear-gradient(135deg,#4a2512 0%,#8f3f17 60%,#c2621f 100%);--sglow:#c2621f;--sacc:#f6c75a}
+.evcard.xmas{--sbg:radial-gradient(120% 140% at 100% 0%,#d1423a 0%,rgba(209,66,58,0) 46%),linear-gradient(135deg,#0f3324 0%,#1b5e3d 60%,#227a4c 100%);--sglow:#2e7a4c;--sacc:#f4cf3a}
+.evcard .sdeco{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+.evcard .sdeco .moon{fill:#fbefb6;filter:drop-shadow(0 0 8px rgba(251,239,182,.7))}
+.evcard .sdeco .bat{fill:#120b20;animation:sbat 3.2s ease-in-out infinite}.evcard .sdeco .b2{animation-duration:2.6s;animation-delay:-1s}
+.evcard .sdeco .star{fill:#fff;animation:stwinkle 2.4s ease-in-out infinite}
+.evcard .sdeco .leaf{fill:#f2a13a;stroke:#5a2810;stroke-width:1;stroke-linejoin:round;animation:sleaf 5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}.evcard .sdeco .leaf .stem{fill:none;stroke:#5a2810;stroke-width:1.4;stroke-linecap:round}
+.evcard .sdeco .l2{fill:#d9502c;animation-delay:-2s;animation-duration:6s}.evcard .sdeco .l3{fill:#f6d04a;animation-delay:-3.4s;animation-duration:4.4s}
+.evcard .sdeco .wire{fill:none;stroke:rgba(255,255,255,.55);stroke-width:1.2}
+.evcard .sdeco .bulb{animation:sbulb 1.8s ease-in-out infinite}.evcard .sdeco .bulb.r{fill:#ff5a4e;filter:drop-shadow(0 0 4px #ff5a4e)}.evcard .sdeco .bulb.g{fill:#5fe08a;filter:drop-shadow(0 0 4px #5fe08a);animation-delay:-.45s}
+.evcard .sdeco .bulb.y{fill:#ffd84a;filter:drop-shadow(0 0 4px #ffd84a);animation-delay:-.9s}.evcard .sdeco .bulb.b{fill:#6cb8ff;filter:drop-shadow(0 0 4px #6cb8ff);animation-delay:-1.35s}
+.evcard .sdeco .snow{fill:#fff;opacity:.85;animation:ssnow 4s ease-in-out infinite}
+.evcard .sdeco .flake{fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;opacity:.85;animation:sflake 6s linear infinite}.evcard .sdeco .f2{animation-delay:-2s}.evcard .sdeco .f3{animation-delay:-4s}
+.evcard .sshine{position:absolute;top:0;bottom:0;left:-40%;width:30%;z-index:-1;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.18),rgba(255,255,255,0));animation:sshine 4.5s ease-in-out infinite;pointer-events:none}
+.evcard .scover{width:92px;flex:none;border-radius:14px;overflow:hidden;line-height:0;box-shadow:0 0 0 2px rgba(255,255,255,.85),0 6px 14px rgba(0,0,0,.35);transform:rotate(-3deg)}
+.evcard .scover svg{display:block;width:100%;height:auto}
+.evcard .sbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.evcard .stag{align-self:flex-start;padding:3px 8px;border-radius:999px;background:var(--sacc);color:#23180a;font:800 10.5px/1.2 "Inter",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.06em}
+.evcard .sbody b{font:800 17px/1.15 "Inter",system-ui,sans-serif;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.evcard .sbody small{font-size:12px;font-weight:600;color:rgba(255,255,255,.82)}
+.evcard .dbars{display:flex;gap:4px}.evcard .dbars i{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.22)}.evcard .dbars i.on{background:var(--sacc)}
+.evcard .sgo{flex:none;align-self:flex-end;padding:8px 14px;border-radius:999px;background:#fff;color:#1d1d26;font:800 14px "Inter",system-ui,sans-serif;box-shadow:0 4px 10px rgba(0,0,0,.25)}
+.evcard:active{transform:scale(.98)}
+@keyframes sbat{0%,100%{transform:translate(0,0)}50%{transform:translate(-6px,4px)}}
+@keyframes stwinkle{0%,100%{opacity:.9}50%{opacity:.3}}
+@keyframes sleaf{0%,100%{transform:translate(0,0) rotate(-8deg)}50%{transform:translate(-5px,7px) rotate(18deg)}}
+@keyframes sbulb{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes ssnow{0%,100%{transform:translateY(-3px)}50%{transform:translateY(4px)}}
+@keyframes sflake{0%{transform:translateY(-6px)}50%{transform:translateY(4px)}100%{transform:translateY(-6px)}}
+@keyframes sshine{0%,55%{left:-40%}100%{left:130%}}
+.evcard .sdeco .cloud{fill:rgba(255,255,255,.22);animation:sleaf 7s ease-in-out infinite}
+.evcard.daily .sdeco .moon{fill:#ffe8a3}.evcard.daily .sdeco .star{fill:#fff}
+.evcard .stag .dh{display:inline-flex;gap:1px;vertical-align:-1px}.evcard .stag .dh svg{width:11px;height:11px;fill:#e0344b}
+.evcard.daily.done .scover{filter:none}.evcard.daily.done .sgo{background:var(--sacc);color:#23180a}
+/* Brush: glowing drops fly from each paint to the bowl, then "Paint it" confirms */
+.bfly{position:fixed;z-index:8;width:18px;height:18px;border-radius:50%;background:var(--c);pointer-events:none;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 0 14px 4px var(--c)}
+#mixChip.brushpop{animation:sbpop .3s ease}
+@keyframes sbpop{40%{transform:scale(1.1)}}
+.region.brushing{animation:sbglow 1s ease-in-out infinite}
+@keyframes sbglow{50%{filter:brightness(1.25) drop-shadow(0 0 6px rgba(255,255,255,.8))}}
+.brushok{margin-top:4px;padding:8px 18px;min-height:0;font-size:15px;border-radius:999px}
+.brushok.brushin{animation:sbin .45s cubic-bezier(.2,1.4,.4,1) both,sbpulse 1.6s ease-in-out .5s infinite}
+@keyframes sbin{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes sbpulse{50%{box-shadow:0 0 0 6px rgba(255,255,255,.18)}}
+/* Reward reveal (chapter and star chest rewards on Home) */
+.rwOverlay{z-index:9}
+.rwcard{position:relative;overflow:hidden;width:min(92vw,360px);padding:30px 20px 20px;border-radius:28px;background:linear-gradient(180deg,#fff3cf 0%,var(--panel) 62%);color:var(--ink);text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.45);isolation:isolate}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rwcard{background:linear-gradient(180deg,#2a2342 0%,var(--panel) 62%)}}
+:root[data-theme="dark"] .rwcard{background:linear-gradient(180deg,#2a2342 0%,var(--panel) 62%)}
+.rwrays{position:absolute;left:50%;top:76px;width:520px;height:520px;margin:-260px 0 0 -260px;z-index:-1;border-radius:50%;pointer-events:none;
+  background:repeating-conic-gradient(rgba(244,197,66,.15) 0 10deg,rgba(244,197,66,0) 10deg 20deg);-webkit-mask:radial-gradient(circle,#000 0,#000 25%,transparent 62%);mask:radial-gradient(circle,#000 0,#000 25%,transparent 62%);animation:rwspin 18s linear infinite}
+.rwicon{width:96px;height:96px;margin:0 auto 6px;filter:drop-shadow(0 6px 14px rgba(244,197,66,.55));animation:rwbounce .7s cubic-bezier(.2,1.6,.4,1) .1s both}
+.rwicon svg{width:100%;height:100%}
+.rwkick{display:block;font:800 12px/1.2 "Inter",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.1em;color:#e0a92a}
+.rwcard h2{margin:6px 0 18px;font:800 26px/1.15 "Inter",system-ui,sans-serif}
+.rwitems{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:20px}
+.rwitem{width:78px;padding:12px 4px 10px;border-radius:18px;background:var(--soft);display:flex;flex-direction:column;align-items:center;gap:4px;animation:rwpop .45s cubic-bezier(.2,1.5,.4,1) calc(.35s + var(--d)*.14s) both}
+.rwitem.coins{width:96px;background:linear-gradient(180deg,rgba(244,197,66,.35),rgba(244,197,66,.12))}
+.rwbig{height:34px;display:flex;align-items:center;justify-content:center}.rwbig .ico{width:28px;height:28px}.rwbig .coin{width:28px;height:28px;background:#f4c542;border-color:#8a5a0b;box-shadow:inset 0 0 0 3px #f4c542,inset 0 0 0 5px #8a5a0b}
+.rwitem b{font:800 18px "Inter",system-ui,sans-serif}.rwitem small{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.rwgo{width:100%}
+.rwcard.rwin{animation:rwin .45s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes rwin{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes rwpop{0%{transform:scale(.3) translateY(10px);opacity:0}100%{transform:none;opacity:1}}
+@keyframes rwbounce{0%{transform:scale(.2) rotate(-20deg);opacity:0}100%{transform:none;opacity:1}}
+@keyframes rwspin{to{transform:rotate(360deg)}}
+/* Gold coin and star (redesign): the top bar, prices and badges match the reward reveal */
+body.v2 .coin,.wrap.v2 .badge .coin,.wrap.v2 .coin{width:1.05em;height:1.05em;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b8 0,#f6cf4e 38%,#e0a92a 75%);border:1.5px solid #9a6a0e;box-shadow:inset 0 0 0 2px rgba(255,255,255,.0),inset 0 0 0 2.5px #f6cf4e,inset 0 0 0 3.6px rgba(154,106,14,.8);vertical-align:-3px}
+.wrap.v2 .badge .coin{width:10px;height:10px;border-width:1px;box-shadow:none}
+body.v2 .coin.big{display:block;width:72px;height:72px;margin:0 auto;border-width:3px;box-shadow:inset 0 0 0 6px #f6cf4e,inset 0 0 0 8px rgba(154,106,14,.8),0 6px 16px rgba(224,169,42,.45)}
+.v2 .pill svg{width:18px;height:18px;fill:#f4c542;stroke:#9a6a0e;stroke-width:1.4;stroke-linejoin:round;filter:drop-shadow(0 1px 1px rgba(154,106,14,.35))}
+.v2 .pill .coin{width:18px;height:18px}
+.v2 .pill.coins{cursor:pointer}
+/* Rewarded ad placeholders: the stand-in ad screen and the offer sheet */
+.adScreen{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;color:#fff;text-align:center;
+  background:linear-gradient(135deg,#141428,#2b1d4a 50%,#123a4a);background-size:200% 200%;animation:adbg 6s ease-in-out infinite}
+.adScreen[hidden]{display:none}
+.adtag{position:absolute;top:calc(14px + env(safe-area-inset-top));left:16px;padding:3px 9px;border-radius:6px;background:rgba(255,255,255,.18);font:800 12px "Inter",system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.adclose{position:absolute;top:calc(10px + env(safe-area-inset-top));right:14px;width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:#141428;font:800 18px "Inter",system-ui,sans-serif;cursor:pointer;animation:sbin .35s cubic-bezier(.2,1.4,.4,1) both}
+.admid{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:300px}
+.adring{position:relative;width:88px;height:88px}.adring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.adring circle{fill:none;stroke:rgba(255,255,255,.18);stroke-width:5}.adring .adprog{stroke:#f4c542;stroke-dasharray:176;stroke-dashoffset:176;stroke-linecap:round}
+.adring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 28px "Inter",system-ui,sans-serif}
+.adtitle{font:800 22px "Inter",system-ui,sans-serif}.admid small{font-size:14px;color:rgba(255,255,255,.75);line-height:1.4}
+.adbar{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.15)}.adbar i{display:block;height:100%;width:0;background:#f4c542}
+@keyframes adbg{50%{background-position:100% 100%}}
+.offerOverlay{z-index:9}
+.offercard{width:min(92vw,340px);padding:26px 20px 16px;border-radius:28px;background:var(--panel);color:var(--ink);text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.offericon{width:72px;height:72px;margin:0 auto 10px;border-radius:22px;background:var(--soft);display:flex;align-items:center;justify-content:center}
+.offericon .ico{width:38px;height:38px}.offericon:has(.coin){background:none}
+.offercard h2{margin:4px 0 6px;font:800 22px/1.2 "Inter",system-ui,sans-serif}.offercard p{margin:0 0 16px;font-size:14px;line-height:1.4;color:var(--muted)}
+.offerbtns{display:flex;flex-direction:column;gap:8px}.offerbtns .btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.adgo .ico,.adbtn .ico{width:16px;height:16px}
+.adgo em{font-style:normal;margin-left:4px;padding:2px 8px;border-radius:999px;background:#f4c542;color:#3a2a05;font-size:12px;font-weight:800}
+.offerno{width:100%;margin-top:6px;background:none;box-shadow:none;color:var(--muted)}
+.btn.adbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
+
+/* Highlight variants for the selected part (#game[data-hl], staging cheat) */
+.wrap.v2 .badge.bump{animation:hlbadge .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes hlbadge{40%{transform:scale(1.45)}}
+#game[data-hl="wash"] .spotDim{fill:#fff;opacity:.5}
+#game[data-hl="halo"] .spotDim,#game[data-hl="sticker"] .spotDim,#game[data-hl="aura"] .spotDim{display:none}
+#game[data-hl="wash"] .spotGlow,#game[data-hl="halo"] .spotGlow{opacity:1;animation:spotIn .35s ease both,hlglow 1.6s .35s ease-in-out infinite}
+@keyframes hlglow{50%{opacity:.55}}
+#game[data-hl="halo"] .selOutline{stroke-width:2.6;stroke-dasharray:7 5;animation:dash 1s linear infinite}
+.wrap.v2 .spotBack{fill:#fff;stroke:#fff;stroke-linejoin:round;stroke-linecap:round;animation:spotIn .3s ease both,hlback 1.8s .3s ease-in-out infinite}
+@keyframes hlback{50%{opacity:.75}}
+.wrap.v2 .spotBack .spotAura{animation:hlaura 1.8s ease-in-out infinite}
+@keyframes hlaura{50%{opacity:.35}}
+/* Hero picture: the outline sits above the drawing so the rounded corners keep it (like the play frame) */
+.home.v2 .v2hero .nextPic{position:relative;border:0}
+.home.v2 .v2hero .nextPic::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 2px var(--paper-ink);pointer-events:none}
+/* Chapter and star chest cards: a trophy and a chest, gold stars and bar; a ready chest glows and wiggles */
+.home.v2 .pcard{padding:12px 14px 12px}
+.pcard .pico{position:absolute;right:10px;top:10px;width:38px;height:38px;filter:drop-shadow(0 3px 6px rgba(224,169,42,.35))}
+.pcard .pico svg{width:100%;height:100%}
+.home.v2 .pcard:not(.ready)::after{display:none}
+.pcard > small:first-of-type,.pcard > b{padding-right:40px}
+.pcard b.gold svg{fill:#f4c542;stroke:#9a6a0e;stroke-width:1.4;stroke-linejoin:round}
+.pcard .bar.gold i{background:linear-gradient(90deg,#f6cf4e,#e0a92a)}
+.pcard.ready{box-shadow:0 0 0 2px #e0a92a,0 8px 22px -8px rgba(224,169,42,.7),var(--shadow)}
+.pcard.ready .pico{animation:pwiggle 1.6s ease-in-out infinite}
+@keyframes pwiggle{0%,60%,100%{transform:rotate(0)}70%{transform:rotate(-10deg) scale(1.08)}80%{transform:rotate(9deg) scale(1.08)}90%{transform:rotate(-5deg)}}
+.pcard .ready{color:#b07a10}
+/* Gallery: bonus pages button on top, the mixing tip at the bottom; the tab shows a dot when a bonus page is ready */
+.gallery .bonusbtn{width:100%;margin:0 0 12px}
+.gallery .tipcard{margin-top:16px}
+.tab.hasnew{position:relative}.tab.hasnew::after{content:"";position:absolute;top:5px;right:calc(50% - 16px);width:8px;height:8px;border-radius:50%;background:#e0344b;box-shadow:0 0 0 2px var(--panel)}
+
+#dailyPicBtn.evcard{padding:12px}
+.home.v2 #chestCard,.home.v2 #chapterCard{background:radial-gradient(120% 90% at 100% 0%,rgba(244,197,66,.22),rgba(244,197,66,0) 55%),var(--panel)}
+/* Hero card: the chapter's accent color (label, bar, a soft glow), a filled dot per part in its color (a restored part
+   gets a check and a ring), a livelier Play */
+.home.v2 .v2hero{--chc:#e8505b;background:radial-gradient(140% 60% at 100% 0%,color-mix(in srgb,var(--chc) 24%,transparent),transparent 65%),var(--panel)}
+.home.v2 .v2hero .nextLabel{color:var(--chc)}
+.home.v2 .v2hero .bar i{background:var(--chc)}
+.heroSw{display:flex;flex-wrap:wrap;gap:9px;margin:8px 0 2px 4px}
+.heroSw i{position:relative;width:18px;height:18px;border-radius:50%;background:var(--pc);box-shadow:inset 0 0 0 1px rgba(0,0,0,.16)}
+.heroSw i.on{box-shadow:inset 0 0 0 1px rgba(0,0,0,.16),0 0 0 2px var(--panel),0 0 0 3.5px var(--pc)}
+.heroSw i.on::after{content:"";position:absolute;left:6px;top:3px;width:4px;height:8px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg);filter:drop-shadow(0 0 1px rgba(0,0,0,.55))}
+.home.v2 .btn.play{position:relative;overflow:hidden;box-shadow:0 10px 20px -10px var(--chc)}
+.home.v2 .btn.play::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:28%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.28),rgba(255,255,255,0));animation:sshine 3.8s ease-in-out infinite;pointer-events:none}
+/* In-play mixing tip: a bubble over the bottom of the picture */
+.wrap.v2 .mtip{position:absolute;left:8px;right:8px;bottom:8px;z-index:3;display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;border-radius:16px;background:var(--ink);color:var(--on-ink);box-shadow:0 10px 24px rgba(0,0,0,.28);font:600 13px/1.3 "Inter",system-ui,sans-serif}
+.wrap.v2 .mtip[hidden]{display:none}
+.mtip .mteq{display:flex;align-items:center;gap:3px;flex:none}.mtip .mteq i{width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 1.5px var(--on-ink)}.mtip .mteq b{font-size:12px;opacity:.7}
+.mtip .mttext{flex:1;min-width:0}.mtip .mttext small{display:block;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#f4c542}
+.mtip .mtx{flex:none;width:28px;height:28px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:var(--on-ink);font:700 13px "Inter",system-ui,sans-serif;cursor:pointer}
+.mtip.mtin{animation:mtin .4s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes mtin{0%{transform:translateY(16px);opacity:0}100%{transform:none;opacity:1}}
+
+/* chapter and chest cards match: thin bars (the generic .bar grows in a column), gold for done pictures and stars */
+.pcard .bar{flex:none}
+.home.v2 #chapterCard .pdots i.on{background:linear-gradient(90deg,#f6cf4e,#e0a92a)}
+.home.v2 #chapterCard .pdots i.cur{background:var(--track);box-shadow:inset 0 0 0 1.5px #e0a92a}
+.gallery .bonusbtn .newtag{margin-left:8px;padding:2px 8px;border-radius:999px;background:#e0344b;color:#fff;font:800 11px "Inter",system-ui,sans-serif;font-style:normal;text-transform:uppercase;letter-spacing:.05em}

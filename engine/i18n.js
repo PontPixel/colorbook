@@ -139,3 +139,187 @@ I18N.add({
 fr:{'Tap <b>{paint}</b> to put a drop in the bowl.':'Touchez <b>{paint}</b> pour verser une goutte dans le bol.','Now drag <b>{paint}</b> into the bowl.':'Maintenant, faites glisser <b>{paint}</b> dans le bol.','Tap any faded part to paint it next.':'Touchez une partie décolorée pour la peindre ensuite.'},
 ru:{'Tap <b>{paint}</b> to put a drop in the bowl.':'Нажмите <b>{paint}</b>, чтобы капнуть в миску.','Now drag <b>{paint}</b> into the bowl.':'Теперь перетащите <b>{paint}</b> в миску.','Tap any faded part to paint it next.':'Нажмите на любую выцветшую часть, чтобы раскрасить её следующей.'}
 });
+// Redesigned screens (GAME.v2): parts strip, mixing card, new boosters, daily card, tips
+I18N.add({
+fr:{'Takes back your last drop. You can also tap a paint in the bowl to take out just that one. The paint comes back.':'Reprend votre dernière goutte. Vous pouvez aussi toucher une peinture dans le bol pour retirer seulement celle-là. La peinture revient.',
+'Magic':'Magie','Puts the next right drop in the bowl, or takes a wrong one out. That part can earn at most 2 stars.':'Verse la bonne goutte suivante dans le bol, ou retire une mauvaise. Cette partie rapporte au plus 2 étoiles.',
+'+5 paint':'+5 peinture','Adds 5 drops to the paint pot.':'Ajoute 5 gouttes au pot de peinture.',
+'Free ×3':'Gratuit ×3',"Your next 3 drops don't use paint from the pot. They still count for stars.":'Vos 3 prochaines gouttes ne prennent pas de peinture dans le pot. Elles comptent quand même pour les étoiles.',
+'{n} free':'{n} gratuites','Parts of the picture':'Parties de l’image','Target':'Cible','Mix':'Mélange','Paint':'Peinture',
+'Your mix. Tap to pour out the bowl.':'Votre mélange. Touchez pour vider le bol.','Tap to pour out':'Touchez pour vider',
+'done':'terminée','selected':'sélectionnée','to do':'à faire','So close':'Presque','Too light':'Trop clair','Too dark':'Trop foncé','The color is off':'La teinte n’y est pas',
+'{n} {paint}. Tap to take one out.':'{n} {paint}. Touchez pour en retirer une.','Your drops show up here':'Vos gouttes apparaissent ici',
+'over par':'au-dessus du par','{used} drops used, par {min}':'{used} gouttes utilisées, par {min}','{n} of 3 stars at this pace':'{n} étoiles sur 3 à ce rythme',
+'Tap a paint to start':'Touchez une peinture pour commencer','{done} of {all} parts restored':'{done} parties restaurées sur {all}',
+'Further off. Try Undo.':'Plus loin de la cible. Essayez Annuler.','Bowl poured out. Paint refunded.':'Bol vidé. Peinture rendue.',
+'Your mix is already right.':'Votre mélange est déjà juste.','The pot is empty.':'Le pot est vide.','Took out {paint}':'{paint} retiré',
+'+5 drops in the pot':'+5 gouttes dans le pot','{n} free drops left.':'Encore {n} gouttes gratuites.','Your next 3 drops are free.':'Vos 3 prochaines gouttes sont gratuites.',
+'Done · streak: {days}':'Fait · série : {days}','Streak: {days}':'Série : {days}','Next tip':'Astuce suivante'},
+ru:{'Takes back your last drop. You can also tap a paint in the bowl to take out just that one. The paint comes back.':'Забирает последнюю каплю. Можно и нажать на краску в миске, чтобы убрать только её. Краска возвращается.',
+'Magic':'Магия','Puts the next right drop in the bowl, or takes a wrong one out. That part can earn at most 2 stars.':'Добавляет в миску следующую нужную каплю или убирает лишнюю. Эта часть принесёт не больше 2 звёзд.',
+'+5 paint':'+5 краски','Adds 5 drops to the paint pot.':'Добавляет 5 капель в банку с краской.',
+'Free ×3':'Бесплатно ×3',"Your next 3 drops don't use paint from the pot. They still count for stars.":'Следующие 3 капли не расходуют краску из банки. Для звёзд они всё равно считаются.',
+'{n} free':'{n} бесплатно','Parts of the picture':'Части картинки','Target':'Цель','Mix':'Смесь','Paint':'Краска',
+'Your mix. Tap to pour out the bowl.':'Ваша смесь. Нажмите, чтобы вылить миску.','Tap to pour out':'Нажмите, чтобы вылить',
+'done':'готово','selected':'выбрано','to do':'осталось','So close':'Почти','Too light':'Слишком светло','Too dark':'Слишком темно','The color is off':'Оттенок не тот',
+'{n} {paint}. Tap to take one out.':'{paint}: {n}. Нажмите, чтобы убрать одну.','Your drops show up here':'Здесь появятся ваши капли',
+'over par':'больше нормы','{used} drops used, par {min}':'Потрачено капель: {used}, норма {min}','{n} of 3 stars at this pace':'{n} из 3 звёзд при таком темпе',
+'Tap a paint to start':'Нажмите на краску, чтобы начать','{done} of {all} parts restored':'Восстановлено частей: {done} из {all}',
+'Further off. Try Undo.':'Стало дальше от цели. Попробуйте «Отменить».','Bowl poured out. Paint refunded.':'Миска вылита. Краска возвращена.',
+'Your mix is already right.':'Смесь уже правильная.','The pot is empty.':'Банка пуста.','Took out {paint}':'Убрано: {paint}',
+'+5 drops in the pot':'+5 капель в банке','{n} free drops left.':'Осталось бесплатных капель: {n}.','Your next 3 drops are free.':'Следующие 3 капли бесплатны.',
+'Done · streak: {days}':'Готово · серия: {days}','Streak: {days}':'Серия: {days}','Next tip':'Следующий совет'}
+});
+// Chapters, star chests, bonus pages, daily twists
+I18N.add({
+fr:{'Not now':'Plus tard','unlock for {coins}':'à débloquer pour {coins}','restore {title} first':'restaurez d’abord {title}','Bonus':'Bonus',
+'Chapter {n}':'Chapitre {n}','Chapter {n} of {all}':'Chapitre {n} sur {all}','Chapter {n} complete: {name}! +{coins}':'Chapitre {n} terminé : {name} ! +{coins}',
+'and +1 of every booster.':'et +1 de chaque bonus.','Star chest {n} opened: +{coins}':'Coffre d’étoiles {n} ouvert : +{coins}',
+'A bonus page: {title} in new colors. {parts}.':'Une page bonus : {title} dans de nouvelles couleurs. {parts}.','Unlock it for {coins}?':'La débloquer pour {coins} ?',
+'It costs {price}. You have {have}. Restore pictures and open star chests to earn more.':'Elle coûte {price}. Vous avez {have}. Restaurez des images et ouvrez des coffres d’étoiles pour en gagner plus.',
+'Unlock':'Débloquer','OK':'OK',"No boosters in today's challenge.":'Pas de bonus dans le défi du jour.',
+'That was the last picture of the book. Bonus pages wait in the gallery.':'C’était la dernière image du cahier. Des pages bonus vous attendent dans la galerie.',
+'Less paint':'Moins de peinture','No boosters':'Sans bonus','No match %':'Sans %',
+"Today's twist: no boosters. Plan every drop.":'Défi du jour : pas de bonus. Prévoyez chaque goutte.',
+"Today's twist: the match % stays hidden. Trust your eyes.":'Défi du jour : le % de correspondance reste caché. Fiez-vous à vos yeux.',
+'Trust your eyes':'Fiez-vous à vos yeux','Finish it: +{coins} and a booster of each kind':'À la fin : +{coins} et un bonus de chaque sorte',
+'Chapter {n}: {name}, {done} of {all} pictures':'Chapitre {n} : {name}, {done} images sur {all}','Star chest':'Coffre d’étoiles',
+'+{coins} and {n} boosters':'+{coins} et {n} bonus','Bonus pages':'Pages bonus','{n} ready to unlock with coins':'{n} à débloquer avec des pièces','Tap to collect':'Touchez pour récupérer','Tap to open':'Touchez pour ouvrir','Rewards':'Récompenses','Nice!':'Super !'},
+ru:{'Not now':'Не сейчас','unlock for {coins}':'открыть за {coins}','restore {title} first':'сначала восстановите «{title}»','Bonus':'Бонус',
+'Chapter {n}':'Глава {n}','Chapter {n} of {all}':'Глава {n} из {all}','Chapter {n} complete: {name}! +{coins}':'Глава {n} пройдена: {name}! +{coins}',
+'and +1 of every booster.':'и +1 каждого бустера.','Star chest {n} opened: +{coins}':'Звёздный сундук {n} открыт: +{coins}',
+'A bonus page: {title} in new colors. {parts}.':'Бонусная страница: «{title}» в новых цветах. {parts}.','Unlock it for {coins}?':'Открыть за {coins}?',
+'It costs {price}. You have {have}. Restore pictures and open star chests to earn more.':'Стоит {price}. У вас {have}. Восстанавливайте картинки и открывайте звёздные сундуки, чтобы заработать больше.',
+'Unlock':'Открыть','OK':'OK',"No boosters in today's challenge.":'В сегодняшнем испытании бустеров нет.',
+'That was the last picture of the book. Bonus pages wait in the gallery.':'Это была последняя картинка раскраски. В галерее ждут бонусные страницы.',
+'Less paint':'Меньше краски','No boosters':'Без бустеров','No match %':'Без процентов',
+"Today's twist: no boosters. Plan every drop.":'Сегодня без бустеров. Планируйте каждую каплю.',
+"Today's twist: the match % stays hidden. Trust your eyes.":'Сегодня процент совпадения скрыт. Доверьтесь глазам.',
+'Trust your eyes':'Доверьтесь глазам','Finish it: +{coins} and a booster of each kind':'За прохождение: +{coins} и по бустеру каждого вида',
+'Chapter {n}: {name}, {done} of {all} pictures':'Глава {n}: {name}, картинок {done} из {all}','Star chest':'Звёздный сундук',
+'+{coins} and {n} boosters':'+{coins} и бустеров: {n}','Bonus pages':'Бонусные страницы','{n} ready to unlock with coins':'Можно открыть за монеты: {n}','Tap to collect':'Нажмите, чтобы забрать','Tap to open':'Нажмите, чтобы открыть','Rewards':'Награды','Nice!':'Отлично!'}
+});
+// Playtest round 2: Palette and Brush boosters, factual mix advice, paint warning, saved progress
+I18N.add({
+fr:{'Palette':'Palette','Dims the paints this part does not use, until the part is painted. The part can still earn 3 stars.':'Estompe les peintures que cette partie n’utilise pas, jusqu’à ce qu’elle soit peinte. La partie peut toujours rapporter 3 étoiles.',
+'Brush':'Pinceau','Paints the part you are on for you, with the exact recipe. It uses that paint from the pot, and the part earns at most 2 stars.':'Peint pour vous la partie en cours avec la recette exacte. Il prend cette peinture dans le pot, et la partie rapporte au plus 2 étoiles.',
+'{part} uses {n} of the paints.':'{part} utilise {n} des peintures.','Brush needs {drops} of paint.':'Le pinceau a besoin de {drops} de peinture.','Brushed!':'Peint !',
+'Too strong':'Trop vif','Too dull':'Trop terne','Aim for a more {hue} tone':'Visez un ton plus {hue}',
+'pink':'rose','red':'rouge','orange':'orangé','yellow':'jaune','green':'vert','teal':'bleu-vert','blue':'bleu','violet':'violet',
+'That took it further away':'Ça s’éloigne de la cible','Rest needs {n}':'Il en faut {n} pour le reste','{done} of {all} parts':'{done} parties sur {all}',
+'Welcome back: {n} of {all} parts already painted.':'Bon retour : {n} parties sur {all} sont déjà peintes.'},
+ru:{'Palette':'Палитра','Dims the paints this part does not use, until the part is painted. The part can still earn 3 stars.':'Приглушает краски, которых нет в этой части, пока она не раскрашена. Часть всё ещё может принести 3 звезды.',
+'Brush':'Кисть','Paints the part you are on for you, with the exact recipe. It uses that paint from the pot, and the part earns at most 2 stars.':'Раскрашивает текущую часть по точному рецепту. Краска берётся из банки, а часть принесёт не больше 2 звёзд.',
+'{part} uses {n} of the paints.':'{part}: нужно красок — {n}.','Brush needs {drops} of paint.':'Кисти нужно {drops} краски.','Brushed!':'Готово!',
+'Too strong':'Слишком ярко','Too dull':'Слишком блёкло','Aim for a more {hue} tone':'Нужен более {hue} оттенок',
+'pink':'розовый','red':'красный','orange':'оранжевый','yellow':'жёлтый','green':'зелёный','teal':'бирюзовый','blue':'синий','violet':'фиолетовый',
+'That took it further away':'Стало дальше от цели','Rest needs {n}':'Для остального нужно {n}','{done} of {all} parts':'Частей: {done} из {all}',
+'Welcome back: {n} of {all} parts already painted.':'С возвращением: уже раскрашено частей — {n} из {all}.'}
+});
+// Playtest round 3: paint pot tip
+I18N.add({
+fr:{'This is your <b>paint pot</b>. Every drop you add comes out of it, and Undo puts it back.':'Voici votre <b>pot de peinture</b>. Chaque goutte ajoutée y est prise, et Annuler la remet.',
+'<b>Rest needs</b> is what the unpainted parts take at par. If the pot runs dry, a refill costs coins, so make every drop count.':'<b>Il en faut</b> indique ce que demandent les parties restantes au par. Si le pot est vide, le remplir coûte des pièces : chaque goutte compte.',
+'Got it':'Compris'},
+ru:{'This is your <b>paint pot</b>. Every drop you add comes out of it, and Undo puts it back.':'Это ваша <b>банка с краской</b>. Каждая капля берётся из неё, а «Отменить» возвращает каплю обратно.',
+'<b>Rest needs</b> is what the unpainted parts take at par. If the pot runs dry, a refill costs coins, so make every drop count.':'<b>Для остального нужно</b> — столько краски нужно оставшимся частям по норме. Если банка опустеет, пополнение стоит монет, так что берегите каждую каплю.',
+'Got it':'Понятно'}
+});
+// Playtest round 4: drops on the paints, Home tutorials, Undo demo
+I18N.add({
+fr:{'Takes back your last drop. Or tap the minus on any paint to take out one drop of just that paint. The paint comes back.':'Reprend votre dernière goutte. Ou touchez le moins sur une peinture pour retirer une goutte de cette peinture seulement. La peinture revient.',
+'Take out one drop of {paint}':'Retirer une goutte de {paint}','Undo: last drop':'Annuler : dernière goutte','Minus: that paint':'Moins : cette peinture',
+'<b>Chapters.</b> Pictures come in chapters of five. Finish a chapter for coins and one booster of each kind.':'<b>Chapitres.</b> Les images vont par chapitres de cinq. Terminez un chapitre pour des pièces et un bonus de chaque sorte.',
+'<b>Star chest.</b> Every star you earn goes in here. When it fills up, it opens: coins and boosters.':'<b>Coffre à étoiles.</b> Chaque étoile gagnée y va. Quand il est plein, il s’ouvre : pièces et bonus.',
+'<b>Daily picture.</b> Each day a picture you restored comes back with a twist: less paint, no boosters or a hidden match %. Play on days in a row to grow your streak and the reward.':'<b>Image du jour.</b> Chaque jour, une image restaurée revient avec une contrainte : moins de peinture, pas de bonus ou % caché. Jouez plusieurs jours de suite pour allonger la série et la récompense.',
+'<b>Mixing tips.</b> A new one every day. Tap the arrow to read more.':'<b>Astuces de mélange.</b> Une nouvelle chaque jour. Touchez la flèche pour en lire d’autres.'},
+ru:{'Takes back your last drop. Or tap the minus on any paint to take out one drop of just that paint. The paint comes back.':'Забирает последнюю каплю. Или нажмите минус на краске, чтобы убрать одну каплю только этой краски. Краска возвращается.',
+'Take out one drop of {paint}':'Убрать одну каплю: {paint}','Undo: last drop':'Отменить: последняя капля','Minus: that paint':'Минус: эта краска',
+'<b>Chapters.</b> Pictures come in chapters of five. Finish a chapter for coins and one booster of each kind.':'<b>Главы.</b> Картинки идут главами по пять. Пройдите главу — получите монеты и по одному бустеру каждого вида.',
+'<b>Star chest.</b> Every star you earn goes in here. When it fills up, it opens: coins and boosters.':'<b>Звёздный сундук.</b> Сюда идут все заработанные звёзды. Когда он заполнится, откроется: монеты и бустеры.',
+'<b>Daily picture.</b> Each day a picture you restored comes back with a twist: less paint, no boosters or a hidden match %. Play on days in a row to grow your streak and the reward.':'<b>Картинка дня.</b> Каждый день одна из восстановленных картинок возвращается с условием: меньше краски, без бустеров или без процента совпадения. Играйте несколько дней подряд — серия и награда растут.',
+'<b>Mixing tips.</b> A new one every day. Tap the arrow to read more.':'<b>Советы по смешиванию.</b> Каждый день новый. Нажмите на стрелку, чтобы прочитать ещё.'}
+});
+I18N.add({
+fr:{'Takes back your last drop. The paint comes back to the pot.':'Reprend votre dernière goutte. La peinture retourne dans le pot.','Tap any faded part to paint it next':'Touchez une partie décolorée pour la peindre'},
+ru:{'Takes back your last drop. The paint comes back to the pot.':'Забирает последнюю каплю. Краска возвращается в банку.','Tap any faded part to paint it next':'Нажмите на любую выцветшую часть, чтобы раскрасить её'}
+});
+I18N.add({
+fr:{'<b>Chapter complete!</b> Pictures come in chapters of five, and each finished chapter pays coins and one booster of each kind. Tap the card to collect.':'<b>Chapitre terminé !</b> Les images vont par chapitres de cinq, et chaque chapitre terminé rapporte des pièces et un bonus de chaque sorte. Touchez la carte pour récupérer.',
+'<b>Your star chest is full!</b> Every star you earn goes in here, and a full chest opens with coins and boosters. Tap it to open.':'<b>Votre coffre à étoiles est plein !</b> Chaque étoile gagnée y va, et un coffre plein s’ouvre avec des pièces et des bonus. Touchez-le pour l’ouvrir.',
+'Collect your reward':'Récupérer la récompense','Close':'Fermer','Chapter {n}: {name}':'Chapitre {n} : {name}','Locked':'Verrouillée',
+'{done} of {all} restored. Finish them all: +{coins} and one booster of each kind.':'{done} sur {all} restaurées. Terminez-les toutes : +{coins} et un bonus de chaque sorte.',
+'{n} more stars to open it. Every star from every picture counts; a part restored at par earns 3.':'Encore {n} étoiles pour l’ouvrir. Chaque étoile compte ; une partie restaurée au par en rapporte 3.',
+'Inside: +{coins} and {n} boosters.':'Dedans : +{coins} et {n} bonus.'},
+ru:{'<b>Chapter complete!</b> Pictures come in chapters of five, and each finished chapter pays coins and one booster of each kind. Tap the card to collect.':'<b>Глава пройдена!</b> Картинки идут главами по пять, и за каждую главу дают монеты и по бустеру каждого вида. Нажмите на карточку, чтобы забрать.',
+'<b>Your star chest is full!</b> Every star you earn goes in here, and a full chest opens with coins and boosters. Tap it to open.':'<b>Звёздный сундук полон!</b> Сюда идут все заработанные звёзды, а полный сундук открывается с монетами и бустерами. Нажмите, чтобы открыть.',
+'Collect your reward':'Забрать награду','Close':'Закрыть','Chapter {n}: {name}':'Глава {n}: {name}','Locked':'Закрыто',
+'{done} of {all} restored. Finish them all: +{coins} and one booster of each kind.':'Восстановлено {done} из {all}. Пройдите все: +{coins} и по бустеру каждого вида.',
+'{n} more stars to open it. Every star from every picture counts; a part restored at par earns 3.':'До открытия ещё звёзд: {n}. Считаются звёзды со всех картинок; часть, восстановленная по норме, даёт 3.',
+'Inside: +{coins} and {n} boosters.':'Внутри: +{coins} и бустеров: {n}.'}
+});
+I18N.add({
+fr:{'Daily challenge':'Défi du jour','{n} of 3 hearts left':'{n} cœurs sur 3','The dream faded':'Le rêve s’est effacé','Try again':'Réessayer',
+"You ran out of hearts. Dreams come back: try again, or wait for tomorrow's page.":'Vous n’avez plus de cœurs. Les rêves reviennent : réessayez, ou attendez la page de demain.',
+"Grandma's dream journal · page {n}":'Journal des rêves de Grand-mère · page {n}',
+"3 hearts: a paint this part doesn't use, or a drop that takes the mix further away, costs one.":'3 cœurs : une peinture que cette partie n’utilise pas, ou une goutte qui éloigne le mélange, en coûte un.',
+'No boosters, and only a little spare paint.':'Pas de bonus, et très peu de peinture en réserve.',
+"<b>Daily challenge.</b> Every day a new page from Grandma's dream journal: a strange picture you won't find in the book, with 3 hearts and no boosters. Play on days in a row to grow your streak and the reward.":'<b>Défi du jour.</b> Chaque jour, une nouvelle page du journal des rêves de Grand-mère : une image étrange qu’on ne trouve pas dans le livre, avec 3 cœurs et sans bonus. Jouez plusieurs jours de suite pour allonger la série et la récompense.',
+'{n} {paint}':'{n} {paint}'},
+ru:{'Daily challenge':'Испытание дня','{n} of 3 hearts left':'Осталось сердец: {n} из 3','The dream faded':'Сон растаял','Try again':'Ещё раз',
+"You ran out of hearts. Dreams come back: try again, or wait for tomorrow's page.":'Сердца закончились. Сны возвращаются: попробуйте ещё раз или дождитесь завтрашней страницы.',
+"Grandma's dream journal · page {n}":'Бабушкин дневник снов · страница {n}',
+"3 hearts: a paint this part doesn't use, or a drop that takes the mix further away, costs one.":'3 сердца: краска, которой нет в этой части, или капля, уводящая смесь дальше от цели, стоит одно сердце.',
+'No boosters, and only a little spare paint.':'Без бустеров и почти без запаса краски.',
+"<b>Daily challenge.</b> Every day a new page from Grandma's dream journal: a strange picture you won't find in the book, with 3 hearts and no boosters. Play on days in a row to grow your streak and the reward.":'<b>Испытание дня.</b> Каждый день новая страница бабушкиного дневника снов: странная картинка, которой нет в книге, с 3 сердцами и без бустеров. Играйте несколько дней подряд — серия и награда растут.',
+'{n} {paint}':'{paint}: {n}'}
+});
+I18N.add({fr:{'No boosters today: every drop counts.':'Pas de bonus aujourd’hui : chaque goutte compte.'},ru:{'No boosters today: every drop counts.':'Сегодня без бустеров: каждая капля на счету.'}});
+// Holidays tab (seasonal pictures)
+I18N.add({
+fr:{'Holidays':'Fêtes','Christmas':'Noël','Thanksgiving':'Thanksgiving','Now':'En ce moment','Last season':'Saison passée',
+'{season} pictures, here until {date}.':'Images de {season}, ici jusqu’au {date}.','{season} pictures arrive on {date}.':'Les images de {season} arrivent le {date}.',
+'Holiday pictures open only in their season. The ones you played stay here.':'Les images des fêtes ne s’ouvrent qu’à leur saison. Celles que vous avez jouées restent ici.',
+'{season} pictures':'Images de {season}','until {date}':'jusqu’au {date}','All restored. Happy holidays!':'Tout est restauré. Joyeuses fêtes !','{done} of {all} restored':'{done} sur {all} restaurées',
+'<b>{season} pictures.</b> Holiday pictures to restore, here only until {date}. Tap the card, or the Holidays tab below.':'<b>Images de {season}.</b> Des images de fête à restaurer, ici seulement jusqu’au {date}. Touchez la carte, ou l’onglet Fêtes en bas.',
+'Merry Christmas!':'Joyeux Noël !','Happy Thanksgiving!':'Joyeux Thanksgiving !','Halloween':'Halloween','Happy Halloween!':'Joyeux Halloween !'},
+ru:{'Holidays':'Праздники','Christmas':'Рождество','Thanksgiving':'День благодарения','Now':'Сейчас','Last season':'Прошлый сезон',
+'{season} pictures, here until {date}.':'Картинки к празднику «{season}», здесь до {date}.','{season} pictures arrive on {date}.':'Картинки к празднику «{season}» появятся {date}.',
+'Holiday pictures open only in their season. The ones you played stay here.':'Праздничные картинки открываются только в свой сезон. Те, что вы уже начали, остаются здесь.',
+'{season} pictures':'Праздник: {season}','until {date}':'до {date}','All restored. Happy holidays!':'Всё восстановлено. С праздниками!','{done} of {all} restored':'Восстановлено {done} из {all}',
+'<b>{season} pictures.</b> Holiday pictures to restore, here only until {date}. Tap the card, or the Holidays tab below.':'<b>Праздник: {season}.</b> Праздничные картинки, только до {date}. Нажмите на карточку или на вкладку «Праздники» внизу.',
+'Merry Christmas!':'Счастливого Рождества!','Happy Thanksgiving!':'С Днём благодарения!','Halloween':'Хэллоуин','Happy Halloween!':'Счастливого Хэллоуина!'}
+});
+I18N.add({
+fr:{'{season} collection':'Collection {season}','Open until {date}':'Ouverte jusqu’au {date}','Opens on {date}':'Ouvre le {date}','Back to Holidays':'Retour aux fêtes',
+'Outside its season, only the pictures you already started can be played.':'Hors saison, seules les images déjà commencées peuvent être jouées.',
+'Holiday collections open in their season. Pictures you started stay playable.':'Les collections des fêtes ouvrent à leur saison. Les images commencées restent jouables.'},
+ru:{'{season} collection':'Коллекция: {season}','Open until {date}':'Открыта до {date}','Opens on {date}':'Откроется {date}','Back to Holidays':'Назад к праздникам',
+'Outside its season, only the pictures you already started can be played.':'Вне сезона можно играть только в уже начатые картинки.',
+'Holiday collections open in their season. Pictures you started stay playable.':'Праздничные коллекции открываются в свой сезон. Начатые картинки остаются доступны.'}
+});
+// Brush confirm and the Home season banner
+I18N.add({
+fr:{'Paint it':'Peindre','The brush is mixing…':'Le pinceau mélange…','Mixes the exact recipe for the part you are on, drop by drop, then you tap Paint it. It uses that paint from the pot, and the part earns at most 2 stars.':'Mélange la recette exacte de la partie en cours, goutte à goutte, puis touchez Peindre. La peinture vient du pot, et la partie gagne au plus 2 étoiles.',
+'{n} days left':'Encore {n} jours','Last day!':'Dernier jour !','View':'Voir'},
+ru:{'Paint it':'Покрасить','The brush is mixing…':'Кисть смешивает…','Mixes the exact recipe for the part you are on, drop by drop, then you tap Paint it. It uses that paint from the pot, and the part earns at most 2 stars.':'Смешивает точный рецепт для текущей части, капля за каплей, а потом вы нажимаете «Покрасить». Краска берётся из банки, и часть получает не больше 2 звёзд.',
+'{n} days left':'Осталось дней: {n}','Last day!':'Последний день!','View':'Смотреть'}
+});
+// Reward reveal
+I18N.add({
+fr:{'Collect':'Récupérer','Chapter {n} complete':'Chapitre {n} terminé','Star chest {n}':'Coffre à étoiles {n}','Chest opened!':'Coffre ouvert !','Coins':'Pièces'},
+ru:{'Collect':'Забрать','Chapter {n} complete':'Глава {n} пройдена','Star chest {n}':'Звёздный сундук {n}','Chest opened!':'Сундук открыт!','Coins':'Монеты'}
+});
+// Rewarded ad placeholders
+I18N.add({
+fr:{'Advertisement':'Publicité','Ad':'Pub','Close the ad and get the reward':'Fermer la pub et recevoir la récompense','Ad placeholder':'Emplacement publicitaire','A short video ad will play here. The reward comes when it ends.':'Une courte vidéo publicitaire passera ici. La récompense arrive à la fin.',
+'Out of {name}':'Plus de {name}','Get one more':'En obtenir un de plus','Watch an ad':'Regarder une pub','Free':'Gratuit','Buy':'Acheter','{price} coins needed':'{price} pièces nécessaires','+1 {name}':'+1 {name}',
+'Get free coins':'Pièces gratuites','Watch a short ad for +{n} coins. {left} left today.':'Regardez une courte pub pour +{n} pièces. Encore {left} aujourd’hui.','That was all for today. Come back tomorrow for more.':'C’est tout pour aujourd’hui. Revenez demain.',
+'+{n} coins':'+{n} pièces','Watch an ad: restart {part} free':'Regarder une pub : recommencer {part} gratuitement','Watch an ad: +{n} coins':'Regarder une pub : +{n} pièces'},
+ru:{'Advertisement':'Реклама','Ad':'Реклама','Close the ad and get the reward':'Закрыть рекламу и получить награду','Ad placeholder':'Место для рекламы','A short video ad will play here. The reward comes when it ends.':'Здесь будет короткий рекламный ролик. Награда — после его окончания.',
+'Out of {name}':'{name}: закончились','Get one more':'Получить ещё','Watch an ad':'Смотреть рекламу','Free':'Бесплатно','Buy':'Купить','{price} coins needed':'Нужно монет: {price}','+1 {name}':'+1 {name}',
+'Get free coins':'Бесплатные монеты','Watch a short ad for +{n} coins. {left} left today.':'Посмотрите короткую рекламу и получите +{n} монет. Сегодня осталось: {left}.','That was all for today. Come back tomorrow for more.':'На сегодня всё. Возвращайтесь завтра.',
+'+{n} coins':'+{n} монет','Watch an ad: restart {part} free':'Реклама: начать «{part}» заново бесплатно','Watch an ad: +{n} coins':'Реклама: +{n} монет'}
+});
+
+I18N.add({fr:{'New':'Nouveau'},ru:{'New':'Новое'}});

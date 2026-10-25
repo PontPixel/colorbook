@@ -196,7 +196,7 @@ document.body.insertAdjacentHTML('afterbegin',(V2?v2Scenes():`
       <button class="btn" data-c="solve">Solve this part</button><button class="btn" data-c="finish">Finish picture ★★★</button>
       <button class="btn" data-c="unlock">Unlock all pictures</button><button class="btn" data-c="restoreAll">Restore all ★★★</button>
       <button class="btn" data-c="newDay">Daily: new day</button><button class="btn" data-c="tutorials">Replay tutorials</button>
-      <button class="btn" data-c="s-thanksgiving">Season: Thanksgiving</button><button class="btn" data-c="s-christmas">Season: Christmas</button>
+      <button class="btn" data-c="s-halloween">Season: Halloween</button><button class="btn" data-c="s-thanksgiving">Season: Thanksgiving</button><button class="btn" data-c="s-christmas">Season: Christmas</button>
       <button class="btn" data-c="s-off">Season: none</button><button class="btn" data-c="s-auto">Season: by date</button>
       <button class="btn" data-c="picStyle" id="cheatStyle">Style: flat</button><button class="btn" data-c="picAuto">Style: default</button>
     </div>
@@ -378,21 +378,24 @@ const unlocked=i=>{const l=LEVELS[i];
   if(l.bonus) return save.best[l.id]!=null||!!save.unlockAll||!!save.bought[l.id];
   return i===0||!!save.unlockAll||save.best[LEVELS[i-1].id]!=null||save.best[l.id]!=null;};
 // ---------- Seasons (ColorBook): pictures with l.season live in the Holidays tab ----------
-// Thanksgiving runs from Nov 1 to the day after US Thanksgiving (4th Thursday of November), Christmas from Dec 1 to
-// Jan 6, by the device date. A season's pictures open during it and stay playable once played. The staging cheat
-// can force a season (save.forceSeason: 'thanksgiving' | 'christmas' | 'off').
+// Halloween runs Oct 1 to Oct 31, Thanksgiving from Nov 1 to the day after US Thanksgiving (4th Thursday of November),
+// Christmas from Dec 1 to Jan 6, by the device date. A season's pictures open during it and stay playable once played.
+// The staging cheat can force a season (save.forceSeason: 'halloween' | 'thanksgiving' | 'christmas' | 'off').
 function thanksgivingDay(y){ const d=new Date(y,10,1); return 1+(4-d.getDay()+7)%7+21; }
 function seasonOn(d){
   if(save.forceSeason) return save.forceSeason==='off'?null:save.forceSeason;
   d=d||new Date(); const y=d.getFullYear(), m=d.getMonth(), day=d.getDate();
+  if(m===9) return 'halloween';
   if(m===10&&day<=thanksgivingDay(y)+1) return 'thanksgiving';
   if(m===11||(m===0&&day<=6)) return 'christmas';
   return null;
 }
-function seasonNext(d){ d=d||new Date(); const y=d.getFullYear(), m=d.getMonth();
-  return m<10?{s:'thanksgiving',at:new Date(y,10,1)}:m===10?{s:'christmas',at:new Date(y,11,1)}:{s:'thanksgiving',at:new Date(m===0?y:y+1,10,1)}; }
+const SEASON_MONTH={halloween:9,thanksgiving:10,christmas:11};
+// the next first day of season s that is still ahead of d
+function seasonStart(s,d){ d=d||new Date(); const at=new Date(d.getFullYear(),SEASON_MONTH[s],1); if(at<=d) at.setFullYear(at.getFullYear()+1); return at; }
+function seasonNext(d){ return Object.keys(SEASON_MONTH).map(s=>({s,at:seasonStart(s,d)})).sort((a,b)=>a.at-b.at)[0]; }
 function seasonEnd(s,d){ d=d||new Date(); const y=d.getFullYear();
-  return s==='thanksgiving'?new Date(y,10,thanksgivingDay(y)+1):new Date(d.getMonth()===0?y:y+1,0,6); }
+  return s==='halloween'?new Date(y,9,31):s==='thanksgiving'?new Date(y,10,thanksgivingDay(y)+1):new Date(d.getMonth()===0?y:y+1,0,6); }
 function seasonOpen(l){ return seasonOn()===l.season||save.best[l.id]!=null||!!(save.partial&&save.partial[l.id])||!!save.unlockAll; }
 const baseDone=l=>!l.bonus||save.best[l.base]!=null; // a bonus picture can be bought once its base picture is restored
 const bonusPrice=l=>EC.bonusPrice[l.tier]||40;
@@ -1769,7 +1772,7 @@ if(V2){
     let sp=''; for(let i=0;i<9;i++){const x=20+Math.random()*280,y=16+Math.random()*200,sc=(.6+Math.random()*.7).toFixed(2);
       sp+=`<g transform="translate(${x|0} ${y|0}) scale(${sc})"><path class="spark" style="animation-delay:${(300+Math.random()*1200)|0}ms" d="M0-9L2.2-2.2L9 0L2.2 2.2L0 9L-2.2 2.2L-9 0L-2.2-2.2Z"/></g>`;}
     $('fxLayer').innerHTML=`<defs><linearGradient id="shineG" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect class="shine" x="-150" y="-80" width="100" height="400" fill="url(#shineG)"/>`+sp;
-    const fest=L.season==='christmas'?['#ffffff','#ffffff','#d1423a','#2e7a4c','#f4cf3a']:L.season==='thanksgiving'?['#e57d22','#c23b2c','#efc12a','#8c5a38','#f3b23d']:null;
+    const fest=L.season==='halloween'?['#f08a24','#6b3fa0','#9bd14a','#f4cf3a','#23283a']:L.season==='christmas'?['#ffffff','#ffffff','#d1423a','#2e7a4c','#f4cf3a']:L.season==='thanksgiving'?['#e57d22','#c23b2c','#efc12a','#8c5a38','#f3b23d']:null;
     setTimeout(()=>{ if(state===st) confettiRain(fest||[...new Set(L.regions.map(r=>hex(r.target)))].concat(['#ffffff'])); },450);
     setTimeout(()=>{ if(state!==st) return; $('stamp').hidden=false; sfx('stamp'); },1300);
     v2.quiet=true; // from here until the next picture, no more bursts (the result card stays calm)
@@ -1837,7 +1840,7 @@ if(V2){
   const chestReady=()=>!!CHESTS&&Math.floor(totalStars()/CHESTS.every)>save.chests;
   const _claim=claimRewards; claimRewards=function(){ return v2.inWin?[]:_claim(); };
   const _winR=win; win=function(){ v2.inWin=true; try{ _winR(); } finally{ v2.inWin=false; }
-    if(L.season) $('endText').insertAdjacentHTML('afterbegin',`<b class="fest">${L.season==='christmas'?t('Merry Christmas!'):t('Happy Thanksgiving!')}</b><br>`);
+    if(L.season) $('endText').insertAdjacentHTML('afterbegin',`<b class="fest">${t({halloween:'Happy Halloween!',thanksgiving:'Happy Thanksgiving!',christmas:'Merry Christmas!'}[L.season])}</b><br>`);
     v2.collect=chapterReady()||chestReady();
     if(v2.collect){ const nb=$('nextBtn'); nb.hidden=false; nb.textContent=t('Collect your reward'); } };
   $('nextBtn').onclick=()=>{ if(v2.collect){ v2.collect=false; goHome(); return; } const n=nextAfter(L.index); if(n<0) goHome(); else start(n); };
@@ -1896,7 +1899,7 @@ if(V2){
     if(nb) bb.innerHTML=icon('gallery')+`<span class="dlab"><b>${t('Bonus pages')}</b><small>${t('{n} ready to unlock with coins',{n:nb})}</small></span>`;
   }
   // ---------- Holidays tab and Home card ----------
-  const seasonName=s=>s==='christmas'?t('Christmas'):t('Thanksgiving');
+  const seasonName=s=>t({halloween:'Halloween',thanksgiving:'Thanksgiving',christmas:'Christmas'}[s]);
   const seasonDate=d=>{ try{ return d.toLocaleDateString(I18N.lang,{month:'long',day:'numeric'}); }catch(e){ return d.toDateString(); } };
   const seasonPics=s=>LEVELS.map((l,i)=>i).filter(i=>LEVELS[i].season===s);
   const holTab=document.querySelector('.tab[data-tab="holidays"]'); if(holTab) holTab.innerHTML=icon('gift')+t('Holidays');
@@ -1905,13 +1908,12 @@ if(V2){
     return `<button class="gcard" data-i="${k}" ${ok?'':'disabled'} aria-label="${esc(T(l))}${ok?'':', '+t('locked')}">${thumbSVG(l,b!=null,pt&&pt.stars)}${ok?'':`<span class="lockico">${icon('lock')}</span>`}`+
       `<b>${esc(T(l))}${TIERS[l.tier].label?` <em class="gtier">${TIERS[l.tier].label}</em>`:''}</b><small>${b!=null?starRow(b):pt?t('{done} of {all} parts',{done:Object.keys(pt.stars).length,all:l.regions.length}):''}</small></button>`;
   }
-  // Two separate collections, each with its own card (dates, progress); a card opens that collection's pictures.
-  const SEASONS=['thanksgiving','christmas'];
+  // Separate collections, each with its own card (dates, progress); a card opens that collection's pictures.
+  const SEASONS=['halloween','thanksgiving','christmas'];
   function seasonStatus(s){
     const on=seasonOn();
     if(on===s) return t('Open until {date}',{date:seasonDate(seasonEnd(s))});
-    const n=seasonNext(); const at=n.s===s?n.at:new Date(n.at.getFullYear()+(s==='thanksgiving'&&n.s==='christmas'?1:0),s==='christmas'?11:10,1);
-    return t('Opens on {date}',{date:seasonDate(at)});
+    return t('Opens on {date}',{date:seasonDate(seasonStart(s))});
   }
   renderHolidays=function(){
     const el=$('holidays'); if(!el) return; const on=seasonOn(), view=v2.holView;
@@ -1937,13 +1939,13 @@ if(V2){
   function renderSeasonCard(){
     const b=$('seasonBtn'), on=seasonOn(); b.hidden=!on; if(!on) return;
     const ids=seasonPics(on), got=ids.filter(i=>save.best[LEVELS[i].id]!=null).length, next=ids.find(i=>save.best[LEVELS[i].id]==null), lv=LEVELS[next!=null?next:ids[0]];
-    b.classList.toggle('xmas',on==='christmas'); b.classList.toggle('tg',on==='thanksgiving');
+    b.classList.toggle('xmas',on==='christmas'); b.classList.toggle('tg',on==='thanksgiving'); b.classList.toggle('hw',on==='halloween');
     b.innerHTML=`<span class="dthumb">${thumbSVG(lv,next==null)}</span><span class="dbody"><span class="dtop"><b>${t('{season} pictures',{season:seasonName(on)})}</b>`+
       `<small>${t('until {date}',{date:seasonDate(seasonEnd(on))})}</small></span><span class="dname">${got===ids.length?t('All restored. Happy holidays!'):t('{done} of {all} restored',{done:got,all:ids.length})}</span>`+
       `<span class="dbars">${ids.map(i=>`<i class="${save.best[LEVELS[i].id]!=null?'on':''}"></i>`).join('')}</span></span>`;
   }
   $('seasonBtn').onclick=()=>{ v2.holView=seasonOn(); showTab('holidays'); };
-  // the Holidays tab itself opens on the two collections
+  // the Holidays tab itself opens on the collections
   if(holTab) holTab.addEventListener('click',()=>{ if(v2.holView){ v2.holView=null; renderHolidays(); } });
   const _renderMenu=renderMenu;
   renderMenu=function(){

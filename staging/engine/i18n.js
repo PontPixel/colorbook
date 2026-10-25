@@ -282,13 +282,13 @@ fr:{'Holidays':'Fêtes','Christmas':'Noël','Thanksgiving':'Thanksgiving','Now':
 'Holiday pictures open only in their season. The ones you played stay here.':'Les images des fêtes ne s’ouvrent qu’à leur saison. Celles que vous avez jouées restent ici.',
 '{season} pictures':'Images de {season}','until {date}':'jusqu’au {date}','All restored. Happy holidays!':'Tout est restauré. Joyeuses fêtes !','{done} of {all} restored':'{done} sur {all} restaurées',
 '<b>{season} pictures.</b> Holiday pictures to restore, here only until {date}. Tap the card, or the Holidays tab below.':'<b>Images de {season}.</b> Des images de fête à restaurer, ici seulement jusqu’au {date}. Touchez la carte, ou l’onglet Fêtes en bas.',
-'Merry Christmas!':'Joyeux Noël !','Happy Thanksgiving!':'Joyeux Thanksgiving !'},
+'Merry Christmas!':'Joyeux Noël !','Happy Thanksgiving!':'Joyeux Thanksgiving !','Halloween':'Halloween','Happy Halloween!':'Joyeux Halloween !'},
 ru:{'Holidays':'Праздники','Christmas':'Рождество','Thanksgiving':'День благодарения','Now':'Сейчас','Last season':'Прошлый сезон',
 '{season} pictures, here until {date}.':'Картинки к празднику «{season}», здесь до {date}.','{season} pictures arrive on {date}.':'Картинки к празднику «{season}» появятся {date}.',
 'Holiday pictures open only in their season. The ones you played stay here.':'Праздничные картинки открываются только в свой сезон. Те, что вы уже начали, остаются здесь.',
 '{season} pictures':'Праздник: {season}','until {date}':'до {date}','All restored. Happy holidays!':'Всё восстановлено. С праздниками!','{done} of {all} restored':'Восстановлено {done} из {all}',
 '<b>{season} pictures.</b> Holiday pictures to restore, here only until {date}. Tap the card, or the Holidays tab below.':'<b>Праздник: {season}.</b> Праздничные картинки, только до {date}. Нажмите на карточку или на вкладку «Праздники» внизу.',
-'Merry Christmas!':'Счастливого Рождества!','Happy Thanksgiving!':'С Днём благодарения!'}
+'Merry Christmas!':'Счастливого Рождества!','Happy Thanksgiving!':'С Днём благодарения!','Halloween':'Хэллоуин','Happy Halloween!':'Счастливого Хэллоуина!'}
 });
 I18N.add({
 fr:{'{season} collection':'Collection {season}','Open until {date}':'Ouverte jusqu’au {date}','Opens on {date}':'Ouvre le {date}','Back to Holidays':'Retour aux fêtes',
